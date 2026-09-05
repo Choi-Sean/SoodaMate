@@ -11,6 +11,14 @@ const admobAndroidAppId =
 const admobIosAppId =
   process.env.EXPO_PUBLIC_ADMOB_IOS_APP_ID ?? "ca-app-pub-3940256099942544~1458002511";
 
+// Apple requires this exact prompt (App Tracking Transparency) before any
+// SDK that touches IDFA — AdMob does — can request personalized ads on iOS.
+// Requested at runtime via expo-tracking-transparency (see ads.native.ts)
+// before mobileAds().initialize(); omitting this is an App Review rejection,
+// not just a degraded-ads issue.
+const userTrackingUsageDescription =
+  "We use this to show you more relevant ads and support the free features of the app.";
+
 module.exports = {
   expo: {
     name: "SuDa Mate",
@@ -66,6 +74,28 @@ module.exports = {
         {
           androidAppId: admobAndroidAppId,
           iosAppId: admobIosAppId,
+          userTrackingUsageDescription,
+          // Best practice per Google's own docs: don't start collecting
+          // measurement data before the user has answered the ATT prompt.
+          delayAppMeasurementInit: true,
+          // Google's own AdMob SKAdNetwork identifier (iOS 14+ ad
+          // attribution) — the full recommended list (50+ entries, mostly
+          // other mediation networks this app doesn't use) is at
+          // https://developers.google.com/admob/ios/ios14#skadnetwork;
+          // add more here only if real mediation partners are added later.
+          skAdNetworkItems: ["cstr6suwn9.skadnetwork"],
+        },
+      ],
+      [
+        "expo-tracking-transparency",
+        { userTrackingPermission: userTrackingUsageDescription },
+      ],
+      [
+        "expo-image-picker",
+        {
+          photosPermission: "Allow SuDa Mate to access your photos so you can add them to your profile.",
+          cameraPermission: "Allow SuDa Mate to access your camera so you can take a profile photo.",
+          microphonePermission: false,
         },
       ],
       "@react-native-firebase/app",

@@ -28,8 +28,12 @@
 | `EXPO_PUBLIC_MARKETING_SITE_URL` | — | The deployed Vercel URL; used to open the Stripe shop (`Linking.openURL`) and privacy/terms links |
 | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | same OAuth client as backend's `GOOGLE_OAUTH_CLIENT_ID` | `@react-native-google-signin/google-signin` needs the *web* client id, not an android/iOS one |
 | `EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY` | Kakao Developers → App → App Keys | Native app key, plus URL scheme registration in iOS/Android native config |
-| `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID` / `EXPO_PUBLIC_ADMOB_IOS_APP_ID` | AdMob console, after app registered | Falls back to Google's test IDs until set |
+| `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID` / `EXPO_PUBLIC_ADMOB_IOS_APP_ID` | AdMob console, after app registered | The *app*-level IDs (one per platform); falls back to Google's test IDs until set |
+| `EXPO_PUBLIC_ADMOB_ANDROID_BANNER_UNIT_ID` / `EXPO_PUBLIC_ADMOB_IOS_BANNER_UNIT_ID` | AdMob console → Ad units, after creating a Banner unit per platform | Falls back to Google's test banner unit ID until set (`src/components/AdSlot.native.tsx`) |
+| `EXPO_PUBLIC_ADMOB_ANDROID_INTERSTITIAL_UNIT_ID` / `EXPO_PUBLIC_ADMOB_IOS_INTERSTITIAL_UNIT_ID` | AdMob console → Ad units, after creating an Interstitial unit per platform | Falls back to Google's test interstitial unit ID until set (`src/services/ads.native.ts`) |
 | `FIREBASE_CONFIG` | Firebase Console → Project settings → your app | google-services.json / GoogleService-Info.plist |
+
+**iOS App Tracking Transparency**: `app.config.js` already declares `NSUserTrackingUsageDescription` (via the `expo-tracking-transparency` plugin) and `ads.native.ts` requests the permission before initializing AdMob — required by Apple for any app using an IDFA-capable SDK like AdMob, not optional. No env var needed; nothing to configure here beyond having a real AdMob account eventually.
 
 The app's own custom URL scheme (`sudamate://`) is fixed in `app.config.js` (`scheme: "sudamate"`) — no env var needed. It's used for the Stripe-purchase-complete deep link back from the website (`sudamate://shop`, handled by `mobile/src/services/deepLinking.ts`).
 

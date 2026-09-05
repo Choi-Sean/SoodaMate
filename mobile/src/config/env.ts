@@ -7,4 +7,12 @@ export const env = {
   kakaoNativeAppKey: process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? "",
   // Placeholder until web/ (Phase 9) is deployed and has a real URL.
   marketingSiteUrl: process.env.EXPO_PUBLIC_MARKETING_SITE_URL ?? "https://sudamate.example.com",
+  // Ad unit IDs (distinct from the AdMob *app* IDs in app.config.js) are
+  // per-platform per-ad-format in AdMob's console. Empty until a real AdMob
+  // account exists; ads.native.ts/AdSlot.native.tsx fall back to Google's
+  // TestIds when these are unset, so the app is fully functional either way.
+  admobAndroidBannerUnitId: process.env.EXPO_PUBLIC_ADMOB_ANDROID_BANNER_UNIT_ID ?? "",
+  admobIosBannerUnitId: process.env.EXPO_PUBLIC_ADMOB_IOS_BANNER_UNIT_ID ?? "",
+  admobAndroidInterstitialUnitId: process.env.EXPO_PUBLIC_ADMOB_ANDROID_INTERSTITIAL_UNIT_ID ?? "",
+  admobIosInterstitialUnitId: process.env.EXPO_PUBLIC_ADMOB_IOS_INTERSTITIAL_UNIT_ID ?? "",
 };

@@ -1,13 +1,17 @@
-import { View, StyleSheet } from "react-native";
+import { Platform, View, StyleSheet } from "react-native";
 import { BannerAd, BannerAdSize, TestIds } from "react-native-google-mobile-ads";
 
-// Test ad unit ID until a real AdMob account exists (TestIds.BANNER
-// auto-picks the right platform-specific test ID); swapping in a real unit
-// ID later is a one-line change.
+import { env } from "../config/env";
+
+const realUnitId = Platform.OS === "ios" ? env.admobIosBannerUnitId : env.admobAndroidBannerUnitId;
+// Falls back to Google's test ad unit ID until a real AdMob account exists
+// and EXPO_PUBLIC_ADMOB_*_BANNER_UNIT_ID is set (see docs/ENV_VARS.md).
+const bannerUnitId = realUnitId || TestIds.BANNER;
+
 export default function AdSlot() {
   return (
     <View style={styles.container}>
-      <BannerAd unitId={TestIds.BANNER} size={BannerAdSize.BANNER} />
+      <BannerAd unitId={bannerUnitId} size={BannerAdSize.BANNER} />
     </View>
   );
 }

@@ -1,4 +1,8 @@
+import { Platform } from "react-native";
+import { getTrackingPermissionsAsync, requestTrackingPermissionsAsync, PermissionStatus } from "expo-tracking-transparency";
 import mobileAds, { AdEventType, InterstitialAd, TestIds } from "react-native-google-mobile-ads";
+
+import { env } from "../config/env";
 
 // This file only ever gets bundled for ios/android (Metro's platform
 // extension resolution) — react-native-google-mobile-ads has no web build
@@ -9,8 +13,24 @@ let initialized = false;
 let lastInterstitialAt = 0;
 const INTERSTITIAL_MIN_INTERVAL_MS = 1000 * 60 * 5; // at most once per 5 minutes
 
+const realInterstitialUnitId =
+  Platform.OS === "ios" ? env.admobIosInterstitialUnitId : env.admobAndroidInterstitialUnitId;
+const interstitialUnitId = realInterstitialUnitId || TestIds.INTERSTITIAL;
+
 export async function initAds(): Promise<void> {
   if (initialized) return;
+
+  // App Tracking Transparency: required on iOS before requesting the IDFA
+  // for personalized ads (Apple rejects apps that skip this). No-op on
+  // Android. delayAppMeasurementInit in app.config.js keeps AdMob's own
+  // measurement SDK idle until this resolves.
+  if (Platform.OS === "ios") {
+    const current = await getTrackingPermissionsAsync();
+    if (current.status === PermissionStatus.UNDETERMINED) {
+      await requestTrackingPermissionsAsync();
+    }
+  }
+
   await mobileAds().initialize();
   initialized = true;
 }
@@ -22,7 +42,7 @@ export async function maybeShowInterstitial(): Promise<void> {
   const now = Date.now();
   if (now - lastInterstitialAt < INTERSTITIAL_MIN_INTERVAL_MS) return;
 
-  const interstitial = InterstitialAd.createForAdRequest(TestIds.INTERSTITIAL);
+  const interstitial = InterstitialAd.createForAdRequest(interstitialUnitId);
 
   await new Promise<void>((resolve) => {
     const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
