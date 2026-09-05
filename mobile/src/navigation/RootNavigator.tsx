@@ -6,6 +6,7 @@ import { useAuthStore } from "../store/authStore";
 import { getMyProfile } from "../api/profiles";
 import { registerForPushNotifications } from "../services/pushNotifications";
 import { maybeShowInterstitial } from "../services/ads";
+import { colors } from "../theme";
 import AuthStack from "./AuthStack";
 import MainTabs from "./MainTabs";
 import ProfileSetupScreen from "../screens/auth/ProfileSetupScreen";
@@ -28,7 +29,7 @@ export default function RootNavigator() {
   if (!hydrated || (isAuthenticated && profileQuery.isLoading)) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator size="large" color="#FF4B6E" />
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }

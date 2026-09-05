@@ -1,4 +1,10 @@
 {
+  "tabs": {
+    "discover": "Discover",
+    "matches": "Matches",
+    "chat": "Chat",
+    "profile": "Profile"
+  },
   "common": {
     "appName": "SuDa Date",
     "cancel": "Cancel",

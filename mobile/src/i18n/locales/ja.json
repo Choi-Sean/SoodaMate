@@ -1,4 +1,10 @@
 {
+  "tabs": {
+    "discover": "ディスカバー",
+    "matches": "マッチ",
+    "chat": "チャット",
+    "profile": "プロフィール"
+  },
   "common": {
     "appName": "数多デート",
     "cancel": "キャンセル",

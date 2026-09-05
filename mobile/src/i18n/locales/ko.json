@@ -1,4 +1,10 @@
 {
+  "tabs": {
+    "discover": "둘러보기",
+    "matches": "매칭",
+    "chat": "채팅",
+    "profile": "프로필"
+  },
   "common": {
     "appName": "수다 데이트",
     "cancel": "취소",

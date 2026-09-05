@@ -1,4 +1,10 @@
 {
+  "tabs": {
+    "discover": "发现",
+    "matches": "配对",
+    "chat": "聊天",
+    "profile": "我的"
+  },
   "common": {
     "appName": "数搭日记",
     "cancel": "取消",
