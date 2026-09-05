@@ -7,17 +7,26 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "env": { "EXPO_PUBLIC_API_BASE_URL": "http://localhost:8001" }
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "http://localhost:8001",
+        "EXPO_PUBLIC_MARKETING_SITE_URL": "https://REPLACE-WITH-YOUR-VERCEL-URL"
+      }
     },
     "preview": {
       "distribution": "internal",
       "channel": "preview",
-      "env": { "EXPO_PUBLIC_API_BASE_URL": "https://REPLACE-WITH-YOUR-RAILWAY-URL" }
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://REPLACE-WITH-YOUR-RAILWAY-URL",
+        "EXPO_PUBLIC_MARKETING_SITE_URL": "https://REPLACE-WITH-YOUR-VERCEL-URL"
+      }
     },
     "production": {
       "autoIncrement": true,
       "channel": "production",
-      "env": { "EXPO_PUBLIC_API_BASE_URL": "https://REPLACE-WITH-YOUR-RAILWAY-URL" }
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://REPLACE-WITH-YOUR-RAILWAY-URL",
+        "EXPO_PUBLIC_MARKETING_SITE_URL": "https://REPLACE-WITH-YOUR-VERCEL-URL"
+      }
     }
   },
   "submit": {

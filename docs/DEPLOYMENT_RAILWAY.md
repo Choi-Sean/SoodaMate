@@ -45,7 +45,7 @@ There's no separate migration step wired into the Railway build — the schema w
 curl https://<your-railway-service>.up.railway.app/health
 ```
 
-Then point `mobile/.env` and `mobile/eas.json`'s build profiles' `EXPO_PUBLIC_API_BASE_URL` at that URL (replacing the `REPLACE-WITH-YOUR-CLOUD-RUN-URL` placeholders left over from the original GCP-based plan).
+Then point `mobile/.env` and `mobile/eas.json`'s build profiles' `EXPO_PUBLIC_API_BASE_URL` at that URL (replacing the `REPLACE-WITH-YOUR-RAILWAY-URL` placeholders). Do the same for `EXPO_PUBLIC_MARKETING_SITE_URL` once `web/` is deployed to Vercel (`REPLACE-WITH-YOUR-VERCEL-URL`) — both env vars are baked in at build time, so a stale placeholder means the in-app Shop button and privacy/terms links silently point nowhere real.
 
 ## Redeploying
 
