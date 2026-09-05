@@ -417,6 +417,55 @@ const translations = {
     zh: '条款相关咨询：<a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>（正式上线前将替换为真实联系地址）',
     ja: '規約に関するお問い合わせ：<a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>（正式リリース前に実際のアドレスに変更予定）',
   },
+
+  "shop.title": { ko: "슈퍼좋아요 & 부스트", en: "Super Like & Boost", es: "Super Like y Boost", zh: "超级喜欢与曝光加速", ja: "スーパーいいね＆ブースト" },
+  "shop.subtitle": {
+    ko: '앱에서 "상점" 버튼으로 여기로 오셨다면 자동으로 로그인 상태예요. 결제는 Stripe로 안전하게 처리됩니다.',
+    en: 'If you got here by tapping "Shop" in the app, you\'re already signed in. Payments are processed securely by Stripe.',
+    es: 'Si llegaste aquí tocando "Tienda" en la app, ya tienes la sesión iniciada. Los pagos se procesan de forma segura con Stripe.',
+    zh: '如果你是通过应用内的"商店"按钮进入的，系统已自动为你登录。付款由Stripe安全处理。',
+    ja: 'アプリ内の「ショップ」ボタンからここに来た場合は、自動的にログイン状態になっています。決済はStripeにより安全に処理されます。',
+  },
+  "shop.authError": {
+    ko: "로그인 정보가 없어요. 앱의 프로필 > 상점 화면에서 다시 열어주세요.",
+    en: "We couldn't find your login. Please open this page again from Profile > Shop in the app.",
+    es: "No encontramos tu sesión. Abre esta página de nuevo desde Perfil > Tienda en la app.",
+    zh: "未找到登录信息，请从应用内的「我的 > 商店」重新打开此页面。",
+    ja: "ログイン情報が見つかりません。アプリの「プロフィール > ショップ」からもう一度開いてください。",
+  },
+  "shop.notice": {
+    ko: '결제 완료 후 크레딧은 앱에 바로 반영됩니다. 문의: <a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>',
+    en: 'Your credits are added to the app right after payment completes. Questions: <a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>',
+    es: 'Tus créditos se añaden a la app justo después de completar el pago. Preguntas: <a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>',
+    zh: '付款完成后，积分将立即在应用内到账。咨询：<a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>',
+    ja: '決済完了後、クレジットはすぐにアプリに反映されます。お問い合わせ：<a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>',
+  },
+  "shop.buyLabel": { ko: "구매", en: "Buy", es: "Comprar", zh: "购买", ja: "購入" },
+  "shop.buyLoading": { ko: "이동 중...", en: "Redirecting...", es: "Redirigiendo...", zh: "跳转中...", ja: "移動中..." },
+  "shop.checkoutError": {
+    ko: "결제를 시작하지 못했어요. 잠시 후 다시 시도해주세요.",
+    en: "Couldn't start checkout. Please try again in a moment.",
+    es: "No se pudo iniciar el pago. Inténtalo de nuevo en un momento.",
+    zh: "无法启动结算，请稍后再试。",
+    ja: "決済を開始できませんでした。しばらくしてからもう一度お試しください。",
+  },
+  "shop.loadError": {
+    ko: "상품을 불러오지 못했어요. 페이지를 새로고침해주세요.",
+    en: "Couldn't load products. Please refresh the page.",
+    es: "No se pudieron cargar los productos. Actualiza la página.",
+    zh: "无法加载商品，请刷新页面。",
+    ja: "商品を読み込めませんでした。ページを更新してください。",
+  },
+
+  "shopSuccess.title": { ko: "결제가 완료됐어요!", en: "Payment complete!", es: "¡Pago completado!", zh: "支付已完成！", ja: "決済が完了しました！" },
+  "shopSuccess.body": {
+    ko: "구매하신 크레딧이 곧 앱에 반영됩니다. 앱으로 돌아가서 확인해보세요.",
+    en: "Your credits will be added shortly. Head back to the app to check.",
+    es: "Tus créditos se añadirán en breve. Vuelve a la app para comprobarlo.",
+    zh: "您购买的积分即将到账，请返回应用查看。",
+    ja: "ご購入いただいたクレジットはまもなく反映されます。アプリに戻ってご確認ください。",
+  },
+  "shopSuccess.backBtn": { ko: "앱으로 돌아가기", en: "Back to the app", es: "Volver a la app", zh: "返回应用", ja: "アプリに戻る" },
 };
 
 function currentLang() {

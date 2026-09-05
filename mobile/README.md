@@ -47,7 +47,14 @@ immediately once the backend is running.
 ## Structure
 
 - `src/navigation/` — `RootNavigator` gates Auth → ProfileSetup → MainTabs based on `useAuthStore` + a `myProfile` query
-- `src/screens/` — one folder per feature area; non-auth screens are placeholders until their phase (see repo root `docs/ARCHITECTURE.md`)
+- `src/screens/` — one folder per feature area; includes Travel Mode and Verification (Profile stack) alongside the core Discover/Matches/Chat/Profile/Settings screens
 - `src/api/` — thin axios wrappers per backend resource, `client.ts` handles the JWT header + refresh-on-401
 - `src/store/authStore.ts` — Zustand; tokens persisted via `expo-secure-store` on native, `localStorage` on web (`src/services/secureStorage.ts`)
 - `src/services/` — native SDK wrappers (Google/Kakao sign-in); guarded to throw cleanly on web instead of crashing the bundle
+- `src/services/deepLinking.ts` — handles `sudadate://shop`, the redirect back from the website's Stripe checkout (see `web/shop-success.html`)
+- `src/theme.ts` — shared color tokens (warm cream/orange/navy, matches the SooDaList family look, not a generic pink dating-app palette)
+- `src/i18n/` — i18next setup + `locales/{ko,en,es,zh,ja}.json`; `SettingsScreen` has the language switcher
+
+## Not yet built
+
+Video call UI (WebRTC) — the backend signaling (Phase 15) is done and tested, but the mobile side needs `react-native-webrtc`, a new native build, and promoting the chat WebSocket from its current per-screen scope to an app-level provider so incoming calls can be received outside the chat room. None of that can be verified in a sandbox without a device/emulator — see `docs/ARCHITECTURE.md`.

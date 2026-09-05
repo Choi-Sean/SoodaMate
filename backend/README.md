@@ -1,6 +1,6 @@
 # backend — SuDa Date API
 
-FastAPI + PostgreSQL backend.
+FastAPI + MSSQL (SQL Server) backend.
 
 ## Local setup
 
@@ -11,10 +11,9 @@ pip install -r requirements-dev.txt
 cp .env.example .env
 ```
 
-Start Postgres (from `../infra`: `docker compose up postgres`, exposed on host port `5433` — see compose file comments), then:
+**No Docker, no local containers** — set `DATABASE_URL` in `.env` to a real, directly-reachable SQL Server instance (see `docs/ENV_VARS.md` at the repo root for the connection-string shape and the `MARS_Connection=yes` requirement). Tables aren't managed by Alembic yet (`Base.metadata.create_all` was used directly against the real database); stored procedures live in `../infra/mssql/stored_procedures.sql` and are applied by running that script against the same instance.
 
 ```bash
-alembic upgrade head
 uvicorn app.main:app --reload --port 8001
 ```
 
@@ -24,18 +23,14 @@ API docs: http://localhost:8001/docs
 
 ## Tests
 
-Tests need a real Postgres reachable at `TEST_DATABASE_URL` (defaults to
-`postgresql+asyncpg://suda:suda@localhost:5433/suda_date_test`). The schema is
-dropped and recreated before every test, so point this at a disposable
-database, never at your dev or prod database.
+Tests run against the **same real MSSQL instance** `DATABASE_URL` points at (there is no separate disposable test database — set `TEST_DATABASE_URL` only if you want to point tests somewhere else). Each test run drops and recreates the schema, so never point this at a database with real user data.
 
 ```bash
 pytest
 ```
 
-## Migrations
+Full-suite runs against a remote hosted instance can take several minutes — most of that is network round-trip latency per test, not local compute.
 
-```bash
-alembic revision --autogenerate -m "description"
-alembic upgrade head
-```
+## Stored procedures
+
+Core transactional logic (`sp_RecordSwipe`, `sp_UpsertBlock`, `sp_UpsertPushToken`) lives in `../infra/mssql/stored_procedures.sql`, not in SQLAlchemy — apply/update it by connecting directly to the database and running the script (e.g. via `sqlcmd` or Azure Data Studio), same as the table schema itself.

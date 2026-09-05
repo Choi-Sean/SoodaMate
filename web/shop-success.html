@@ -29,17 +29,22 @@
       <img src="/assets/logo.svg" alt="" class="logo-mark" width="28" height="28" />
       수다 데이트
     </a>
+    <div class="nav-right">
+      <div class="lang-switcher" data-lang-switcher aria-label="Language"></div>
+    </div>
   </header>
 
   <main class="success-main">
     <div class="success-icon">🎉</div>
-    <h1>결제가 완료됐어요!</h1>
-    <p>구매하신 크레딧이 곧 앱에 반영됩니다. 앱으로 돌아가서 확인해보세요.</p>
-    <a class="back-btn" href="sudadate://shop">앱으로 돌아가기</a>
+    <h1 data-i18n="shopSuccess.title">결제가 완료됐어요!</h1>
+    <p data-i18n="shopSuccess.body">구매하신 크레딧이 곧 앱에 반영됩니다. 앱으로 돌아가서 확인해보세요.</p>
+    <a class="back-btn" href="sudadate://shop" data-i18n="shopSuccess.backBtn">앱으로 돌아가기</a>
   </main>
 
   <footer class="foot">
-    <p>© 2026 수다리스트. All rights reserved.</p>
+    <p data-i18n="footer.rights">© 2026 수다리스트. All rights reserved.</p>
   </footer>
+
+  <script src="/i18n.js"></script>
 </body>
 </html>

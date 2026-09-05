@@ -38,31 +38,35 @@
       수다 데이트
     </a>
     <nav class="nav-links" aria-label="Site">
-      <a href="/#features">기능</a>
+      <a href="/#features" data-i18n="nav.features">기능</a>
     </nav>
+    <div class="nav-right">
+      <div class="lang-switcher" data-lang-switcher aria-label="Language"></div>
+    </div>
   </header>
 
   <main class="shop-main">
-    <h1>슈퍼좋아요 &amp; 부스트</h1>
-    <p class="sub">앱에서 "상점" 버튼으로 여기로 오셨다면 자동으로 로그인 상태예요. 결제는 Stripe로 안전하게 처리됩니다.</p>
+    <h1 data-i18n="shop.title">슈퍼좋아요 &amp; 부스트</h1>
+    <p class="sub" data-i18n="shop.subtitle">앱에서 "상점" 버튼으로 여기로 오셨다면 자동으로 로그인 상태예요. 결제는 Stripe로 안전하게 처리됩니다.</p>
 
-    <p class="shop-error" id="authError">
+    <p class="shop-error" id="authError" data-i18n="shop.authError">
       로그인 정보가 없어요. 앱의 프로필 &gt; 상점 화면에서 다시 열어주세요.
     </p>
 
     <div class="product-list" id="productList"></div>
 
-    <p class="shop-notice">결제 완료 후 크레딧은 앱에 바로 반영됩니다. 문의: <a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a></p>
+    <p class="shop-notice" data-i18n-html="shop.notice">결제 완료 후 크레딧은 앱에 바로 반영됩니다. 문의: <a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a></p>
   </main>
 
   <footer class="foot">
     <div class="foot-links">
-      <a href="/privacy-policy.html">개인정보처리방침</a>
-      <a href="/terms.html">이용약관</a>
+      <a href="/privacy-policy.html" data-i18n="footer.privacy">개인정보처리방침</a>
+      <a href="/terms.html" data-i18n="footer.terms">이용약관</a>
     </div>
-    <p>© 2026 수다리스트. All rights reserved.</p>
+    <p data-i18n="footer.rights">© 2026 수다리스트. All rights reserved.</p>
   </footer>
 
+  <script src="/i18n.js"></script>
   <script>
     const API_BASE_URL = window.SUDA_API_BASE_URL || "http://localhost:8001";
     const params = new URLSearchParams(window.location.search);
@@ -76,9 +80,18 @@
       authErrorEl.style.display = "block";
     }
 
-    async function loadProducts() {
-      const resp = await fetch(`${API_BASE_URL}/payments/products`);
-      const products = await resp.json();
+    // i18n.js (loaded above) declares `translations` at top-level scope, which
+    // stays visible to this later inline script within the same document.
+    function tr(key) {
+      const lang = document.documentElement.lang || "ko";
+      const entry = translations[key];
+      return (entry && (entry[lang] || entry.ko)) || key;
+    }
+
+    let products = [];
+    let loadFailed = false;
+
+    function renderProducts() {
       listEl.innerHTML = products
         .map(
           (p) => `
@@ -87,7 +100,7 @@
             <h3>${p.name}</h3>
             <p>$${(p.price_usd_cents / 100).toFixed(2)}</p>
           </div>
-          <button class="buy-btn" data-product-id="${p.product_id}" ${token ? "" : "disabled"}>구매</button>
+          <button class="buy-btn" data-product-id="${p.product_id}" ${token ? "" : "disabled"}>${tr("shop.buyLabel")}</button>
         </div>`
         )
         .join("");
@@ -97,9 +110,24 @@
       });
     }
 
+    async function loadProducts() {
+      try {
+        if (products.length === 0) {
+          const resp = await fetch(`${API_BASE_URL}/payments/products`);
+          if (!resp.ok) throw new Error("products request failed");
+          products = await resp.json();
+        }
+        loadFailed = false;
+        renderProducts();
+      } catch (e) {
+        loadFailed = true;
+        listEl.innerHTML = `<p class="shop-error" style="display:block">${tr("shop.loadError")}</p>`;
+      }
+    }
+
     async function startCheckout(productId, btn) {
       btn.disabled = true;
-      btn.textContent = "이동 중...";
+      btn.textContent = tr("shop.buyLoading");
       try {
         const resp = await fetch(`${API_BASE_URL}/payments/create-checkout-session`, {
           method: "POST",
@@ -111,12 +139,21 @@
         window.location.href = data.checkout_url;
       } catch (e) {
         btn.disabled = false;
-        btn.textContent = "구매";
-        alert("결제를 시작하지 못했어요. 잠시 후 다시 시도해주세요.");
+        btn.textContent = tr("shop.buyLabel");
+        alert(tr("shop.checkoutError"));
       }
     }
 
-    loadProducts();
+    document.addEventListener("DOMContentLoaded", loadProducts);
+    // The lang switcher's own click handler (attached to an ancestor of the
+    // clicked button) runs first during bubbling and updates
+    // document.documentElement.lang before this listener re-renders.
+    document.addEventListener("click", (e) => {
+      if (e.target.closest("[data-lang-option]")) {
+        if (loadFailed) loadProducts();
+        else renderProducts();
+      }
+    });
   </script>
 </body>
 </html>
