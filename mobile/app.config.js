@@ -59,7 +59,13 @@ const hasIosFirebase = fs.existsSync(googleServiceInfoPlistPath);
 module.exports = {
   expo: {
     name: "SooDa Mate",
-    slug: "sooda-mate",
+    // Stuck as "suda-mate" — this is the EAS project's server-side slug
+    // (tied to extra.eas.projectId below), and eas build hard-errors on any
+    // mismatch between this field and that. Renaming it would mean deleting
+    // and recreating the whole EAS project, losing the Android/iOS build
+    // credentials already set up. Purely internal — never shown to users,
+    // only appears in the expo.dev dashboard URL.
+    slug: "suda-mate",
     scheme: "soodamate",
     version: "1.0.0",
     orientation: "portrait",
@@ -170,7 +176,7 @@ module.exports = {
     },
     extra: {
       eas: {
-        // Created via `eas init --force` — https://expo.dev/accounts/seanchoi1991/projects/sooda-mate
+        // Created via `eas init --force` — https://expo.dev/accounts/seanchoi1991/projects/suda-mate
         projectId: "24ed66e3-d709-4bde-aa7e-417d576ca56d",
       },
     },
