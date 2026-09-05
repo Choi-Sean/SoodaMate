@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Chat-bubble mascot: 수다(chit-chat) as a smiling speech bubble, plus a
+       heart accent for "date" — ties the family (SooDaList) chat-bubble/
+       mascot motif to this app's own identity. -->
+  <path d="M32 6C16.5 6 5 16.2 5 29c0 7 3.6 13.2 9.4 17.4-.4 3-1.7 6.2-3.8 8.9-.5.6 0 1.5.8 1.4 4.6-.6 8.7-2.4 11.9-4.9 2.8.8 5.7 1.2 8.7 1.2 15.5 0 27-10.2 27-23S47.5 6 32 6z" fill="#E2914D"/>
+  <circle cx="21" cy="30" r="3.2" fill="#0B3B63"/>
+  <circle cx="43" cy="30" r="3.2" fill="#0B3B63"/>
+  <circle cx="17" cy="36" r="4" fill="#F6B99A" opacity="0.8"/>
+  <circle cx="47" cy="36" r="4" fill="#F6B99A" opacity="0.8"/>
+  <path d="M23 39c2.8 3 6 4.4 9 4.4s6.2-1.4 9-4.4" stroke="#0B3B63" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <path d="M48 10c0-3 2.4-5 5-5.6-1 2.2-1 4 0 6.2-2.6-.4-5-.6-5-.6z" fill="#E2914D"/>
+  <path d="M50.5 3.6c1.7-2 4.6-2.3 6.2-.6 1.6 1.7 1.2 4.6-.9 6.6-1.4 1.4-4.9 3.1-4.9 3.1s-1.7-3.5-1.9-5.4c-.2-1.4.4-2.7 1.5-3.7z" fill="#E85D6B"/>
+</svg>

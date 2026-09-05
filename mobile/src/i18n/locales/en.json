@@ -1,0 +1,152 @@
+{
+  "common": {
+    "appName": "SuDa Date",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "logout": "Log out",
+    "loading": "Loading...",
+    "somethingWentWrong": "Something went wrong. Please try again.",
+    "tryAgain": "Try again"
+  },
+  "auth": {
+    "loginTitle": "SuDa Date",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "logIn": "Log in",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithKakao": "Continue with Kakao",
+    "noAccount": "Don't have an account? Sign up",
+    "createAccount": "Create your account",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords don't match",
+    "signUp": "Sign up",
+    "haveAccount": "Already have an account? Log in"
+  },
+  "profileSetup": {
+    "title": "Complete your profile",
+    "addPhoto": "+ Add photo",
+    "photoPermission": "Photo library permission is required to add a profile photo",
+    "displayName": "Display name",
+    "birthDate": "Birth date (YYYY-MM-DD)",
+    "iAm": "I am",
+    "interestedIn": "Interested in",
+    "male": "male",
+    "female": "female",
+    "other": "other",
+    "all": "all",
+    "continue": "Continue",
+    "validationMissing": "Enter a display name and birth date (YYYY-MM-DD)",
+    "needPhoto": "Add at least one photo"
+  },
+  "discover": {
+    "loadError": "Couldn't load candidates. Pull to retry.",
+    "empty": "No new profiles right now — check back later!",
+    "superlikedYou": "Super Liked you!",
+    "kmAway": "{{km}} km away",
+    "pass": "Pass",
+    "superLike": "Super Like",
+    "like": "Like"
+  },
+  "match": {
+    "title": "It's a Match!",
+    "subtitle": "You and {{name}} liked each other.",
+    "someone": "someone new",
+    "sendMessage": "Send a message",
+    "keepBrowsing": "Keep browsing"
+  },
+  "matches": {
+    "title": "Matches",
+    "empty": "No matches yet — keep browsing!"
+  },
+  "chat": {
+    "title": "Chats",
+    "empty": "No matches yet — keep browsing!",
+    "messagePlaceholder": "Message",
+    "send": "Send",
+    "matchedOn": "Matched {{date}}",
+    "reportOrBlock": "Report or block",
+    "report": "Report",
+    "block": "Block",
+    "cancel": "Cancel",
+    "reportReasonTitle": "Report reason",
+    "reasonHarassment": "Harassment",
+    "reasonInappropriate": "Inappropriate content",
+    "reasonFakeProfile": "Fake profile",
+    "reported": "Reported",
+    "reportedBody": "Thanks — we'll review this.",
+    "blockConfirmTitle": "Block this person?",
+    "blockConfirmBody": "They won't be able to match, message, or see you again.",
+    "blockConfirm": "Block",
+    "errorGeneric": "Something went wrong. Please try again later.",
+    "firstMessageRestricted": "It's their turn to send the first message right now.",
+    "restrictedBanner": "This match expires if they don't send the first message within 24 hours."
+  },
+  "profile": {
+    "editProfile": "Edit profile",
+    "managePhotos": "Manage photos",
+    "settings": "Settings",
+    "shop": "Shop",
+    "superlikeCredits": "{{count}} Super Likes",
+    "boostCredits": "{{count}} Boosts"
+  },
+  "editProfile": {
+    "title": "Edit profile",
+    "displayName": "Display name",
+    "bio": "Bio",
+    "iAm": "I am",
+    "interestedIn": "Interested in",
+    "ageRange": "Age range",
+    "to": "to",
+    "maxDistance": "Max distance (km)",
+    "managePhotosCount": "Manage photos ({{count}})",
+    "save": "Save"
+  },
+  "photos": {
+    "title": "Photos"
+  },
+  "settings": {
+    "title": "Settings",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "logOut": "Log out",
+    "deleteAccount": "Delete account",
+    "deleteConfirmTitle": "Delete account",
+    "deleteConfirmBody": "This permanently deletes your profile, matches, and messages. This can't be undone.",
+    "deleteFailed": "Couldn't delete account",
+    "tryAgainLater": "Try again later",
+    "incognito": "Incognito mode",
+    "incognitoDesc": "When on, you won't appear in other people's discovery feed.",
+    "travelMode": "Travel mode",
+    "verification": "Work/school verification"
+  },
+  "travel": {
+    "title": "Travel mode",
+    "subtitle": "Browse new people in another location.",
+    "presetCity": "Choose a city",
+    "manualEntry": "Enter manually",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "duration": "Duration",
+    "hours24": "24 hours",
+    "days7": "7 days",
+    "activate": "Turn on travel mode",
+    "active": "Travel mode is on",
+    "activeUntil": "Until {{date}}",
+    "turnOff": "Turn off travel mode"
+  },
+  "verification": {
+    "title": "Work/school verification",
+    "subtitle": "Verify with a work or school email to show a trust badge on your profile.",
+    "kindWork": "Work verification",
+    "kindSchool": "School verification",
+    "emailPlaceholder": "Work/school email",
+    "sendCode": "Send verification code",
+    "codePlaceholder": "Verification code (6 digits)",
+    "confirm": "Verify",
+    "alreadyVerified": "Already verified ({{kind}})",
+    "codeSent": "We sent a code — check your email.",
+    "verifiedSuccess": "Verification complete!"
+  }
+}

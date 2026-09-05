@@ -1,0 +1,152 @@
+{
+  "common": {
+    "appName": "SuDa Date",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "logout": "Cerrar sesión",
+    "loading": "Cargando...",
+    "somethingWentWrong": "Algo salió mal. Inténtalo de nuevo.",
+    "tryAgain": "Reintentar"
+  },
+  "auth": {
+    "loginTitle": "SuDa Date",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "logIn": "Iniciar sesión",
+    "continueWithGoogle": "Continuar con Google",
+    "continueWithKakao": "Continuar con Kakao",
+    "noAccount": "¿No tienes cuenta? Regístrate",
+    "createAccount": "Crea tu cuenta",
+    "passwordMinLength": "La contraseña debe tener al menos 8 caracteres",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "signUp": "Registrarse",
+    "haveAccount": "¿Ya tienes cuenta? Inicia sesión"
+  },
+  "profileSetup": {
+    "title": "Completa tu perfil",
+    "addPhoto": "+ Añadir foto",
+    "photoPermission": "Se necesita permiso de acceso a fotos para añadir una foto de perfil",
+    "displayName": "Nombre visible",
+    "birthDate": "Fecha de nacimiento (AAAA-MM-DD)",
+    "iAm": "Soy",
+    "interestedIn": "Interesado/a en",
+    "male": "hombre",
+    "female": "mujer",
+    "other": "otro",
+    "all": "todos",
+    "continue": "Continuar",
+    "validationMissing": "Ingresa un nombre y fecha de nacimiento (AAAA-MM-DD)",
+    "needPhoto": "Añade al menos una foto"
+  },
+  "discover": {
+    "loadError": "No se pudieron cargar los perfiles. Desliza hacia abajo para reintentar.",
+    "empty": "No hay perfiles nuevos por ahora — ¡vuelve más tarde!",
+    "superlikedYou": "¡Te dio Super Like!",
+    "kmAway": "a {{km}} km",
+    "pass": "Pasar",
+    "superLike": "Super Like",
+    "like": "Me gusta"
+  },
+  "match": {
+    "title": "¡Es un Match!",
+    "subtitle": "Tú y {{name}} se gustaron mutuamente.",
+    "someone": "alguien nuevo",
+    "sendMessage": "Enviar mensaje",
+    "keepBrowsing": "Seguir explorando"
+  },
+  "matches": {
+    "title": "Matches",
+    "empty": "Aún no tienes matches — ¡sigue explorando!"
+  },
+  "chat": {
+    "title": "Chats",
+    "empty": "Aún no tienes matches — ¡sigue explorando!",
+    "messagePlaceholder": "Mensaje",
+    "send": "Enviar",
+    "matchedOn": "Match el {{date}}",
+    "reportOrBlock": "Reportar o bloquear",
+    "report": "Reportar",
+    "block": "Bloquear",
+    "cancel": "Cancelar",
+    "reportReasonTitle": "Motivo del reporte",
+    "reasonHarassment": "Acoso",
+    "reasonInappropriate": "Contenido inapropiado",
+    "reasonFakeProfile": "Perfil falso",
+    "reported": "Reportado",
+    "reportedBody": "Gracias — lo revisaremos.",
+    "blockConfirmTitle": "¿Bloquear a esta persona?",
+    "blockConfirmBody": "No podrán hacer match, enviarte mensajes ni verte de nuevo.",
+    "blockConfirm": "Bloquear",
+    "errorGeneric": "Algo salió mal. Inténtalo más tarde.",
+    "firstMessageRestricted": "Ahora le toca a la otra persona enviar el primer mensaje.",
+    "restrictedBanner": "Este match expira si no envía el primer mensaje en 24 horas."
+  },
+  "profile": {
+    "editProfile": "Editar perfil",
+    "managePhotos": "Administrar fotos",
+    "settings": "Ajustes",
+    "shop": "Tienda",
+    "superlikeCredits": "{{count}} Super Likes",
+    "boostCredits": "{{count}} Boosts"
+  },
+  "editProfile": {
+    "title": "Editar perfil",
+    "displayName": "Nombre visible",
+    "bio": "Biografía",
+    "iAm": "Soy",
+    "interestedIn": "Interesado/a en",
+    "ageRange": "Rango de edad",
+    "to": "a",
+    "maxDistance": "Distancia máxima (km)",
+    "managePhotosCount": "Administrar fotos ({{count}})",
+    "save": "Guardar"
+  },
+  "photos": {
+    "title": "Fotos"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "privacyPolicy": "Política de privacidad",
+    "termsOfService": "Términos de uso",
+    "logOut": "Cerrar sesión",
+    "deleteAccount": "Eliminar cuenta",
+    "deleteConfirmTitle": "Eliminar cuenta",
+    "deleteConfirmBody": "Esto elimina permanentemente tu perfil, matches y mensajes. No se puede deshacer.",
+    "deleteFailed": "No se pudo eliminar la cuenta",
+    "tryAgainLater": "Inténtalo más tarde",
+    "incognito": "Modo incógnito",
+    "incognitoDesc": "Si está activado, no aparecerás en el feed de descubrimiento de otras personas.",
+    "travelMode": "Modo viaje",
+    "verification": "Verificación laboral/escolar"
+  },
+  "travel": {
+    "title": "Modo viaje",
+    "subtitle": "Descubre nuevas personas en otra ubicación.",
+    "presetCity": "Elegir ciudad",
+    "manualEntry": "Ingresar manualmente",
+    "latitude": "Latitud",
+    "longitude": "Longitud",
+    "duration": "Duración",
+    "hours24": "24 horas",
+    "days7": "7 días",
+    "activate": "Activar modo viaje",
+    "active": "Modo viaje activado",
+    "activeUntil": "Hasta {{date}}",
+    "turnOff": "Desactivar modo viaje"
+  },
+  "verification": {
+    "title": "Verificación laboral/escolar",
+    "subtitle": "Verifica con un correo laboral o escolar para mostrar una insignia de confianza en tu perfil.",
+    "kindWork": "Verificación laboral",
+    "kindSchool": "Verificación escolar",
+    "emailPlaceholder": "Correo laboral/escolar",
+    "sendCode": "Enviar código de verificación",
+    "codePlaceholder": "Código de verificación (6 dígitos)",
+    "confirm": "Verificar",
+    "alreadyVerified": "Ya verificado ({{kind}})",
+    "codeSent": "Enviamos un código — revisa tu correo.",
+    "verifiedSuccess": "¡Verificación completa!"
+  }
+}

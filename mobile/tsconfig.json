@@ -1,0 +1,11 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    // Mirrors Metro's platform-extension resolution (ads.native.ts vs
+    // ads.web.ts etc.) so tsc resolves the same files Metro would bundle
+    // for a native build — the primary target — instead of erroring on
+    // "module not found" for every platform-split file.
+    "moduleSuffixes": [".native", ""]
+  }
+}

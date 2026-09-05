@@ -1,0 +1,152 @@
+{
+  "common": {
+    "appName": "数搭日记",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "logout": "退出登录",
+    "loading": "加载中...",
+    "somethingWentWrong": "出错了，请重试。",
+    "tryAgain": "重试"
+  },
+  "auth": {
+    "loginTitle": "数搭日记",
+    "email": "邮箱",
+    "password": "密码",
+    "confirmPassword": "确认密码",
+    "logIn": "登录",
+    "continueWithGoogle": "使用谷歌继续",
+    "continueWithKakao": "使用Kakao继续",
+    "noAccount": "还没有账号？注册",
+    "createAccount": "创建账号",
+    "passwordMinLength": "密码至少需要8位字符",
+    "passwordMismatch": "两次密码不一致",
+    "signUp": "注册",
+    "haveAccount": "已有账号？登录"
+  },
+  "profileSetup": {
+    "title": "完善你的个人主页",
+    "addPhoto": "+ 添加照片",
+    "photoPermission": "添加头像需要相册访问权限",
+    "displayName": "昵称",
+    "birthDate": "出生日期 (YYYY-MM-DD)",
+    "iAm": "我是",
+    "interestedIn": "感兴趣的性别",
+    "male": "男性",
+    "female": "女性",
+    "other": "其他",
+    "all": "不限",
+    "continue": "继续",
+    "validationMissing": "请输入昵称和出生日期 (YYYY-MM-DD)",
+    "needPhoto": "请至少添加一张照片"
+  },
+  "discover": {
+    "loadError": "无法加载推荐用户，请下拉重试。",
+    "empty": "暂时没有新的推荐 — 稍后再来看看吧！",
+    "superlikedYou": "对你发送了超级喜欢！",
+    "kmAway": "{{km}}公里外",
+    "pass": "跳过",
+    "superLike": "超级喜欢",
+    "like": "喜欢"
+  },
+  "match": {
+    "title": "配对成功！",
+    "subtitle": "你和{{name}}互相喜欢了对方。",
+    "someone": "新的缘分",
+    "sendMessage": "发送消息",
+    "keepBrowsing": "继续浏览"
+  },
+  "matches": {
+    "title": "配对",
+    "empty": "还没有配对 — 继续浏览吧！"
+  },
+  "chat": {
+    "title": "聊天",
+    "empty": "还没有配对 — 继续浏览吧！",
+    "messagePlaceholder": "输入消息",
+    "send": "发送",
+    "matchedOn": "{{date}} 配对成功",
+    "reportOrBlock": "举报或拉黑",
+    "report": "举报",
+    "block": "拉黑",
+    "cancel": "取消",
+    "reportReasonTitle": "举报原因",
+    "reasonHarassment": "骚扰",
+    "reasonInappropriate": "不当内容",
+    "reasonFakeProfile": "虚假资料",
+    "reported": "举报成功",
+    "reportedBody": "谢谢，我们会尽快审核。",
+    "blockConfirmTitle": "要拉黑此人吗？",
+    "blockConfirmBody": "拉黑后双方将无法配对、发消息或查看对方资料。",
+    "blockConfirm": "拉黑",
+    "errorGeneric": "出错了，请稍后再试。",
+    "firstMessageRestricted": "现在轮到对方先发消息。",
+    "restrictedBanner": "如果对方24小时内未发送第一条消息，此配对将失效。"
+  },
+  "profile": {
+    "editProfile": "编辑资料",
+    "managePhotos": "管理照片",
+    "settings": "设置",
+    "shop": "商店",
+    "superlikeCredits": "{{count}}个超级喜欢",
+    "boostCredits": "{{count}}次曝光加速"
+  },
+  "editProfile": {
+    "title": "编辑资料",
+    "displayName": "昵称",
+    "bio": "个人简介",
+    "iAm": "我是",
+    "interestedIn": "感兴趣的性别",
+    "ageRange": "偏好年龄段",
+    "to": "至",
+    "maxDistance": "最大距离 (公里)",
+    "managePhotosCount": "管理照片 ({{count}}张)",
+    "save": "保存"
+  },
+  "photos": {
+    "title": "照片"
+  },
+  "settings": {
+    "title": "设置",
+    "privacyPolicy": "隐私政策",
+    "termsOfService": "使用条款",
+    "logOut": "退出登录",
+    "deleteAccount": "删除账户",
+    "deleteConfirmTitle": "删除账户",
+    "deleteConfirmBody": "这将永久删除你的资料、配对及聊天记录，且无法恢复。",
+    "deleteFailed": "账户删除失败",
+    "tryAgainLater": "请稍后再试",
+    "incognito": "隐身模式",
+    "incognitoDesc": "开启后，你不会出现在其他人的推荐列表中。",
+    "travelMode": "旅行模式",
+    "verification": "职场/学校认证"
+  },
+  "travel": {
+    "title": "旅行模式",
+    "subtitle": "浏览其他地区的新用户。",
+    "presetCity": "选择城市",
+    "manualEntry": "手动输入",
+    "latitude": "纬度",
+    "longitude": "经度",
+    "duration": "持续时间",
+    "hours24": "24小时",
+    "days7": "7天",
+    "activate": "开启旅行模式",
+    "active": "旅行模式已开启",
+    "activeUntil": "至 {{date}}",
+    "turnOff": "关闭旅行模式"
+  },
+  "verification": {
+    "title": "职场/学校认证",
+    "subtitle": "使用工作或学校邮箱验证后，你的资料将显示信任徽章。",
+    "kindWork": "职场认证",
+    "kindSchool": "学校认证",
+    "emailPlaceholder": "工作/学校邮箱",
+    "sendCode": "发送验证码",
+    "codePlaceholder": "验证码（6位数字）",
+    "confirm": "验证",
+    "alreadyVerified": "已认证（{{kind}}）",
+    "codeSent": "验证码已发送，请查看邮箱。",
+    "verifiedSuccess": "认证成功！"
+  }
+}

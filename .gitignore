@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Node / React Native
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
+npm-debug.log*
+
+# iOS / Android native build artifacts
+mobile/ios/build/
+mobile/ios/Pods/
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/.gradle/
+
+# GCP / secrets
+*service-account*.json
+firebase-credentials*.json
+keystore/*.jks
+keystore/*.keystore
+
+# App Store Connect API key (mobile/eas.json references this by path)
+mobile/secrets/
+*.p8
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

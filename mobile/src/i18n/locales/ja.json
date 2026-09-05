@@ -1,0 +1,152 @@
+{
+  "common": {
+    "appName": "数多デート",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "logout": "ログアウト",
+    "loading": "読み込み中...",
+    "somethingWentWrong": "問題が発生しました。もう一度お試しください。",
+    "tryAgain": "再試行"
+  },
+  "auth": {
+    "loginTitle": "数多デート",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "confirmPassword": "パスワード確認",
+    "logIn": "ログイン",
+    "continueWithGoogle": "Googleで続ける",
+    "continueWithKakao": "カカオで続ける",
+    "noAccount": "アカウントをお持ちでないですか？新規登録",
+    "createAccount": "アカウントを作成",
+    "passwordMinLength": "パスワードは8文字以上で入力してください",
+    "passwordMismatch": "パスワードが一致しません",
+    "signUp": "新規登録",
+    "haveAccount": "すでにアカウントをお持ちですか？ログイン"
+  },
+  "profileSetup": {
+    "title": "プロフィールを完成させましょう",
+    "addPhoto": "+ 写真を追加",
+    "photoPermission": "プロフィール写真を追加するには写真ライブラリへのアクセス許可が必要です",
+    "displayName": "ニックネーム",
+    "birthDate": "生年月日 (YYYY-MM-DD)",
+    "iAm": "自分の性別",
+    "interestedIn": "興味のある性別",
+    "male": "男性",
+    "female": "女性",
+    "other": "その他",
+    "all": "すべて",
+    "continue": "続ける",
+    "validationMissing": "ニックネームと生年月日 (YYYY-MM-DD) を入力してください",
+    "needPhoto": "写真を1枚以上追加してください"
+  },
+  "discover": {
+    "loadError": "プロフィールを読み込めませんでした。下に引っ張って再試行してください。",
+    "empty": "今は新しいプロフィールがありません — また後で確認してください！",
+    "superlikedYou": "スーパーいいねを送りました！",
+    "kmAway": "{{km}}km先",
+    "pass": "パス",
+    "superLike": "スーパーいいね",
+    "like": "いいね"
+  },
+  "match": {
+    "title": "マッチしました！",
+    "subtitle": "{{name}}さんとお互いにいいねしました。",
+    "someone": "新しい出会い",
+    "sendMessage": "メッセージを送る",
+    "keepBrowsing": "見て回る"
+  },
+  "matches": {
+    "title": "マッチ",
+    "empty": "まだマッチがありません — 見て回りましょう！"
+  },
+  "chat": {
+    "title": "チャット",
+    "empty": "まだマッチがありません — 見て回りましょう！",
+    "messagePlaceholder": "メッセージ",
+    "send": "送信",
+    "matchedOn": "{{date}} にマッチ",
+    "reportOrBlock": "通報またはブロック",
+    "report": "通報する",
+    "block": "ブロックする",
+    "cancel": "キャンセル",
+    "reportReasonTitle": "通報理由",
+    "reasonHarassment": "嫌がらせ",
+    "reasonInappropriate": "不適切なコンテンツ",
+    "reasonFakeProfile": "偽のプロフィール",
+    "reported": "通報しました",
+    "reportedBody": "ありがとうございます。確認いたします。",
+    "blockConfirmTitle": "この人をブロックしますか？",
+    "blockConfirmBody": "ブロックすると、マッチ・メッセージ・プロフィール閲覧が互いにできなくなります。",
+    "blockConfirm": "ブロック",
+    "errorGeneric": "問題が発生しました。しばらくしてから再度お試しください。",
+    "firstMessageRestricted": "今は相手が先にメッセージを送る番です。",
+    "restrictedBanner": "24時間以内に相手が最初のメッセージを送らない場合、このマッチは無効になります。"
+  },
+  "profile": {
+    "editProfile": "プロフィール編集",
+    "managePhotos": "写真を管理",
+    "settings": "設定",
+    "shop": "ショップ",
+    "superlikeCredits": "スーパーいいね {{count}}回分",
+    "boostCredits": "ブースト {{count}}回分"
+  },
+  "editProfile": {
+    "title": "プロフィール編集",
+    "displayName": "ニックネーム",
+    "bio": "自己紹介",
+    "iAm": "自分の性別",
+    "interestedIn": "興味のある性別",
+    "ageRange": "希望年齢層",
+    "to": "〜",
+    "maxDistance": "最大距離 (km)",
+    "managePhotosCount": "写真を管理 ({{count}}枚)",
+    "save": "保存"
+  },
+  "photos": {
+    "title": "写真"
+  },
+  "settings": {
+    "title": "設定",
+    "privacyPolicy": "プライバシーポリシー",
+    "termsOfService": "利用規約",
+    "logOut": "ログアウト",
+    "deleteAccount": "アカウント削除",
+    "deleteConfirmTitle": "アカウントを削除しますか？",
+    "deleteConfirmBody": "プロフィール、マッチ、メッセージ履歴が完全に削除され、元に戻せません。",
+    "deleteFailed": "アカウントを削除できませんでした",
+    "tryAgainLater": "しばらくしてから再度お試しください",
+    "incognito": "シークレットモード",
+    "incognitoDesc": "オンにすると、他のユーザーの表示画面に表示されなくなります。",
+    "travelMode": "トラベルモード",
+    "verification": "職場/学校認証"
+  },
+  "travel": {
+    "title": "トラベルモード",
+    "subtitle": "別の地域で新しい出会いを探せます。",
+    "presetCity": "都市を選択",
+    "manualEntry": "手動で入力",
+    "latitude": "緯度",
+    "longitude": "経度",
+    "duration": "適用期間",
+    "hours24": "24時間",
+    "days7": "7日間",
+    "activate": "トラベルモードをオンにする",
+    "active": "トラベルモード有効",
+    "activeUntil": "{{date}}まで",
+    "turnOff": "トラベルモードをオフにする"
+  },
+  "verification": {
+    "title": "職場/学校認証",
+    "subtitle": "職場または学校のメールで認証すると、プロフィールに信頼バッジが表示されます。",
+    "kindWork": "職場認証",
+    "kindSchool": "学校認証",
+    "emailPlaceholder": "職場/学校のメールアドレス",
+    "sendCode": "認証コードを送信",
+    "codePlaceholder": "認証コード（6桁）",
+    "confirm": "認証する",
+    "alreadyVerified": "認証済み（{{kind}}）",
+    "codeSent": "認証コードを送信しました。メールをご確認ください。",
+    "verifiedSuccess": "認証が完了しました！"
+  }
+}

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>수다 데이트 — SuDa Date</title>
+  <meta name="description" content="수다 데이트 — 좋아요·패스·슈퍼좋아요 버튼으로 편하게 만나고, 실시간 채팅으로 진짜 대화를 시작하는 데이팅 앱." />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="bar">
+    <a class="logo" href="/">
+      <img src="/assets/logo.svg" alt="" class="logo-mark" width="34" height="34" />
+      수다 데이트
+    </a>
+    <nav class="nav-links" aria-label="Site">
+      <a href="#features" data-i18n="nav.features">기능</a>
+      <a href="#rule" data-i18n="nav.rule">매칭 방식</a>
+      <a href="#safety" data-i18n="nav.safety">안전</a>
+      <a href="#screens" data-i18n="nav.screens">스크린샷</a>
+    </nav>
+    <div class="nav-right">
+      <div class="lang-switcher" data-lang-switcher aria-label="Language"></div>
+      <a class="nav-cta" href="#download" data-i18n="nav.download">다운로드</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow" data-i18n="hero.eyebrow">🇰🇷 한국 시장을 위한 데이팅 앱</span>
+        <h1 class="hero-title" data-i18n-html="hero.title">
+          스와이프 대신,<br />
+          <span class="accent">확실한 버튼</span>으로 시작하는 수다
+        </h1>
+        <p class="hero-subtitle" data-i18n="hero.subtitle">
+          실수로 넘기는 스와이프는 이제 그만. 좋아요·패스·슈퍼좋아요 버튼으로 또렷하게 의사표현하고,
+          매칭되면 바로 실시간 채팅으로 진짜 대화를 시작하세요.
+        </p>
+
+        <div class="hero-badges">
+          <a class="store-badge" href="#download">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.13 7.31c1.35.07 2.29.74 3.08.8.95-.06 1.86-.68 3.13-.71 1.53-.04 2.9.63 3.68 1.63-3.31 1.98-2.77 6.33.36 7.42-.75 1.9-1.75 3.79-2.33 3.83zM12.03 7.25c-.13-2.42 1.85-4.44 4.05-4.62.29 2.42-2.1 4.85-4.05 4.62z"/></svg>
+            <span><small data-i18n="hero.storeSoon">출시 예정</small>App Store</span>
+          </a>
+          <a class="store-badge" href="#download">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.6 2.6c-.4.4-.6.9-.6 1.5v15.8c0 .6.2 1.1.6 1.5l.1.1L13 12.5v-.1L3.7 2.5l-.1.1zM16 15.5l-2.6-2.6v-.1L16 10.2l3.5 2c.7.4.7 1.1 0 1.5l-3.5 1.9zm-2.9-2.7L4.3 21.5c.5.1 1 0 1.5-.3l9-5-1.7-1.9zm0-1.6L14.8 9l-9-5.1c-.5-.3-1.1-.3-1.5-.2l8.8 8.5z"/></svg>
+            <span><small data-i18n="hero.storeSoon">출시 예정</small>Google Play</span>
+          </a>
+        </div>
+
+        <div class="hero-trust">
+          <div class="hero-trust-item"><span class="dot"></span><span data-i18n="hero.trust1">만 18세 이상만 이용 가능</span></div>
+          <div class="hero-trust-item"><span class="dot"></span><span data-i18n="hero.trust2">실시간 신고·차단</span></div>
+          <div class="hero-trust-item"><span class="dot"></span><span data-i18n="hero.trust3">카카오·구글 간편 로그인</span></div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-float-card match" data-i18n="hero.matchToast">💛 It's a Match!</div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-card">
+              <div class="phone-card-badge" data-i18n="hero.cardDistance">2km 이내</div>
+              <div class="phone-card-info">
+                <div class="name" data-i18n="hero.cardName">지은, 27</div>
+                <div class="bio" data-i18n="hero.cardBio">주말엔 등산, 평일엔 카페 탐방 🌿</div>
+              </div>
+            </div>
+            <div class="phone-actions">
+              <div class="phone-action-btn pass">✕</div>
+              <div class="phone-action-btn super">★</div>
+              <div class="phone-action-btn like">♥</div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-float-card chat" data-i18n="hero.chatToast">💬 실시간 채팅 연결됨</div>
+      </div>
+    </section>
+
+    <section id="features" class="features">
+      <div class="section-head">
+        <h2 data-i18n="features.head.title">왜 수다 데이트일까요</h2>
+        <p data-i18n="features.head.sub">불편한 스와이프 대신 명확한 선택, 그리고 진짜 대화로 이어지는 경험을 설계했습니다.</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">👍</div>
+          <h3 data-i18n="feature.1.title">버튼으로 편하게</h3>
+          <p data-i18n="feature.1.body">좋아요·패스·슈퍼좋아요 버튼으로 명확하게 의사표현. 실수로 밀어서 놓치는 인연이 없어요.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💬</div>
+          <h3 data-i18n="feature.2.title">실시간 채팅</h3>
+          <p data-i18n="feature.2.body">매칭되는 순간 바로 대화를 시작할 수 있는 실시간 채팅으로, 어색한 정적 없이 이어집니다.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⭐</div>
+          <h3 data-i18n="feature.3.title">슈퍼좋아요 &amp; 부스트</h3>
+          <p data-i18n="feature.3.body">마음에 드는 상대에게 특별하게 눈에 띄고 싶다면 슈퍼좋아요와 부스트로 우선 노출되세요.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎥</div>
+          <h3 data-i18n="feature.4.title">화상통화 매칭 확인</h3>
+          <p data-i18n="feature.4.body">실제로 만나기 전, 화상통화로 서로를 먼저 확인할 수 있어 더 안심하고 다음 단계로 나아갈 수 있어요.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🏅</div>
+          <h3 data-i18n="feature.5.title">재직·학교 인증 배지</h3>
+          <p data-i18n="feature.5.body">이메일 인증으로 재직 중인 회사나 학교를 인증하고, 프로필에 신뢰 배지를 표시할 수 있어요.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🕶️</div>
+          <h3 data-i18n="feature.6.title">인코그니토 &amp; 여행 모드</h3>
+          <p data-i18n="feature.6.body">조용히 둘러보고 싶을 땐 인코그니토, 다른 지역 인연이 궁금할 땐 여행 모드를 켜보세요.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="how">
+      <div class="section-head">
+        <h2 data-i18n="how.head.title">시작하는 방법</h2>
+        <p data-i18n="how.head.sub">가입부터 첫 대화까지, 3단계면 충분합니다.</p>
+      </div>
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-step-num">1</div>
+          <h3 data-i18n="how.1.title">3초 로그인</h3>
+          <p data-i18n="how.1.body">카카오, 구글, 이메일 중 편한 방법으로 가입하고 프로필을 완성하세요.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">2</div>
+          <h3 data-i18n="how.2.title">버튼으로 둘러보기</h3>
+          <p data-i18n="how.2.body">추천된 프로필을 보고 좋아요·패스·슈퍼좋아요 버튼으로 선택하세요.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">3</div>
+          <h3 data-i18n="how.3.title">매칭 후 대화</h3>
+          <p data-i18n="how.3.body">서로 좋아요를 누르면 매칭! 바로 실시간 채팅으로 대화를 시작하세요.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="rule" style="padding-top: 0;">
+      <div class="rule">
+        <div class="rule-text">
+          <span class="rule-badge" data-i18n="rule.badge">✨ 여성을 위한 안전한 시작</span>
+          <h2 data-i18n-html="rule.title">먼저 말 걸어야 하는 부담,<br />이제 지워드릴게요</h2>
+          <p data-i18n="rule.p1">
+            남녀가 매칭되면 여성 회원이 먼저 대화를 시작할 수 있어요. 원치 않는 연락으로부터의 부담을
+            줄이고, 대화를 시작할 준비가 됐을 때 편하게 먼저 말을 건넬 수 있도록 설계했습니다.
+          </p>
+          <p data-i18n="rule.p2">
+            같은 성별 간 매칭이나 성별 무관 매칭은 누구나 먼저 대화를 시작할 수 있어요.
+          </p>
+        </div>
+        <div class="rule-visual">
+          <div class="rule-timeline">
+            <div class="rule-timeline-item">
+              <span class="rule-timeline-dot"></span>
+              <div><strong data-i18n="rule.timeline1.title">매칭 성사</strong><span data-i18n="rule.timeline1.body">서로 좋아요를 누르면 매칭이 만들어져요.</span></div>
+            </div>
+            <div class="rule-timeline-item">
+              <span class="rule-timeline-dot"></span>
+              <div><strong data-i18n="rule.timeline2.title">24시간의 기회</strong><span data-i18n="rule.timeline2.body">남녀 매칭이라면 여성 회원에게 먼저 대화를 시작할 24시간이 주어져요.</span></div>
+            </div>
+            <div class="rule-timeline-item">
+              <span class="rule-timeline-dot"></span>
+              <div><strong data-i18n="rule.timeline3.title">대화 시작!</strong><span data-i18n="rule.timeline3.body">첫 메시지가 오면 이후엔 누구나 자유롭게 대화할 수 있어요.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="safety" class="safety">
+      <div class="safety-grid">
+        <ul class="safety-list">
+          <li>
+            <span class="safety-check">✓</span>
+            <div><strong data-i18n="safety.1.title">손쉬운 차단·신고</strong><span data-i18n="safety.1.body">불편한 상대는 대화방에서 바로 차단하거나 신고할 수 있어요.</span></div>
+          </li>
+          <li>
+            <span class="safety-check">✓</span>
+            <div><strong data-i18n="safety.2.title">재직·학교 인증</strong><span data-i18n="safety.2.body">이메일 인증을 거친 회원에게는 신뢰 배지가 표시돼요.</span></div>
+          </li>
+          <li>
+            <span class="safety-check">✓</span>
+            <div><strong data-i18n="safety.3.title">화상통화로 먼저 확인</strong><span data-i18n="safety.3.body">실제로 만나기 전에 화상통화로 서로를 확인할 수 있어요.</span></div>
+          </li>
+          <li>
+            <span class="safety-check">✓</span>
+            <div><strong data-i18n="safety.4.title">만 18세 이상만 이용</strong><span data-i18n="safety.4.body">모든 회원은 가입 시 생년월일 확인을 거쳐요.</span></div>
+          </li>
+        </ul>
+        <div class="safety-visual">
+          <div class="big-emoji">🛡️</div>
+          <h3 data-i18n="safety.card.title">안전이 먼저입니다</h3>
+          <p data-i18n="safety.card.body">진짜 인연은 신뢰에서 시작돼요. 수다 데이트는 안전한 만남을 위한 장치를 계속 더해가고 있습니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="screens" class="screens">
+      <div class="section-head">
+        <h2 data-i18n="screens.head.title">미리보기</h2>
+        <p data-i18n="screens.head.sub">실제 앱 스크린샷은 출시 후 이 자리에 업데이트됩니다.</p>
+      </div>
+      <div class="phone-row">
+        <div class="phone-frame">
+          <div class="phone-frame-screen placeholder-discover" data-i18n-html="screens.discover">Discover<br />버튼으로 둘러보기</div>
+        </div>
+        <div class="phone-frame">
+          <div class="phone-frame-screen placeholder-match" data-i18n="screens.match">It's a Match!</div>
+        </div>
+        <div class="phone-frame">
+          <div class="phone-frame-screen placeholder-chat" data-i18n="screens.chat">실시간 채팅</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="download">
+      <div class="cta">
+        <h2 data-i18n="cta.title">지금 바로 시작하세요</h2>
+        <p data-i18n="cta.body">수다 데이트는 곧 App Store와 Google Play에 출시됩니다.</p>
+        <div class="hero-badges">
+          <a class="store-badge" href="#download">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.13 7.31c1.35.07 2.29.74 3.08.8.95-.06 1.86-.68 3.13-.71 1.53-.04 2.9.63 3.68 1.63-3.31 1.98-2.77 6.33.36 7.42-.75 1.9-1.75 3.79-2.33 3.83zM12.03 7.25c-.13-2.42 1.85-4.44 4.05-4.62.29 2.42-2.1 4.85-4.05 4.62z"/></svg>
+            <span><small data-i18n="hero.storeSoon">출시 예정</small>App Store</span>
+          </a>
+          <a class="store-badge" href="#download">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.6 2.6c-.4.4-.6.9-.6 1.5v15.8c0 .6.2 1.1.6 1.5l.1.1L13 12.5v-.1L3.7 2.5l-.1.1zM16 15.5l-2.6-2.6v-.1L16 10.2l3.5 2c.7.4.7 1.1 0 1.5l-3.5 1.9zm-2.9-2.7L4.3 21.5c.5.1 1 0 1.5-.3l9-5-1.7-1.9zm0-1.6L14.8 9l-9-5.1c-.5-.3-1.1-.3-1.5-.2l8.8 8.5z"/></svg>
+            <span><small data-i18n="hero.storeSoon">출시 예정</small>Google Play</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="foot-logo">
+      <img src="/assets/logo.svg" alt="" width="24" height="24" />
+      수다 데이트
+    </div>
+    <div class="foot-links">
+      <a href="/privacy-policy.html" data-i18n="footer.privacy">개인정보처리방침</a>
+      <a href="/terms.html" data-i18n="footer.terms">이용약관</a>
+    </div>
+    <p data-i18n="footer.rights">© 2026 수다리스트. All rights reserved.</p>
+  </footer>
+
+  <script src="/i18n.js"></script>
+  <script src="/script.js"></script>
+</body>
+</html>

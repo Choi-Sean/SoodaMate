@@ -1,0 +1,152 @@
+{
+  "common": {
+    "appName": "수다 데이트",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "logout": "로그아웃",
+    "loading": "불러오는 중...",
+    "somethingWentWrong": "문제가 발생했어요. 다시 시도해주세요.",
+    "tryAgain": "다시 시도"
+  },
+  "auth": {
+    "loginTitle": "수다 데이트",
+    "email": "이메일",
+    "password": "비밀번호",
+    "confirmPassword": "비밀번호 확인",
+    "logIn": "로그인",
+    "continueWithGoogle": "구글로 계속하기",
+    "continueWithKakao": "카카오로 계속하기",
+    "noAccount": "계정이 없으신가요? 회원가입",
+    "createAccount": "계정 만들기",
+    "passwordMinLength": "비밀번호는 8자 이상이어야 해요",
+    "passwordMismatch": "비밀번호가 일치하지 않아요",
+    "signUp": "회원가입",
+    "haveAccount": "이미 계정이 있으신가요? 로그인"
+  },
+  "profileSetup": {
+    "title": "프로필을 완성해주세요",
+    "addPhoto": "+ 사진 추가",
+    "photoPermission": "프로필 사진을 추가하려면 사진 라이브러리 접근 권한이 필요해요",
+    "displayName": "닉네임",
+    "birthDate": "생년월일 (YYYY-MM-DD)",
+    "iAm": "저는",
+    "interestedIn": "관심 있는 성별",
+    "male": "남성",
+    "female": "여성",
+    "other": "기타",
+    "all": "전체",
+    "continue": "계속하기",
+    "validationMissing": "닉네임과 생년월일(YYYY-MM-DD)을 입력해주세요",
+    "needPhoto": "사진을 최소 1장 추가해주세요"
+  },
+  "discover": {
+    "loadError": "프로필을 불러오지 못했어요. 아래로 당겨서 다시 시도하세요.",
+    "empty": "지금은 새로운 프로필이 없어요 — 나중에 다시 확인해주세요!",
+    "superlikedYou": "슈퍼좋아요를 보냈어요!",
+    "kmAway": "{{km}}km 거리",
+    "pass": "패스",
+    "superLike": "슈퍼좋아요",
+    "like": "좋아요"
+  },
+  "match": {
+    "title": "매칭 성사!",
+    "subtitle": "{{name}}님과 서로 좋아요를 눌렀어요.",
+    "someone": "새로운 인연",
+    "sendMessage": "메시지 보내기",
+    "keepBrowsing": "계속 둘러보기"
+  },
+  "matches": {
+    "title": "매칭",
+    "empty": "아직 매칭이 없어요 — 계속 둘러보세요!"
+  },
+  "chat": {
+    "title": "채팅",
+    "empty": "아직 매칭이 없어요 — 계속 둘러보세요!",
+    "messagePlaceholder": "메시지 입력",
+    "send": "전송",
+    "matchedOn": "{{date}} 매칭됨",
+    "reportOrBlock": "신고 또는 차단",
+    "report": "신고하기",
+    "block": "차단하기",
+    "cancel": "취소",
+    "reportReasonTitle": "신고 사유",
+    "reasonHarassment": "괴롭힘",
+    "reasonInappropriate": "부적절한 콘텐츠",
+    "reasonFakeProfile": "가짜 프로필",
+    "reported": "신고 완료",
+    "reportedBody": "감사합니다 — 검토하겠습니다.",
+    "blockConfirmTitle": "이 사람을 차단할까요?",
+    "blockConfirmBody": "차단하면 서로 매칭, 메시지, 프로필 열람이 모두 불가능해져요.",
+    "blockConfirm": "차단",
+    "errorGeneric": "문제가 발생했어요. 나중에 다시 시도해주세요.",
+    "firstMessageRestricted": "지금은 상대방이 먼저 메시지를 보낼 차례예요.",
+    "restrictedBanner": "24시간 안에 상대방이 먼저 메시지를 보내지 않으면 이 매칭은 만료돼요."
+  },
+  "profile": {
+    "editProfile": "프로필 수정",
+    "managePhotos": "사진 관리",
+    "settings": "설정",
+    "shop": "상점",
+    "superlikeCredits": "슈퍼좋아요 {{count}}개",
+    "boostCredits": "부스트 {{count}}회"
+  },
+  "editProfile": {
+    "title": "프로필 수정",
+    "displayName": "닉네임",
+    "bio": "자기소개",
+    "iAm": "저는",
+    "interestedIn": "관심 있는 성별",
+    "ageRange": "선호 나이대",
+    "to": "~",
+    "maxDistance": "최대 거리 (km)",
+    "managePhotosCount": "사진 관리 ({{count}}장)",
+    "save": "저장"
+  },
+  "photos": {
+    "title": "사진"
+  },
+  "settings": {
+    "title": "설정",
+    "privacyPolicy": "개인정보처리방침",
+    "termsOfService": "이용약관",
+    "logOut": "로그아웃",
+    "deleteAccount": "계정 삭제",
+    "deleteConfirmTitle": "계정을 삭제할까요?",
+    "deleteConfirmBody": "프로필, 매칭, 채팅 기록이 영구적으로 삭제되며 되돌릴 수 없어요.",
+    "deleteFailed": "계정을 삭제하지 못했어요",
+    "tryAgainLater": "나중에 다시 시도해주세요",
+    "incognito": "인코그니토 모드",
+    "incognitoDesc": "켜면 다른 사람의 둘러보기 화면에 노출되지 않아요.",
+    "travelMode": "여행 모드",
+    "verification": "재직/학교 인증"
+  },
+  "travel": {
+    "title": "여행 모드",
+    "subtitle": "다른 지역의 새로운 인연을 둘러보세요.",
+    "presetCity": "도시 선택",
+    "manualEntry": "직접 입력",
+    "latitude": "위도",
+    "longitude": "경도",
+    "duration": "적용 기간",
+    "hours24": "24시간",
+    "days7": "7일",
+    "activate": "여행 모드 켜기",
+    "active": "여행 모드 활성화됨",
+    "activeUntil": "{{date}}까지",
+    "turnOff": "여행 모드 끄기"
+  },
+  "verification": {
+    "title": "재직/학교 인증",
+    "subtitle": "회사 또는 학교 이메일로 인증하면 프로필에 신뢰 배지가 표시돼요.",
+    "kindWork": "재직 인증",
+    "kindSchool": "학교 인증",
+    "emailPlaceholder": "회사/학교 이메일",
+    "sendCode": "인증 코드 보내기",
+    "codePlaceholder": "인증 코드 (6자리)",
+    "confirm": "인증하기",
+    "alreadyVerified": "이미 인증되었어요 ({{kind}})",
+    "codeSent": "인증 코드를 보냈어요. 이메일을 확인해주세요.",
+    "verifiedSuccess": "인증이 완료됐어요!"
+  }
+}

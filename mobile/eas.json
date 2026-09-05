@@ -1,0 +1,32 @@
+{
+  "cli": {
+    "version": ">= 13.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": { "EXPO_PUBLIC_API_BASE_URL": "http://localhost:8001" }
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "env": { "EXPO_PUBLIC_API_BASE_URL": "https://REPLACE-WITH-YOUR-RAILWAY-URL" }
+    },
+    "production": {
+      "autoIncrement": true,
+      "channel": "production",
+      "env": { "EXPO_PUBLIC_API_BASE_URL": "https://REPLACE-WITH-YOUR-RAILWAY-URL" }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascApiKeyPath": "./secrets/AuthKey_55M944LNN4.p8",
+        "ascApiKeyIssuerId": "2a378149-23b8-4247-b1cc-51407d1fc9f4",
+        "ascApiKeyId": "55M944LNN4"
+      }
+    }
+  }
+}

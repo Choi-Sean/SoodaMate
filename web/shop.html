@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>상점 — 수다 데이트</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .shop-main { max-width: 640px; margin: 0 auto; padding: 64px 24px 96px; }
+    .shop-main h1 { font-size: 28px; font-weight: 900; color: var(--navy); margin-bottom: 8px; }
+    .shop-main .sub { color: var(--muted); margin-bottom: 32px; }
+    .product-list { display: flex; flex-direction: column; gap: 14px; }
+    .product-card {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--white); border: 1px solid var(--border); border-radius: 16px;
+      padding: 20px 22px;
+    }
+    .product-card .info h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+    .product-card .info p { font-size: 13px; color: var(--muted); }
+    .product-card .buy-btn {
+      background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+      border: none; border-radius: 999px; padding: 10px 20px; cursor: pointer;
+    }
+    .product-card .buy-btn:hover { background: var(--accent-dark); }
+    .product-card .buy-btn:disabled { opacity: 0.5; cursor: default; }
+    .shop-notice { margin-top: 28px; font-size: 13px; color: var(--muted); text-align: center; }
+    .shop-error { color: #B3261E; text-align: center; margin-bottom: 16px; display: none; }
+  </style>
+</head>
+<body>
+  <header class="bar">
+    <a class="logo" href="/">
+      <img src="/assets/logo.svg" alt="" class="logo-mark" width="28" height="28" />
+      수다 데이트
+    </a>
+    <nav class="nav-links" aria-label="Site">
+      <a href="/#features">기능</a>
+    </nav>
+  </header>
+
+  <main class="shop-main">
+    <h1>슈퍼좋아요 &amp; 부스트</h1>
+    <p class="sub">앱에서 "상점" 버튼으로 여기로 오셨다면 자동으로 로그인 상태예요. 결제는 Stripe로 안전하게 처리됩니다.</p>
+
+    <p class="shop-error" id="authError">
+      로그인 정보가 없어요. 앱의 프로필 &gt; 상점 화면에서 다시 열어주세요.
+    </p>
+
+    <div class="product-list" id="productList"></div>
+
+    <p class="shop-notice">결제 완료 후 크레딧은 앱에 바로 반영됩니다. 문의: <a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a></p>
+  </main>
+
+  <footer class="foot">
+    <div class="foot-links">
+      <a href="/privacy-policy.html">개인정보처리방침</a>
+      <a href="/terms.html">이용약관</a>
+    </div>
+    <p>© 2026 수다리스트. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const API_BASE_URL = window.SUDA_API_BASE_URL || "http://localhost:8001";
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token") || sessionStorage.getItem("suda_token");
+    if (token) sessionStorage.setItem("suda_token", token);
+
+    const authErrorEl = document.getElementById("authError");
+    const listEl = document.getElementById("productList");
+
+    if (!token) {
+      authErrorEl.style.display = "block";
+    }
+
+    async function loadProducts() {
+      const resp = await fetch(`${API_BASE_URL}/payments/products`);
+      const products = await resp.json();
+      listEl.innerHTML = products
+        .map(
+          (p) => `
+        <div class="product-card">
+          <div class="info">
+            <h3>${p.name}</h3>
+            <p>$${(p.price_usd_cents / 100).toFixed(2)}</p>
+          </div>
+          <button class="buy-btn" data-product-id="${p.product_id}" ${token ? "" : "disabled"}>구매</button>
+        </div>`
+        )
+        .join("");
+
+      listEl.querySelectorAll(".buy-btn").forEach((btn) => {
+        btn.addEventListener("click", () => startCheckout(btn.getAttribute("data-product-id"), btn));
+      });
+    }
+
+    async function startCheckout(productId, btn) {
+      btn.disabled = true;
+      btn.textContent = "이동 중...";
+      try {
+        const resp = await fetch(`${API_BASE_URL}/payments/create-checkout-session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ product_id: productId }),
+        });
+        if (!resp.ok) throw new Error("checkout session failed");
+        const data = await resp.json();
+        window.location.href = data.checkout_url;
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = "구매";
+        alert("결제를 시작하지 못했어요. 잠시 후 다시 시도해주세요.");
+      }
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
