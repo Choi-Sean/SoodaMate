@@ -1,5 +1,26 @@
 const fs = require("fs");
 const path = require("path");
+const { withPodfile } = require("@expo/config-plugins");
+
+// @react-native-firebase/* is autolinked (present in package.json) even
+// when its Expo config plugin is excluded below for lacking a real
+// google-services.json/GoogleService-Info.plist — autolinking scans
+// node_modules directly and doesn't consult the plugins array. On iOS,
+// react-native-firebase resolves Firebase via Swift Package Manager by
+// default, which conflicts with Expo/RN's static CocoaPods linkage
+// ("SPM + static linkage is not supported... duplicate-symbol errors" —
+// a real `eas build` failure, not a guess). $RNFirebaseDisableSPM is
+// react-native-firebase's own documented opt-out, falling back to plain
+// CocoaPods resolution instead; must be set before any Podfile target
+// block, hence prepending it via a raw Podfile mod.
+function withRNFirebaseDisableSPM(config) {
+  return withPodfile(config, (config) => {
+    if (!config.modResults.contents.includes("$RNFirebaseDisableSPM")) {
+      config.modResults.contents = `$RNFirebaseDisableSPM = true\n${config.modResults.contents}`;
+    }
+    return config;
+  });
+}
 
 // app.config.js instead of app.json so the Kakao native app key (needed for
 // the URL scheme the OAuth redirect lands on) can come from an env var
@@ -132,6 +153,10 @@ module.exports = {
       ...(hasAndroidFirebase || hasIosFirebase
         ? ["@react-native-firebase/app", "@react-native-firebase/messaging"]
         : []),
+      // Unconditional (unlike the plugins above) — autolinking still pulls
+      // in the Firebase native pods on iOS regardless of whether the
+      // config plugin ran, so the Podfile fix is needed either way.
+      withRNFirebaseDisableSPM,
     ],
     // EAS Update isn't actually wired up (no OTA update flow built) — this
     // just satisfies `eas build`'s own check, since eas.json's build
