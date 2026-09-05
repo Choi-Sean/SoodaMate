@@ -13,23 +13,23 @@ const admobIosAppId =
 
 module.exports = {
   expo: {
-    name: "SuDa Date",
-    slug: "suda-date",
-    scheme: "sudadate",
+    name: "SuDa Mate",
+    slug: "suda-mate",
+    scheme: "sudamate",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.sudalist.sudadate",
+      bundleIdentifier: "com.sudalist.sudamate",
       // Required alongside Google Sign-In per App Store Review Guideline
       // 4.8 — see docs/APP_STORE_SUBMISSION.md. Also enable the "Sign In
       // with Apple" capability on the App ID in the developer portal.
       usesAppleSignIn: true,
     },
     android: {
-      package: "com.sudalist.sudadate",
+      package: "com.sudalist.sudamate",
       adaptiveIcon: {
         backgroundColor: "#FCEBDD",
         foregroundImage: "./assets/android-icon-foreground.png",

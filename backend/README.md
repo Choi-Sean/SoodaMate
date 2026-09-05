@@ -1,4 +1,4 @@
-# backend — SuDa Date API
+# backend — SuDa Mate API
 
 FastAPI + MSSQL (SQL Server) backend.
 

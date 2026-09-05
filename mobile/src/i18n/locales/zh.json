@@ -6,7 +6,7 @@
     "profile": "我的"
   },
   "common": {
-    "appName": "数搭日记",
+    "appName": "数搭伴侣",
     "cancel": "取消",
     "save": "保存",
     "delete": "删除",
@@ -16,7 +16,7 @@
     "tryAgain": "重试"
   },
   "auth": {
-    "loginTitle": "数搭日记",
+    "loginTitle": "数搭伴侣",
     "email": "邮箱",
     "password": "密码",
     "confirmPassword": "确认密码",

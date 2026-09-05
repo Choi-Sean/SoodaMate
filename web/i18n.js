@@ -49,7 +49,7 @@ const translations = {
     ja: "週末は登山、平日はカフェ巡り 🌿",
   },
 
-  "features.head.title": { ko: "왜 수다 데이트일까요", en: "Why SuDa Date", es: "Por qué SuDa Date", zh: "为什么选择数搭日记", ja: "なぜ数多デートなのか" },
+  "features.head.title": { ko: "왜 수다메이트일까요", en: "Why SuDa Mate", es: "Por qué SuDa Mate", zh: "为什么选择数搭伴侣", ja: "なぜ数多メイトなのか" },
   "features.head.sub": {
     ko: "불편한 스와이프 대신 명확한 선택, 그리고 진짜 대화로 이어지는 경험을 설계했습니다.",
     en: "We designed clear choices instead of awkward swiping — and an experience that actually leads to real conversation.",
@@ -220,11 +220,11 @@ const translations = {
   },
   "safety.card.title": { ko: "안전이 먼저입니다", en: "Safety comes first", es: "La seguridad es lo primero", zh: "安全第一", ja: "安全を第一に" },
   "safety.card.body": {
-    ko: "진짜 인연은 신뢰에서 시작돼요. 수다 데이트는 안전한 만남을 위한 장치를 계속 더해가고 있습니다.",
+    ko: "진짜 인연은 신뢰에서 시작돼요. 수다메이트는 안전한 만남을 위한 장치를 계속 더해가고 있습니다.",
     en: "Real connection starts with trust. We keep adding new ways to make meeting people safer.",
     es: "La conexión real empieza con confianza. Seguimos sumando formas de hacer más segura cada conexión.",
-    zh: "真正的缘分始于信任。数搭日记会持续增加更多安全保障功能。",
-    ja: "本当の縁は信頼から始まります。数多デートは安全な出会いのための仕組みを増やし続けています。",
+    zh: "真正的缘分始于信任。数搭伴侣会持续增加更多安全保障功能。",
+    ja: "本当の縁は信頼から始まります。数多メイトは安全な出会いのための仕組みを増やし続けています。",
   },
 
   "screens.head.title": { ko: "미리보기", en: "Sneak peek", es: "Vista previa", zh: "抢先预览", ja: "プレビュー" },
@@ -241,11 +241,11 @@ const translations = {
 
   "cta.title": { ko: "지금 바로 시작하세요", en: "Get started today", es: "Empieza hoy mismo", zh: "现在就开始吧", ja: "今すぐ始めよう" },
   "cta.body": {
-    ko: "수다 데이트는 곧 App Store와 Google Play에 출시됩니다.",
-    en: "SuDa Date is launching soon on the App Store and Google Play.",
-    es: "SuDa Date llega pronto a App Store y Google Play.",
-    zh: "数搭日记即将登陆App Store和Google Play。",
-    ja: "数多デートはまもなくApp StoreとGoogle Playで公開予定です。",
+    ko: "수다메이트는 곧 App Store와 Google Play에 출시됩니다.",
+    en: "SuDa Mate is launching soon on the App Store and Google Play.",
+    es: "SuDa Mate llega pronto a App Store y Google Play.",
+    zh: "数搭伴侣即将登陆App Store和Google Play。",
+    ja: "数多メイトはまもなくApp StoreとGoogle Playで公開予定です。",
   },
 
   "footer.rights": { ko: "© 2026 수다리스트. All rights reserved.", en: "© 2026 SooDaList. All rights reserved.", es: "© 2026 SooDaList. Todos los derechos reservados.", zh: "© 2026 SooDaList 保留所有权利。", ja: "© 2026 SooDaList. All rights reserved." },
@@ -257,11 +257,11 @@ const translations = {
 
   "privacy.title": { ko: "개인정보처리방침", en: "Privacy Policy", es: "Política de privacidad", zh: "隐私政策", ja: "プライバシーポリシー" },
   "privacy.intro": {
-    ko: '수다리스트("회사")는 수다 데이트 앱("서비스")을 운영하며, 이용자의 개인정보를 소중히 다룹니다. 본 방침은 서비스 이용 과정에서 수집하는 개인정보의 항목, 이용 목적, 보관 기간, 제3자 제공 및 이용자의 권리를 안내합니다.',
-    en: 'SooDaList ("the Company") operates the SuDa Date app ("the Service") and takes your privacy seriously. This policy explains what personal data we collect, why, how long we keep it, who we share it with, and your rights.',
-    es: 'SooDaList ("la Empresa") opera la app SuDa Date ("el Servicio") y se toma en serio tu privacidad. Esta política explica qué datos personales recopilamos, por qué, cuánto tiempo los conservamos, con quién los compartimos y cuáles son tus derechos.',
-    zh: 'SooDaList（"公司"）运营数搭日记应用（"服务"），高度重视用户隐私。本政策说明我们收集哪些个人信息、收集目的、保存期限、第三方共享情况以及用户享有的权利。',
-    ja: 'SooDaList（以下「当社」）は数多デートアプリ（以下「本サービス」）を運営しており、利用者の個人情報を大切に取り扱います。本方針では、収集する個人情報の項目、利用目的、保管期間、第三者提供、および利用者の権利について説明します。',
+    ko: '수다리스트("회사")는 수다메이트 앱("서비스")을 운영하며, 이용자의 개인정보를 소중히 다룹니다. 본 방침은 서비스 이용 과정에서 수집하는 개인정보의 항목, 이용 목적, 보관 기간, 제3자 제공 및 이용자의 권리를 안내합니다.',
+    en: 'SooDaList ("the Company") operates the SuDa Mate app ("the Service") and takes your privacy seriously. This policy explains what personal data we collect, why, how long we keep it, who we share it with, and your rights.',
+    es: 'SooDaList ("la Empresa") opera la app SuDa Mate ("el Servicio") y se toma en serio tu privacidad. Esta política explica qué datos personales recopilamos, por qué, cuánto tiempo los conservamos, con quién los compartimos y cuáles son tus derechos.',
+    zh: 'SooDaList（"公司"）运营数搭伴侣应用（"服务"），高度重视用户隐私。本政策说明我们收集哪些个人信息、收集目的、保存期限、第三方共享情况以及用户享有的权利。',
+    ja: 'SooDaList（以下「当社」）は数多メイトアプリ（以下「本サービス」）を運営しており、利用者の個人情報を大切に取り扱います。本方針では、収集する個人情報の項目、利用目的、保管期間、第三者提供、および利用者の権利について説明します。',
   },
   "privacy.h1": { ko: "1. 수집하는 개인정보 항목", en: "1. Personal Data We Collect", es: "1. Datos personales que recopilamos", zh: "1. 我们收集的个人信息", ja: "1. 収集する個人情報の項目" },
   "privacy.s1.li1": {
@@ -342,21 +342,21 @@ const translations = {
   },
   "privacy.h6": { ko: "6. 문의처", en: "6. Contact", es: "6. Contacto", zh: "6. 联系方式", ja: "6. お問い合わせ" },
   "privacy.s6": {
-    ko: '개인정보 관련 문의: <a href="mailto:privacy@sudadate.example.com">privacy@sudadate.example.com</a> (연락처는 정식 출시 전 실제 주소로 교체 예정)',
-    en: 'Privacy inquiries: <a href="mailto:privacy@sudadate.example.com">privacy@sudadate.example.com</a> (to be replaced with a real address before official launch)',
-    es: 'Consultas sobre privacidad: <a href="mailto:privacy@sudadate.example.com">privacy@sudadate.example.com</a> (se reemplazará por una dirección real antes del lanzamiento oficial)',
-    zh: '隐私相关咨询：<a href="mailto:privacy@sudadate.example.com">privacy@sudadate.example.com</a>（正式上线前将替换为真实联系地址）',
-    ja: '個人情報に関するお問い合わせ：<a href="mailto:privacy@sudadate.example.com">privacy@sudadate.example.com</a>（正式リリース前に実際のアドレスに変更予定）',
+    ko: '개인정보 관련 문의: <a href="mailto:privacy@sudamate.example.com">privacy@sudamate.example.com</a> (연락처는 정식 출시 전 실제 주소로 교체 예정)',
+    en: 'Privacy inquiries: <a href="mailto:privacy@sudamate.example.com">privacy@sudamate.example.com</a> (to be replaced with a real address before official launch)',
+    es: 'Consultas sobre privacidad: <a href="mailto:privacy@sudamate.example.com">privacy@sudamate.example.com</a> (se reemplazará por una dirección real antes del lanzamiento oficial)',
+    zh: '隐私相关咨询：<a href="mailto:privacy@sudamate.example.com">privacy@sudamate.example.com</a>（正式上线前将替换为真实联系地址）',
+    ja: '個人情報に関するお問い合わせ：<a href="mailto:privacy@sudamate.example.com">privacy@sudamate.example.com</a>（正式リリース前に実際のアドレスに変更予定）',
   },
 
   "terms.title": { ko: "이용약관", en: "Terms of Use", es: "Términos de uso", zh: "使用条款", ja: "利用規約" },
   "terms.a1.title": { ko: "제1조 (목적)", en: "Article 1 (Purpose)", es: "Artículo 1 (Objeto)", zh: "第1条（目的）", ja: "第1条（目的）" },
   "terms.a1.body": {
-    ko: '본 약관은 수다리스트("회사")가 제공하는 수다 데이트 앱 서비스("서비스")의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을 정함을 목적으로 합니다.',
-    en: 'These Terms set out the rights, obligations, and responsibilities between SooDaList ("the Company") and users regarding the use of the SuDa Date app service ("the Service").',
-    es: 'Estos Términos establecen los derechos, obligaciones y responsabilidades entre SooDaList ("la Empresa") y los usuarios en relación con el uso del servicio de la app SuDa Date ("el Servicio").',
-    zh: '本条款旨在规定SooDaList（"公司"）提供的数搭日记应用服务（"服务"）使用过程中公司与用户之间的权利、义务及责任事项。',
-    ja: '本規約は、SooDaList（以下「当社」）が提供する数多デートアプリサービス（以下「本サービス」）の利用に関し、当社と利用者間の権利、義務及び責任事項を定めることを目的とします。',
+    ko: '본 약관은 수다리스트("회사")가 제공하는 수다메이트 앱 서비스("서비스")의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을 정함을 목적으로 합니다.',
+    en: 'These Terms set out the rights, obligations, and responsibilities between SooDaList ("the Company") and users regarding the use of the SuDa Mate app service ("the Service").',
+    es: 'Estos Términos establecen los derechos, obligaciones y responsabilidades entre SooDaList ("la Empresa") y los usuarios en relación con el uso del servicio de la app SuDa Mate ("el Servicio").',
+    zh: '本条款旨在规定SooDaList（"公司"）提供的数搭伴侣应用服务（"服务"）使用过程中公司与用户之间的权利、义务及责任事项。',
+    ja: '本規約は、SooDaList（以下「当社」）が提供する数多メイトアプリサービス（以下「本サービス」）の利用に関し、当社と利用者間の権利、義務及び責任事項を定めることを目的とします。',
   },
   "terms.a2.title": { ko: "제2조 (이용 자격)", en: "Article 2 (Eligibility)", es: "Artículo 2 (Requisitos de uso)", zh: "第2条（使用资格）", ja: "第2条（利用資格）" },
   "terms.a2.body": {
@@ -411,11 +411,11 @@ const translations = {
   },
   "terms.a9.title": { ko: "제9조 (문의처)", en: "Article 9 (Contact)", es: "Artículo 9 (Contacto)", zh: "第9条（联系方式）", ja: "第9条（お問い合わせ）" },
   "terms.a9.body": {
-    ko: '약관 관련 문의: <a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a> (연락처는 정식 출시 전 실제 주소로 교체 예정)',
-    en: 'Terms inquiries: <a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a> (to be replaced with a real address before official launch)',
-    es: 'Consultas sobre los términos: <a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a> (se reemplazará por una dirección real antes del lanzamiento oficial)',
-    zh: '条款相关咨询：<a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>（正式上线前将替换为真实联系地址）',
-    ja: '規約に関するお問い合わせ：<a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>（正式リリース前に実際のアドレスに変更予定）',
+    ko: '약관 관련 문의: <a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a> (연락처는 정식 출시 전 실제 주소로 교체 예정)',
+    en: 'Terms inquiries: <a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a> (to be replaced with a real address before official launch)',
+    es: 'Consultas sobre los términos: <a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a> (se reemplazará por una dirección real antes del lanzamiento oficial)',
+    zh: '条款相关咨询：<a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>（正式上线前将替换为真实联系地址）',
+    ja: '規約に関するお問い合わせ：<a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>（正式リリース前に実際のアドレスに変更予定）',
   },
 
   "shop.title": { ko: "슈퍼좋아요 & 부스트", en: "Super Like & Boost", es: "Super Like y Boost", zh: "超级喜欢与曝光加速", ja: "スーパーいいね＆ブースト" },
@@ -434,11 +434,11 @@ const translations = {
     ja: "ログイン情報が見つかりません。アプリの「プロフィール > ショップ」からもう一度開いてください。",
   },
   "shop.notice": {
-    ko: '결제 완료 후 크레딧은 앱에 바로 반영됩니다. 문의: <a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>',
-    en: 'Your credits are added to the app right after payment completes. Questions: <a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>',
-    es: 'Tus créditos se añaden a la app justo después de completar el pago. Preguntas: <a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>',
-    zh: '付款完成后，积分将立即在应用内到账。咨询：<a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>',
-    ja: '決済完了後、クレジットはすぐにアプリに反映されます。お問い合わせ：<a href="mailto:support@sudadate.example.com">support@sudadate.example.com</a>',
+    ko: '결제 완료 후 크레딧은 앱에 바로 반영됩니다. 문의: <a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>',
+    en: 'Your credits are added to the app right after payment completes. Questions: <a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>',
+    es: 'Tus créditos se añaden a la app justo después de completar el pago. Preguntas: <a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>',
+    zh: '付款完成后，积分将立即在应用内到账。咨询：<a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>',
+    ja: '決済完了後、クレジットはすぐにアプリに反映されます。お問い合わせ：<a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>',
   },
   "shop.buyLabel": { ko: "구매", en: "Buy", es: "Comprar", zh: "购买", ja: "購入" },
   "shop.buyLoading": { ko: "이동 중...", en: "Redirecting...", es: "Redirigiendo...", zh: "跳转中...", ja: "移動中..." },
@@ -471,8 +471,8 @@ const translations = {
 function currentLang() {
   const saved = localStorage.getItem("suda_lang");
   if (saved && SUPPORTED_LANGS.includes(saved)) return saved;
-  const browserLang = (navigator.language || "ko").slice(0, 2);
-  return SUPPORTED_LANGS.includes(browserLang) ? browserLang : "ko";
+  const browserLang = (navigator.language || "en").slice(0, 2);
+  return SUPPORTED_LANGS.includes(browserLang) ? browserLang : "en";
 }
 
 function applyLang(lang) {

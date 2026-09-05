@@ -79,7 +79,7 @@ async def start_verification(
     # and that propagates to the caller before we commit the new code.
     await sender.send(
         email,
-        "수다 데이트 인증 코드",
+        "수다메이트 인증 코드",
         f"인증 코드: {code}\n\n{CODE_EXPIRY_MINUTES}분 안에 입력해주세요.",
     )
     await db.commit()

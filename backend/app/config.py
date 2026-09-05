@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int = 30
 
     database_url: str = (
-        "mssql+aioodbc://sa:ChangeMe123!@localhost:1433/suda_date"
+        "mssql+aioodbc://sa:ChangeMe123!@localhost:1433/suda_mate"
         "?driver=ODBC+Driver+17+for+SQL+Server&Encrypt=yes&TrustServerCertificate=yes"
         "&MARS_Connection=yes&Connection+Timeout=15"
     )
@@ -21,9 +21,9 @@ class Settings(BaseSettings):
     # a separate OAuth client — defaults to the real bundle id already used
     # in mobile/app.config.js, so no extra account/config is needed beyond
     # the paid Apple Developer account App Store submission already requires.
-    apple_bundle_id: str = "com.sudalist.sudadate"
+    apple_bundle_id: str = "com.sudalist.sudamate"
 
-    gcs_bucket_name: str = "suda-date-photos"
+    gcs_bucket_name: str = "suda-mate-photos"
     google_application_credentials: str = ""
 
     firebase_credentials_path: str = ""
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_username: str = ""
     smtp_password: str = ""
-    smtp_from_address: str = "no-reply@sudadate.example.com"
+    smtp_from_address: str = "no-reply@sudamate.example.com"
 
     # Phase 17 — Stripe (web checkout, not in-app purchase — user explicitly
     # rejected IAP's store commission; boost/superlike credits are bought via

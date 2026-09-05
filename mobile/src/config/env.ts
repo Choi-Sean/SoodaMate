@@ -6,5 +6,5 @@ export const env = {
   googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "",
   kakaoNativeAppKey: process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? "",
   // Placeholder until web/ (Phase 9) is deployed and has a real URL.
-  marketingSiteUrl: process.env.EXPO_PUBLIC_MARKETING_SITE_URL ?? "https://sudadate.example.com",
+  marketingSiteUrl: process.env.EXPO_PUBLIC_MARKETING_SITE_URL ?? "https://sudamate.example.com",
 };

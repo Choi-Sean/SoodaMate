@@ -6,7 +6,7 @@
     "profile": "プロフィール"
   },
   "common": {
-    "appName": "数多デート",
+    "appName": "数多メイト",
     "cancel": "キャンセル",
     "save": "保存",
     "delete": "削除",
@@ -16,7 +16,7 @@
     "tryAgain": "再試行"
   },
   "auth": {
-    "loginTitle": "数多デート",
+    "loginTitle": "数多メイト",
     "email": "メールアドレス",
     "password": "パスワード",
     "confirmPassword": "パスワード確認",

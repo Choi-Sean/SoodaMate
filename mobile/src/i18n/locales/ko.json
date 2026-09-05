@@ -6,7 +6,7 @@
     "profile": "프로필"
   },
   "common": {
-    "appName": "수다 데이트",
+    "appName": "수다메이트",
     "cancel": "취소",
     "save": "저장",
     "delete": "삭제",
@@ -16,7 +16,7 @@
     "tryAgain": "다시 시도"
   },
   "auth": {
-    "loginTitle": "수다 데이트",
+    "loginTitle": "수다메이트",
     "email": "이메일",
     "password": "비밀번호",
     "confirmPassword": "비밀번호 확인",

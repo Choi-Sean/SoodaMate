@@ -61,7 +61,7 @@ async def send_match_notification(db: AsyncSession, user_id: uuid.UUID, match_id
         db,
         user_id,
         "It's a match!",
-        "You have a new match on SuDa Date",
+        "You have a new match on SuDa Mate",
         {"type": "match", "match_id": str(match_id)},
     )
 

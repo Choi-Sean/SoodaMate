@@ -23,10 +23,10 @@ const resources = {
 };
 
 function detectDeviceLanguage(): SupportedLanguage {
-  const deviceLang = Localization.getLocales()[0]?.languageCode ?? "ko";
+  const deviceLang = Localization.getLocales()[0]?.languageCode ?? "en";
   return (SUPPORTED_LANGUAGES as readonly string[]).includes(deviceLang)
     ? (deviceLang as SupportedLanguage)
-    : "ko";
+    : "en";
 }
 
 export async function initI18n(): Promise<void> {
@@ -39,7 +39,7 @@ export async function initI18n(): Promise<void> {
   await i18n.use(initReactI18next).init({
     resources,
     lng: initialLanguage,
-    fallbackLng: "ko",
+    fallbackLng: "en",
     interpolation: { escapeValue: false },
     compatibilityJSON: "v4",
   });

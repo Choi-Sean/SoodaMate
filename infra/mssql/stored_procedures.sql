@@ -1,4 +1,4 @@
--- Stored procedures for SuDa Date on MSSQL.
+-- Stored procedures for SuDa Mate on MSSQL.
 -- Each CREATE OR ALTER PROCEDURE must be the only statement executed in its
 -- batch (deploy_procedures.py splits on the "GO" markers below and executes
 -- each block separately — this file is also valid to run as-is in SSMS/
