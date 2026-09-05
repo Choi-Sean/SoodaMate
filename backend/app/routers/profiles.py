@@ -114,6 +114,10 @@ async def set_incognito(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "complete your profile first")
     profile.is_incognito = body.is_incognito
     await db.commit()
+    # updated_at is server-computed (onupdate=func.now()) and left unloaded
+    # after commit — refresh so ProfileOut's response model doesn't trigger
+    # a lazy load outside of an await (see update_my_profile's same fix).
+    await db.refresh(profile)
     return await _load_profile_out(db, user.id)
 
 
@@ -130,6 +134,7 @@ async def set_travel_mode(
     profile.travel_lng = body.lng
     profile.travel_expires_at = datetime.now(timezone.utc) + timedelta(hours=body.duration_hours)
     await db.commit()
+    await db.refresh(profile)
     return await _load_profile_out(db, user.id)
 
 
@@ -144,4 +149,5 @@ async def clear_travel_mode(
     profile.travel_lng = None
     profile.travel_expires_at = None
     await db.commit()
+    await db.refresh(profile)
     return await _load_profile_out(db, user.id)

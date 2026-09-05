@@ -62,8 +62,6 @@ def test_expired_match_excluded_from_list_and_rejects_messages():
         match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
         match_id = match_resp.json()["match_id"]
 
-        import asyncio
-
         from app.database import async_session_factory
         from app.models.interaction import Match
 
@@ -73,7 +71,14 @@ def test_expired_match_excluded_from_list_and_rejects_messages():
                 match.first_message_deadline = datetime.now(timezone.utc) - timedelta(hours=1)
                 await session.commit()
 
-        asyncio.run(backdate_deadline())
+        # asyncio.run() here would spin up a second, independent event loop
+        # (with its own default thread executor) alongside the anyio blocking
+        # portal TestClient already owns for this `with` block — on Windows,
+        # aioodbc's thread-pool-wrapped ODBC calls running under two
+        # concurrent loops crashed the interpreter (access violation) at
+        # portal teardown. Reusing TestClient's own portal avoids the
+        # dual-loop conflict entirely.
+        tc.portal.call(backdate_deadline)
 
         matches = tc.get("/matches", headers=a_headers).json()
         assert all(m["id"] != match_id for m in matches)

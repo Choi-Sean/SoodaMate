@@ -76,8 +76,19 @@ def test_disconnect_mid_call_notifies_peer():
                 call_id = offer["call_id"]
                 ws_b.send_json({"type": "call_answer", "call_id": call_id, "sdp": "fake-answer-sdp"})
                 ws_a.receive_json()  # the call_answer forwarded to A
-            # ws_a's `with` block exits here -> A disconnects mid-call.
 
-            ended = ws_b.receive_json()
-            assert ended["type"] == "call_end"
-            assert ended["reason"] == "peer_offline"
+                # Explicitly signal the disconnect and read the notification
+                # here, before this `with` block's own __exit__ runs. Letting
+                # __exit__ trigger the disconnect instead is racy: right
+                # after closing, it also cancels the server-side task
+                # group (WebSocketTestSession._notify_close ->
+                # cancel_scope.cancel()), which can interrupt the
+                # ws_chat() finally block's `await manager.send_to_user(...)`
+                # before the notification actually reaches B — this hung
+                # ws_b.receive_json() forever until pytest-timeout caught it.
+                # A real deployment doesn't have this race (uvicorn lets the
+                # handler's own cleanup run to completion on disconnect).
+                ws_a.close()
+                ended = ws_b.receive_json()
+                assert ended["type"] == "call_end"
+                assert ended["reason"] == "peer_offline"

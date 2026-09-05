@@ -2,6 +2,8 @@ import asyncio
 import smtplib
 from email.message import EmailMessage
 
+from fastapi import HTTPException, status
+
 from app.config import settings
 from app.core.email_sender_base import EmailSender
 
@@ -13,7 +15,10 @@ class SmtpEmailSender(EmailSender):
 
     async def send(self, to: str, subject: str, body: str) -> None:
         if not settings.smtp_host:
-            raise RuntimeError("SMTP is not configured")
+            # HTTPException (not a bare RuntimeError) so FastAPI's own
+            # exception handling turns this into a clean 503 response — same
+            # "not configured yet" pattern as payment_service._get_stripe().
+            raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "email sending is not configured")
 
         message = EmailMessage()
         message["From"] = settings.smtp_from_address

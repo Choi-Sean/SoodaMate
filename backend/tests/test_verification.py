@@ -26,10 +26,11 @@ async def test_start_fails_loudly_when_smtp_unconfigured(client):
     resp = await client.post(
         "/verification/start", headers=headers, json={"kind": "work", "email": "me@acmecorp.com"}
     )
-    # No SMTP_HOST configured in test env -> the real sender raises, not a
-    # silent no-op (unlike push_service's pattern) since a code that never
-    # arrives is worse than an honest error.
-    assert resp.status_code == 500
+    # No SMTP_HOST configured in test env -> the real sender raises an
+    # HTTPException(503), not a silent no-op (unlike push_service's pattern),
+    # since a code that never arrives is worse than an honest error. Same
+    # "not configured yet" status as payments' test_checkout_session_requires_configured_stripe.
+    assert resp.status_code == 503
 
 
 @pytest.mark.asyncio
