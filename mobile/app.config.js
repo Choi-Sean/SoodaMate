@@ -60,7 +60,14 @@ module.exports = {
       ...(hasIosFirebase ? { googleServicesFile: googleServiceInfoPlistPath } : {}),
     },
     android: {
-      package: "com.sudalist.sudamate",
+      // Must match exactly what was set when the app was first created in
+      // Play Console (com.sudalist.sudamate, used everywhere else in this
+      // repo, was never actually registered there) — package name is
+      // immutable in Play Console once an app exists, so this has to stay
+      // com.soodamate.myapp specifically, even though it doesn't match the
+      // iOS bundleIdentifier below. iOS has no such constraint yet since no
+      // App Store Connect app record exists for this app.
+      package: "com.soodamate.myapp",
       adaptiveIcon: {
         backgroundColor: "#FCEBDD",
         foregroundImage: "./assets/android-icon-foreground.png",
