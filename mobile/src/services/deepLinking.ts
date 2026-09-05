@@ -4,7 +4,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { navigationRef } from "../navigation/navigationRef";
 
 function pathFromUrl(url: string): string {
-  // "sudamate://shop" -> "shop"; also tolerates a trailing query string.
+  // "soodamate://shop" -> "shop"; also tolerates a trailing query string.
   const withoutScheme = url.replace(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//, "");
   return withoutScheme.split("?")[0].replace(/^\/+|\/+$/g, "");
 }

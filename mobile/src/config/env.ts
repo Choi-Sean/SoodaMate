@@ -6,7 +6,7 @@ export const env = {
   googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "",
   kakaoNativeAppKey: process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? "",
   // Placeholder until web/ (Phase 9) is deployed and has a real URL.
-  marketingSiteUrl: process.env.EXPO_PUBLIC_MARKETING_SITE_URL ?? "https://sudamate.example.com",
+  marketingSiteUrl: process.env.EXPO_PUBLIC_MARKETING_SITE_URL ?? "https://soodamate.example.com",
   // Ad unit IDs (distinct from the AdMob *app* IDs in app.config.js) are
   // per-platform per-ad-format in AdMob's console. Empty until a real AdMob
   // account exists; ads.native.ts/AdSlot.native.tsx fall back to Google's

@@ -27,12 +27,12 @@ export GCP_PROJECT_ID=<your-project-id>
 bash infra/gcp/cloudsql-setup.sh
 ```
 
-Creates a `db-f1-micro` Postgres 16 instance (cheapest tier — resize later if needed), a `suda_date` database, and a `suda` app user (you'll be prompted for its password). Save that password; it goes into the `DATABASE_URL` secret in step 3.
+Creates a `db-f1-micro` Postgres 16 instance (cheapest tier — resize later if needed), a `sooda_date` database, and a `sooda` app user (you'll be prompted for its password). Save that password; it goes into the `DATABASE_URL` secret in step 3.
 
 ## 2. Photo storage — Cloud Storage
 
 ```bash
-export GCS_BUCKET_NAME=suda-date-photos-<something-unique>   # bucket names are globally unique
+export GCS_BUCKET_NAME=sooda-date-photos-<something-unique>   # bucket names are globally unique
 bash infra/gcp/gcs-bucket-setup.sh
 ```
 
@@ -44,23 +44,23 @@ Create these before running the Cloud Run deploy script (it references them by n
 
 ```bash
 # From cloudsql-setup.sh's output:
-echo -n "postgresql+asyncpg://suda:<password>@/suda_date?host=/cloudsql/<connection-name>" | \
-  gcloud secrets create suda-date-database-url --data-file=-
+echo -n "postgresql+asyncpg://sooda:<password>@/sooda_date?host=/cloudsql/<connection-name>" | \
+  gcloud secrets create sooda-date-database-url --data-file=-
 
 # Generate a real random secret, not the dev placeholder:
-openssl rand -hex 32 | tr -d '\n' | gcloud secrets create suda-date-secret-key --data-file=-
+openssl rand -hex 32 | tr -d '\n' | gcloud secrets create sooda-date-secret-key --data-file=-
 
 # From Google Cloud Console → APIs & Services → Credentials (OAuth client, Web application type):
-echo -n "<your-google-oauth-web-client-id>" | gcloud secrets create suda-date-google-oauth-client-id --data-file=-
+echo -n "<your-google-oauth-web-client-id>" | gcloud secrets create sooda-date-google-oauth-client-id --data-file=-
 
 # From Kakao Developers → App → App Keys:
-echo -n "<your-kakao-rest-api-key>" | gcloud secrets create suda-date-kakao-rest-api-key --data-file=-
+echo -n "<your-kakao-rest-api-key>" | gcloud secrets create sooda-date-kakao-rest-api-key --data-file=-
 
 # The Firebase service-account JSON downloaded in step 0:
-gcloud secrets create suda-date-firebase-credentials --data-file=path/to/firebase-service-account.json
+gcloud secrets create sooda-date-firebase-credentials --data-file=path/to/firebase-service-account.json
 ```
 
-Any of these can be skipped for a first deploy (Google/Kakao login and push just no-op until their secret has a real value, same as local dev) — but `suda-date-database-url` and `suda-date-secret-key` are required for the app to boot at all.
+Any of these can be skipped for a first deploy (Google/Kakao login and push just no-op until their secret has a real value, same as local dev) — but `sooda-date-database-url` and `sooda-date-secret-key` are required for the app to boot at all.
 
 ## 4. Deploy the backend
 
@@ -78,7 +78,7 @@ The deploy script doesn't run Alembic automatically (migrations should be a deli
 
 ```bash
 cd backend
-DATABASE_URL="<the same value you put in the suda-date-database-url secret>" \
+DATABASE_URL="<the same value you put in the sooda-date-database-url secret>" \
   .venv/Scripts/python.exe -m alembic upgrade head    # or venv/bin/python on macOS/Linux
 ```
 

@@ -3,9 +3,9 @@ import { create } from "zustand";
 import * as secureStorage from "../services/secureStorage";
 import type { AuthTokens } from "../types";
 
-const ACCESS_TOKEN_KEY = "suda_access_token";
-const REFRESH_TOKEN_KEY = "suda_refresh_token";
-const USER_ID_KEY = "suda_user_id";
+const ACCESS_TOKEN_KEY = "sooda_access_token";
+const REFRESH_TOKEN_KEY = "sooda_refresh_token";
+const USER_ID_KEY = "sooda_user_id";
 
 interface AuthState {
   accessToken: string | null;

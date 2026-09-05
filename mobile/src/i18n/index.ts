@@ -12,7 +12,7 @@ import ja from "./locales/ja.json";
 export const SUPPORTED_LANGUAGES = ["ko", "en", "es", "zh", "ja"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
-const LANG_STORAGE_KEY = "suda_language";
+const LANG_STORAGE_KEY = "sooda_language";
 
 const resources = {
   ko: { translation: ko },

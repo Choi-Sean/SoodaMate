@@ -51,7 +51,7 @@ immediately once the backend is running.
 - `src/api/` — thin axios wrappers per backend resource, `client.ts` handles the JWT header + refresh-on-401
 - `src/store/authStore.ts` — Zustand; tokens persisted via `expo-secure-store` on native, `localStorage` on web (`src/services/secureStorage.ts`)
 - `src/services/` — native SDK wrappers (Google/Kakao sign-in); guarded to throw cleanly on web instead of crashing the bundle
-- `src/services/deepLinking.ts` — handles `sudamate://shop`, the redirect back from the website's Stripe checkout (see `web/shop-success.html`)
+- `src/services/deepLinking.ts` — handles `soodamate://shop`, the redirect back from the website's Stripe checkout (see `web/shop-success.html`)
 - `src/theme.ts` — shared color tokens (warm cream/orange/navy, matches the SooDaList family look, not a generic pink dating-app palette)
 - `src/i18n/` — i18next setup + `locales/{ko,en,es,zh,ja}.json`; `SettingsScreen` has the language switcher
 

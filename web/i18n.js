@@ -342,11 +342,11 @@ const translations = {
   },
   "privacy.h6": { ko: "6. 문의처", en: "6. Contact", es: "6. Contacto", zh: "6. 联系方式", ja: "6. お問い合わせ" },
   "privacy.s6": {
-    ko: '개인정보 관련 문의: <a href="mailto:privacy@sudamate.example.com">privacy@sudamate.example.com</a> (연락처는 정식 출시 전 실제 주소로 교체 예정)',
-    en: 'Privacy inquiries: <a href="mailto:privacy@sudamate.example.com">privacy@sudamate.example.com</a> (to be replaced with a real address before official launch)',
-    es: 'Consultas sobre privacidad: <a href="mailto:privacy@sudamate.example.com">privacy@sudamate.example.com</a> (se reemplazará por una dirección real antes del lanzamiento oficial)',
-    zh: '隐私相关咨询：<a href="mailto:privacy@sudamate.example.com">privacy@sudamate.example.com</a>（正式上线前将替换为真实联系地址）',
-    ja: '個人情報に関するお問い合わせ：<a href="mailto:privacy@sudamate.example.com">privacy@sudamate.example.com</a>（正式リリース前に実際のアドレスに変更予定）',
+    ko: '개인정보 관련 문의: <a href="mailto:privacy@soodamate.example.com">privacy@soodamate.example.com</a> (연락처는 정식 출시 전 실제 주소로 교체 예정)',
+    en: 'Privacy inquiries: <a href="mailto:privacy@soodamate.example.com">privacy@soodamate.example.com</a> (to be replaced with a real address before official launch)',
+    es: 'Consultas sobre privacidad: <a href="mailto:privacy@soodamate.example.com">privacy@soodamate.example.com</a> (se reemplazará por una dirección real antes del lanzamiento oficial)',
+    zh: '隐私相关咨询：<a href="mailto:privacy@soodamate.example.com">privacy@soodamate.example.com</a>（正式上线前将替换为真实联系地址）',
+    ja: '個人情報に関するお問い合わせ：<a href="mailto:privacy@soodamate.example.com">privacy@soodamate.example.com</a>（正式リリース前に実際のアドレスに変更予定）',
   },
 
   "terms.title": { ko: "이용약관", en: "Terms of Use", es: "Términos de uso", zh: "使用条款", ja: "利用規約" },
@@ -411,11 +411,11 @@ const translations = {
   },
   "terms.a9.title": { ko: "제9조 (문의처)", en: "Article 9 (Contact)", es: "Artículo 9 (Contacto)", zh: "第9条（联系方式）", ja: "第9条（お問い合わせ）" },
   "terms.a9.body": {
-    ko: '약관 관련 문의: <a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a> (연락처는 정식 출시 전 실제 주소로 교체 예정)',
-    en: 'Terms inquiries: <a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a> (to be replaced with a real address before official launch)',
-    es: 'Consultas sobre los términos: <a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a> (se reemplazará por una dirección real antes del lanzamiento oficial)',
-    zh: '条款相关咨询：<a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>（正式上线前将替换为真实联系地址）',
-    ja: '規約に関するお問い合わせ：<a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>（正式リリース前に実際のアドレスに変更予定）',
+    ko: '약관 관련 문의: <a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a> (연락처는 정식 출시 전 실제 주소로 교체 예정)',
+    en: 'Terms inquiries: <a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a> (to be replaced with a real address before official launch)',
+    es: 'Consultas sobre los términos: <a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a> (se reemplazará por una dirección real antes del lanzamiento oficial)',
+    zh: '条款相关咨询：<a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a>（正式上线前将替换为真实联系地址）',
+    ja: '規約に関するお問い合わせ：<a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a>（正式リリース前に実際のアドレスに変更予定）',
   },
 
   "shop.title": { ko: "슈퍼좋아요 & 부스트", en: "Super Like & Boost", es: "Super Like y Boost", zh: "超级喜欢与曝光加速", ja: "スーパーいいね＆ブースト" },
@@ -434,11 +434,11 @@ const translations = {
     ja: "ログイン情報が見つかりません。アプリの「プロフィール > ショップ」からもう一度開いてください。",
   },
   "shop.notice": {
-    ko: '결제 완료 후 크레딧은 앱에 바로 반영됩니다. 문의: <a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>',
-    en: 'Your credits are added to the app right after payment completes. Questions: <a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>',
-    es: 'Tus créditos se añaden a la app justo después de completar el pago. Preguntas: <a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>',
-    zh: '付款完成后，积分将立即在应用内到账。咨询：<a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>',
-    ja: '決済完了後、クレジットはすぐにアプリに反映されます。お問い合わせ：<a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a>',
+    ko: '결제 완료 후 크레딧은 앱에 바로 반영됩니다. 문의: <a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a>',
+    en: 'Your credits are added to the app right after payment completes. Questions: <a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a>',
+    es: 'Tus créditos se añaden a la app justo después de completar el pago. Preguntas: <a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a>',
+    zh: '付款完成后，积分将立即在应用内到账。咨询：<a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a>',
+    ja: '決済完了後、クレジットはすぐにアプリに反映されます。お問い合わせ：<a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a>',
   },
   "shop.buyLabel": { ko: "구매", en: "Buy", es: "Comprar", zh: "购买", ja: "購入" },
   "shop.buyLoading": { ko: "이동 중...", en: "Redirecting...", es: "Redirigiendo...", zh: "跳转中...", ja: "移動中..." },
@@ -469,7 +469,7 @@ const translations = {
 };
 
 function currentLang() {
-  const saved = localStorage.getItem("suda_lang");
+  const saved = localStorage.getItem("sooda_lang");
   if (saved && SUPPORTED_LANGS.includes(saved)) return saved;
   const browserLang = (navigator.language || "en").slice(0, 2);
   return SUPPORTED_LANGS.includes(browserLang) ? browserLang : "en";
@@ -488,7 +488,7 @@ function applyLang(lang) {
   document.querySelectorAll("[data-lang-option]").forEach((el) => {
     el.classList.toggle("active", el.getAttribute("data-lang-option") === lang);
   });
-  localStorage.setItem("suda_lang", lang);
+  localStorage.setItem("sooda_lang", lang);
 }
 
 function initLangSwitcher() {

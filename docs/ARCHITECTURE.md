@@ -18,7 +18,7 @@ after that plan shipped. This doc is the living reference as the system evolves.
 4. Matched users chat over `/ws/chat` (WebSocket); messages persist to MSSQL; offline delivery falls back to FCM push
 5. The same `/ws/chat` connection also carries WebRTC signaling frames (`call_offer`/`call_answer`/`call_ice_candidate`/`call_end`) for video calls — no second realtime channel
 6. Photos upload directly to GCS via presigned URLs, never proxied through the API
-7. Paid credits (superlike packs, boost) are bought on the **website**, not in-app — Stripe Checkout, webhook-granted, deep-linked back into the app via `sudamate://shop`
+7. Paid credits (superlike packs, boost) are bought on the **website**, not in-app — Stripe Checkout, webhook-granted, deep-linked back into the app via `soodamate://shop`
 
 ## Database schema
 
@@ -50,7 +50,7 @@ At match creation, `match_service.record_swipe` (via the `sp_RecordSwipe` stored
 
 ## Paid superlike/boost via Stripe web checkout (Phase 17)
 
-**No in-app purchase** — store commission was explicitly rejected as too expensive. Credits are bought through the marketing website's `web/shop.html` (Stripe Checkout, inline `price_data` so no pre-created Stripe product/price IDs are needed, only the secret key), and granted to the account via `POST /payments/webhook` — idempotent via `try_insert` keyed on `stripe_event_id`, so webhook redelivery never double-grants. Since the website has no login system of its own, the mobile app passes its JWT as a URL query param when it opens the shop (`Linking.openURL(...&token=...)`); the website reads it out of the URL. After a successful purchase, `web/shop-success.html` links back to `sudamate://shop`, which the app's `initDeepLinking` (`mobile/src/services/deepLinking.ts`) catches to refetch the profile and land on the profile tab. Superlike gating: 1 free per day, then consumes credits, else `402`. Boost purchase and activation are separate steps (`POST /payments/activate-boost`, 30-minute window) — a purchase shouldn't silently start burning visibility time unattended.
+**No in-app purchase** — store commission was explicitly rejected as too expensive. Credits are bought through the marketing website's `web/shop.html` (Stripe Checkout, inline `price_data` so no pre-created Stripe product/price IDs are needed, only the secret key), and granted to the account via `POST /payments/webhook` — idempotent via `try_insert` keyed on `stripe_event_id`, so webhook redelivery never double-grants. Since the website has no login system of its own, the mobile app passes its JWT as a URL query param when it opens the shop (`Linking.openURL(...&token=...)`); the website reads it out of the URL. After a successful purchase, `web/shop-success.html` links back to `soodamate://shop`, which the app's `initDeepLinking` (`mobile/src/services/deepLinking.ts`) catches to refetch the profile and land on the profile tab. Superlike gating: 1 free per day, then consumes credits, else `402`. Boost purchase and activation are separate steps (`POST /payments/activate-boost`, 30-minute window) — a purchase shouldn't silently start burning visibility time unattended.
 
 ## Incognito + travel mode (Phase 18)
 

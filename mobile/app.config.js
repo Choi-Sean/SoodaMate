@@ -59,15 +59,15 @@ const hasIosFirebase = fs.existsSync(googleServiceInfoPlistPath);
 module.exports = {
   expo: {
     name: "SooDa Mate",
-    slug: "suda-mate",
-    scheme: "sudamate",
+    slug: "sooda-mate",
+    scheme: "soodamate",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.sudalist.sudamate",
+      bundleIdentifier: "com.soodalist.soodamate",
       // Required alongside Google Sign-In per App Store Review Guideline
       // 4.8 — see docs/APP_STORE_SUBMISSION.md. Also enable the "Sign In
       // with Apple" capability on the App ID in the developer portal.
@@ -85,7 +85,7 @@ module.exports = {
       // that previously forced a different value here (com.soodamate.myapp)
       // was deleted and recreated fresh, so nothing external constrains
       // this anymore — unify with iOS instead of keeping them different.
-      package: "com.sudalist.sudamate",
+      package: "com.soodalist.soodamate",
       adaptiveIcon: {
         backgroundColor: "#FCEBDD",
         foregroundImage: "./assets/android-icon-foreground.png",
@@ -170,7 +170,7 @@ module.exports = {
     },
     extra: {
       eas: {
-        // Created via `eas init --force` — https://expo.dev/accounts/seanchoi1991/projects/suda-mate
+        // Created via `eas init --force` — https://expo.dev/accounts/seanchoi1991/projects/sooda-mate
         projectId: "24ed66e3-d709-4bde-aa7e-417d576ca56d",
       },
     },

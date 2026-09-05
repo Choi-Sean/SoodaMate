@@ -55,7 +55,7 @@
 
     <div class="product-list" id="productList"></div>
 
-    <p class="shop-notice" data-i18n-html="shop.notice">결제 완료 후 크레딧은 앱에 바로 반영됩니다. 문의: <a href="mailto:support@sudamate.example.com">support@sudamate.example.com</a></p>
+    <p class="shop-notice" data-i18n-html="shop.notice">결제 완료 후 크레딧은 앱에 바로 반영됩니다. 문의: <a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a></p>
   </main>
 
   <footer class="foot">
@@ -70,8 +70,8 @@
   <script>
     const API_BASE_URL = window.SUDA_API_BASE_URL || "http://localhost:8001";
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("token") || sessionStorage.getItem("suda_token");
-    if (token) sessionStorage.setItem("suda_token", token);
+    const token = params.get("token") || sessionStorage.getItem("sooda_token");
+    if (token) sessionStorage.setItem("sooda_token", token);
 
     const authErrorEl = document.getElementById("authError");
     const listEl = document.getElementById("productList");

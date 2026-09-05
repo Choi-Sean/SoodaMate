@@ -14,7 +14,7 @@ npx serve .
 ## Structure
 
 - `index.html` — hero, feature highlights, Bumble-rule + safety sections, screenshot placeholders, download CTA (Hinge/Bumble/Tinder-inspired layout)
-- `shop.html`, `shop-success.html` — Stripe Checkout for superlike/boost credits. No login of its own: reads the mobile app's JWT out of the URL (`?token=`, set when the app opens this page via `Linking.openURL`), and redirects back into the app via `sudamate://shop` on success
+- `shop.html`, `shop-success.html` — Stripe Checkout for superlike/boost credits. No login of its own: reads the mobile app's JWT out of the URL (`?token=`, set when the app opens this page via `Linking.openURL`), and redirects back into the app via `soodamate://shop` on success
 - `privacy-policy.html`, `terms.html` — real content, not placeholders; required for app store submission, fully translated (not just the page chrome)
 - `i18n.js` — translation dictionary + language switcher for the whole site (ko/en/es/zh/ja), via `data-i18n`/`data-i18n-html` attributes
 - `assets/` — logo/favicon (SooDaList family palette — warm cream/orange, navy text — matches `mobile/src/theme.ts`, not a generic pink dating-app look)

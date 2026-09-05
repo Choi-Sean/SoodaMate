@@ -23,7 +23,7 @@ Everything below assumes steps 1–3 are done and `mobile/.env` / `eas.json`'s e
 
 ### 1.0 App ID capabilities (Apple Developer portal → Identifiers → your App ID)
 
-Enable these two capabilities when creating (or editing) the `com.sudalist.sudamate` App ID:
+Enable these two capabilities when creating (or editing) the `com.soodalist.soodamate` App ID:
 
 - **Push Notifications** — required for FCM/APNs delivery of match and message alerts.
 - **Sign In with Apple** — required by App Store Review Guideline 4.8: since this app offers Google Sign-In, Apple requires an equivalent "Sign in with Apple" option too, or the build risks rejection at review. The backend (`app/services/oauth/apple.py`) and mobile (`expo-apple-authentication`, iOS-only per Apple's own scope for this requirement) already implement this — enabling the capability here just grants the entitlement EAS Build needs to sign it in.
@@ -42,7 +42,7 @@ First run prompts to log into your Apple Developer account and either let EAS ma
 
 In [App Store Connect](https://appstoreconnect.apple.com/) → My Apps → **+** → New App:
 
-- Bundle ID: `com.sudalist.sudamate` (must match `mobile/app.config.js`'s `ios.bundleIdentifier`)
+- Bundle ID: `com.soodalist.soodamate` (must match `mobile/app.config.js`'s `ios.bundleIdentifier`)
 - Name: 수다메이트 (or the localized name you want on the store)
 - Primary category: Lifestyle or Social Networking
 - Age rating: complete Apple's questionnaire — this app has user-generated content and is 18+ only, mark accordingly
@@ -79,7 +79,7 @@ Produces a signed `.aab` (Android App Bundle); EAS manages the upload keystore u
 
 In [Play Console](https://play.google.com/console/) → Create app:
 
-- Package name: `com.sudalist.sudamate` (must match `mobile/app.config.js`'s `android.package` — same as the iOS bundle id above; package names are immutable in Play Console once the app record exists, so double-check this before first upload)
+- Package name: `com.soodalist.soodamate` (must match `mobile/app.config.js`'s `android.package` — same as the iOS bundle id above; package names are immutable in Play Console once the app record exists, so double-check this before first upload)
 - App category: Dating
 - Complete the **Data safety** section — this app collects email, profile data, location, photos, messages, and device tokens; declare each honestly (see `web/privacy-policy.html` for the authoritative list) since this is a common source of Play Store rejections if it doesn't match actual behavior
 - Complete the **Content rating** questionnaire (dating apps are typically rated for mature audiences)

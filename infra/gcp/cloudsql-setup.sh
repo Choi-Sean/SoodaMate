@@ -10,9 +10,9 @@ set -euo pipefail
 
 PROJECT_ID="${GCP_PROJECT_ID:?Set GCP_PROJECT_ID}"
 REGION="${GCP_REGION:-asia-northeast3}"          # Seoul, closest to the target market
-INSTANCE_NAME="${CLOUDSQL_INSTANCE_NAME:-suda-date-db}"
-DB_NAME="${CLOUDSQL_DB_NAME:-suda_date}"
-DB_USER="${CLOUDSQL_DB_USER:-suda}"
+INSTANCE_NAME="${CLOUDSQL_INSTANCE_NAME:-sooda-date-db}"
+DB_NAME="${CLOUDSQL_DB_NAME:-sooda_date}"
+DB_USER="${CLOUDSQL_DB_USER:-sooda}"
 
 echo "Creating Cloud SQL instance '$INSTANCE_NAME' in $REGION (project $PROJECT_ID)..."
 gcloud sql instances create "$INSTANCE_NAME" \

@@ -8,7 +8,7 @@
 | `DATABASE_URL` | your hosted SQL Server instance | `mssql+aioodbc://user:pass@host:1433/db?driver=ODBC+Driver+17+for+SQL+Server&Encrypt=yes&TrustServerCertificate=yes&MARS_Connection=yes&Connection+Timeout=15` — **no Docker/local container**, connect directly to a real MSSQL instance for every environment including tests. `MARS_Connection=yes` is required or aioodbc throws "Connection is busy with results for another command." `Connection+Timeout=15` bounds how long a connection attempt can hang against a slow/unreachable shared-hosting instance — recommended after a real `pytest` run once silently hung indefinitely (no query-level timeout exists yet; this only bounds the initial connection handshake, not a stalled query on an already-open connection) |
 | `GOOGLE_OAUTH_CLIENT_ID` | Google Cloud Console → APIs & Services → Credentials → OAuth client (type: Web application) | Used as the audience when verifying id_tokens from the mobile app |
 | `KAKAO_REST_API_KEY` | Kakao Developers → App → App Keys | REST API key |
-| `APPLE_BUNDLE_ID` | — | Defaults to `com.sudalist.sudamate` (the real bundle id, already set in `mobile/app.config.js`) — only override if the bundle id ever changes. No separate Apple account/key needed beyond the paid Apple Developer Program membership App Store submission already requires; just enable the "Sign In with Apple" capability on the App ID in the developer portal |
+| `APPLE_BUNDLE_ID` | — | Defaults to `com.soodalist.soodamate` (the real bundle id, already set in `mobile/app.config.js`) — only override if the bundle id ever changes. No separate Apple account/key needed beyond the paid Apple Developer Program membership App Store submission already requires; just enable the "Sign In with Apple" capability on the App ID in the developer portal |
 | `GCS_BUCKET_NAME` | GCP Console → Cloud Storage | Bucket for profile photos |
 | `GOOGLE_APPLICATION_CREDENTIALS` | GCP Console → IAM → Service Accounts → Keys | Path to service account JSON, needs Storage Object Admin on the bucket |
 | `FIREBASE_CREDENTIALS_PATH` | Firebase Console → Project Settings → Service Accounts | Path to service account JSON for FCM push |
@@ -35,7 +35,7 @@
 
 **iOS App Tracking Transparency**: `app.config.js` already declares `NSUserTrackingUsageDescription` (via the `expo-tracking-transparency` plugin) and `ads.native.ts` requests the permission before initializing AdMob — required by Apple for any app using an IDFA-capable SDK like AdMob, not optional. No env var needed; nothing to configure here beyond having a real AdMob account eventually.
 
-The app's own custom URL scheme (`sudamate://`) is fixed in `app.config.js` (`scheme: "sudamate"`) — no env var needed. It's used for the Stripe-purchase-complete deep link back from the website (`sudamate://shop`, handled by `mobile/src/services/deepLinking.ts`).
+The app's own custom URL scheme (`soodamate://`) is fixed in `app.config.js` (`scheme: "soodamate"`) — no env var needed. It's used for the Stripe-purchase-complete deep link back from the website (`soodamate://shop`, handled by `mobile/src/services/deepLinking.ts`).
 
 ## Deployment-platform config (not app env vars, but required)
 
