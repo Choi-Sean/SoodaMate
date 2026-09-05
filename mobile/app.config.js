@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+
 // app.config.js instead of app.json so the Kakao native app key (needed for
 // the URL scheme the OAuth redirect lands on) can come from an env var
 // instead of being hardcoded — no Kakao app exists yet, so this is empty
@@ -19,6 +22,19 @@ const admobIosAppId =
 const userTrackingUsageDescription =
   "We use this to show you more relevant ads and support the free features of the app.";
 
+// The @react-native-firebase/* config plugins hard-fail prebuild (not just
+// a runtime no-op, unlike this app's other "no real account yet" defaults)
+// if expo.android.googleServicesFile / expo.ios.googleServicesFile aren't
+// set to a real file — this broke `eas build` outright before a Firebase
+// project existed. Only wire Firebase in once the real config files are
+// actually present, matching every other external-account default in this
+// file; drop these two JSON/plist files in mobile/ once a Firebase project
+// exists and the plugins + googleServicesFile activate automatically.
+const googleServicesJsonPath = path.join(__dirname, "google-services.json");
+const googleServiceInfoPlistPath = path.join(__dirname, "GoogleService-Info.plist");
+const hasAndroidFirebase = fs.existsSync(googleServicesJsonPath);
+const hasIosFirebase = fs.existsSync(googleServiceInfoPlistPath);
+
 module.exports = {
   expo: {
     name: "SuDa Mate",
@@ -35,6 +51,13 @@ module.exports = {
       // 4.8 — see docs/APP_STORE_SUBMISSION.md. Also enable the "Sign In
       // with Apple" capability on the App ID in the developer portal.
       usesAppleSignIn: true,
+      infoPlist: {
+        // The app only uses standard HTTPS/TLS (no custom/proprietary
+        // encryption) — declaring this avoids App Store Connect's export
+        // compliance question blocking every single build submission.
+        ITSAppUsesNonExemptEncryption: false,
+      },
+      ...(hasIosFirebase ? { googleServicesFile: googleServiceInfoPlistPath } : {}),
     },
     android: {
       package: "com.sudalist.sudamate",
@@ -45,6 +68,7 @@ module.exports = {
         monochromeImage: "./assets/android-icon-monochrome.png",
       },
       predictiveBackGestureEnabled: false,
+      ...(hasAndroidFirebase ? { googleServicesFile: googleServicesJsonPath } : {}),
     },
     web: {
       favicon: "./assets/favicon.png",
@@ -98,8 +122,9 @@ module.exports = {
           microphonePermission: false,
         },
       ],
-      "@react-native-firebase/app",
-      "@react-native-firebase/messaging",
+      ...(hasAndroidFirebase || hasIosFirebase
+        ? ["@react-native-firebase/app", "@react-native-firebase/messaging"]
+        : []),
     ],
     extra: {
       eas: {
