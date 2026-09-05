@@ -6,7 +6,7 @@
     "profile": "Perfil"
   },
   "common": {
-    "appName": "SuDa Mate",
+    "appName": "SooDa Mate",
     "cancel": "Cancelar",
     "save": "Guardar",
     "delete": "Eliminar",
@@ -16,7 +16,7 @@
     "tryAgain": "Reintentar"
   },
   "auth": {
-    "loginTitle": "SuDa Mate",
+    "loginTitle": "SooDa Mate",
     "email": "Correo electrónico",
     "password": "Contraseña",
     "confirmPassword": "Confirmar contraseña",

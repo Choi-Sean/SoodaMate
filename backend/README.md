@@ -1,4 +1,4 @@
-# backend — SuDa Mate API
+# backend — SooDa Mate API
 
 FastAPI + MSSQL (SQL Server) backend.
 

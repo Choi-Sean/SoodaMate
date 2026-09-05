@@ -58,7 +58,7 @@ const hasIosFirebase = fs.existsSync(googleServiceInfoPlistPath);
 
 module.exports = {
   expo: {
-    name: "SuDa Mate",
+    name: "SooDa Mate",
     slug: "suda-mate",
     scheme: "sudamate",
     version: "1.0.0",
@@ -142,8 +142,8 @@ module.exports = {
       [
         "expo-image-picker",
         {
-          photosPermission: "Allow SuDa Mate to access your photos so you can add them to your profile.",
-          cameraPermission: "Allow SuDa Mate to access your camera so you can take a profile photo.",
+          photosPermission: "Allow SooDa Mate to access your photos so you can add them to your profile.",
+          cameraPermission: "Allow SooDa Mate to access your camera so you can take a profile photo.",
           microphonePermission: false,
         },
       ],

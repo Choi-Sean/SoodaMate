@@ -1,4 +1,4 @@
-# web — 수다메이트 (SuDa Mate) marketing site
+# web — 수다메이트 (SooDa Mate) marketing site
 
 Plain HTML/CSS/JS, no build step — same convention as the sibling `centiplay-web` project.
 

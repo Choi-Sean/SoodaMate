@@ -1,4 +1,4 @@
-# mobile — SuDa Mate
+# mobile — SooDa Mate
 
 React Native app built with Expo (dev client, not Expo Go — Google/Kakao
 login and AdMob need native modules Expo Go doesn't include).

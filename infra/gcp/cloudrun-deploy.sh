@@ -19,7 +19,7 @@ CLOUDSQL_CONNECTION_NAME=$(gcloud sql instances describe "$CLOUDSQL_INSTANCE_NAM
 echo "Ensuring service account $SA_EMAIL exists with the roles the backend needs..."
 gcloud iam service-accounts create "$SA_NAME" \
   --project="$PROJECT_ID" \
-  --display-name="SuDa Date backend (Cloud Run)" 2>/dev/null || true
+  --display-name="SooDa Mate backend (Cloud Run)" 2>/dev/null || true
 
 for role in roles/cloudsql.client roles/storage.objectAdmin roles/secretmanager.secretAccessor; do
   gcloud projects add-iam-policy-binding "$PROJECT_ID" \

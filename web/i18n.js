@@ -49,7 +49,7 @@ const translations = {
     ja: "週末は登山、平日はカフェ巡り 🌿",
   },
 
-  "features.head.title": { ko: "왜 수다메이트일까요", en: "Why SuDa Mate", es: "Por qué SuDa Mate", zh: "为什么选择数搭伴侣", ja: "なぜ数多メイトなのか" },
+  "features.head.title": { ko: "왜 수다메이트일까요", en: "Why SooDa Mate", es: "Por qué SooDa Mate", zh: "为什么选择数搭伴侣", ja: "なぜ数多メイトなのか" },
   "features.head.sub": {
     ko: "불편한 스와이프 대신 명확한 선택, 그리고 진짜 대화로 이어지는 경험을 설계했습니다.",
     en: "We designed clear choices instead of awkward swiping — and an experience that actually leads to real conversation.",
@@ -242,8 +242,8 @@ const translations = {
   "cta.title": { ko: "지금 바로 시작하세요", en: "Get started today", es: "Empieza hoy mismo", zh: "现在就开始吧", ja: "今すぐ始めよう" },
   "cta.body": {
     ko: "수다메이트는 곧 App Store와 Google Play에 출시됩니다.",
-    en: "SuDa Mate is launching soon on the App Store and Google Play.",
-    es: "SuDa Mate llega pronto a App Store y Google Play.",
+    en: "SooDa Mate is launching soon on the App Store and Google Play.",
+    es: "SooDa Mate llega pronto a App Store y Google Play.",
     zh: "数搭伴侣即将登陆App Store和Google Play。",
     ja: "数多メイトはまもなくApp StoreとGoogle Playで公開予定です。",
   },
@@ -258,8 +258,8 @@ const translations = {
   "privacy.title": { ko: "개인정보처리방침", en: "Privacy Policy", es: "Política de privacidad", zh: "隐私政策", ja: "プライバシーポリシー" },
   "privacy.intro": {
     ko: '수다리스트("회사")는 수다메이트 앱("서비스")을 운영하며, 이용자의 개인정보를 소중히 다룹니다. 본 방침은 서비스 이용 과정에서 수집하는 개인정보의 항목, 이용 목적, 보관 기간, 제3자 제공 및 이용자의 권리를 안내합니다.',
-    en: 'SooDaList ("the Company") operates the SuDa Mate app ("the Service") and takes your privacy seriously. This policy explains what personal data we collect, why, how long we keep it, who we share it with, and your rights.',
-    es: 'SooDaList ("la Empresa") opera la app SuDa Mate ("el Servicio") y se toma en serio tu privacidad. Esta política explica qué datos personales recopilamos, por qué, cuánto tiempo los conservamos, con quién los compartimos y cuáles son tus derechos.',
+    en: 'SooDaList ("the Company") operates the SooDa Mate app ("the Service") and takes your privacy seriously. This policy explains what personal data we collect, why, how long we keep it, who we share it with, and your rights.',
+    es: 'SooDaList ("la Empresa") opera la app SooDa Mate ("el Servicio") y se toma en serio tu privacidad. Esta política explica qué datos personales recopilamos, por qué, cuánto tiempo los conservamos, con quién los compartimos y cuáles son tus derechos.',
     zh: 'SooDaList（"公司"）运营数搭伴侣应用（"服务"），高度重视用户隐私。本政策说明我们收集哪些个人信息、收集目的、保存期限、第三方共享情况以及用户享有的权利。',
     ja: 'SooDaList（以下「当社」）は数多メイトアプリ（以下「本サービス」）を運営しており、利用者の個人情報を大切に取り扱います。本方針では、収集する個人情報の項目、利用目的、保管期間、第三者提供、および利用者の権利について説明します。',
   },
@@ -353,8 +353,8 @@ const translations = {
   "terms.a1.title": { ko: "제1조 (목적)", en: "Article 1 (Purpose)", es: "Artículo 1 (Objeto)", zh: "第1条（目的）", ja: "第1条（目的）" },
   "terms.a1.body": {
     ko: '본 약관은 수다리스트("회사")가 제공하는 수다메이트 앱 서비스("서비스")의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을 정함을 목적으로 합니다.',
-    en: 'These Terms set out the rights, obligations, and responsibilities between SooDaList ("the Company") and users regarding the use of the SuDa Mate app service ("the Service").',
-    es: 'Estos Términos establecen los derechos, obligaciones y responsabilidades entre SooDaList ("la Empresa") y los usuarios en relación con el uso del servicio de la app SuDa Mate ("el Servicio").',
+    en: 'These Terms set out the rights, obligations, and responsibilities between SooDaList ("the Company") and users regarding the use of the SooDa Mate app service ("the Service").',
+    es: 'Estos Términos establecen los derechos, obligaciones y responsabilidades entre SooDaList ("la Empresa") y los usuarios en relación con el uso del servicio de la app SooDa Mate ("el Servicio").',
     zh: '本条款旨在规定SooDaList（"公司"）提供的数搭伴侣应用服务（"服务"）使用过程中公司与用户之间的权利、义务及责任事项。',
     ja: '本規約は、SooDaList（以下「当社」）が提供する数多メイトアプリサービス（以下「本サービス」）の利用に関し、当社と利用者間の権利、義務及び責任事項を定めることを目的とします。',
   },

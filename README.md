@@ -1,6 +1,6 @@
-# 수다메이트 (SuDa Mate)
+# 수다메이트 (SooDa Mate)
 
-Dating app monorepo — part of the 수다리스트 (SuDaList) app family. Bumble-style mechanic: unlimited swipe via Like/Pass/SuperLike buttons, women-message-first with a 24h match expiry, video call, work/school verification badges, paid superlike/boost via Stripe web checkout (no in-app purchase), incognito/travel mode.
+Dating app monorepo — part of the 수다리스트 (SooDaList) app family. Bumble-style mechanic: unlimited swipe via Like/Pass/SuperLike buttons, women-message-first with a 24h match expiry, video call, work/school verification badges, paid superlike/boost via Stripe web checkout (no in-app purchase), incognito/travel mode.
 
 ## Structure
 
