@@ -126,6 +126,19 @@ module.exports = {
         ? ["@react-native-firebase/app", "@react-native-firebase/messaging"]
         : []),
     ],
+    // EAS Update isn't actually wired up (no OTA update flow built) — this
+    // just satisfies `eas build`'s own check, since eas.json's build
+    // profiles already declare a "channel", which EAS expects update
+    // config to exist alongside. runtimeVersion "appVersion" means an OTA
+    // update (if one is ever pushed) only targets clients on the exact
+    // same app.config.js `version`, never crossing a native-rebuild
+    // boundary.
+    updates: {
+      url: "https://u.expo.dev/24ed66e3-d709-4bde-aa7e-417d576ca56d",
+    },
+    runtimeVersion: {
+      policy: "appVersion",
+    },
     extra: {
       eas: {
         // Created via `eas init --force` — https://expo.dev/accounts/seanchoi1991/projects/suda-mate
