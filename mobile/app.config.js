@@ -101,5 +101,11 @@ module.exports = {
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
     ],
+    extra: {
+      eas: {
+        // Created via `eas init --force` — https://expo.dev/accounts/seanchoi1991/projects/suda-mate
+        projectId: "24ed66e3-d709-4bde-aa7e-417d576ca56d",
+      },
+    },
   },
 };
