@@ -13,3 +13,9 @@ select = ["E", "F", "I", "UP"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
+# Per-test safety net against a silent hang (e.g. a WebSocket receive_json()
+# with no matching server-side send, or a stalled network call to the real
+# remote MSSQL instance). "signal" method needs SIGALRM, unavailable on
+# Windows — "thread" works cross-platform.
+timeout = 120
+timeout_method = "thread"

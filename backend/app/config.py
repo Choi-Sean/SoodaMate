@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     database_url: str = (
         "mssql+aioodbc://sa:ChangeMe123!@localhost:1433/suda_date"
         "?driver=ODBC+Driver+17+for+SQL+Server&Encrypt=yes&TrustServerCertificate=yes"
-        "&MARS_Connection=yes"
+        "&MARS_Connection=yes&Connection+Timeout=15"
     )
 
     google_oauth_client_id: str = ""

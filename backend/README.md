@@ -29,7 +29,7 @@ Tests run against the **same real MSSQL instance** `DATABASE_URL` points at (the
 pytest
 ```
 
-Full-suite runs against a remote hosted instance can take several minutes — most of that is network round-trip latency per test, not local compute.
+Full-suite runs against a remote hosted instance can take several minutes — most of that is network round-trip latency per test, not local compute. `pytest-timeout` (`pyproject.toml`, 120s per test, `thread` method since Windows has no `SIGALRM`) guards against a silent hang turning into an unbounded wait — if a test exceeds it, pytest reports a `Failed: Timeout` with a thread-dump traceback pointing at exactly where it stalled.
 
 ## Stored procedures
 
