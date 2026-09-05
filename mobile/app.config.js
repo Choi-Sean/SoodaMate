@@ -23,6 +23,10 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.sudalist.sudadate",
+      // Required alongside Google Sign-In per App Store Review Guideline
+      // 4.8 — see docs/APP_STORE_SUBMISSION.md. Also enable the "Sign In
+      // with Apple" capability on the App ID in the developer portal.
+      usesAppleSignIn: true,
     },
     android: {
       package: "com.sudalist.sudadate",
@@ -50,6 +54,7 @@ module.exports = {
         },
       ],
       "@react-native-google-signin/google-signin",
+      "expo-apple-authentication",
       [
         "@react-native-seoul/kakao-login",
         {

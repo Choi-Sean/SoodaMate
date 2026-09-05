@@ -23,6 +23,7 @@
     "logIn": "ログイン",
     "continueWithGoogle": "Googleで続ける",
     "continueWithKakao": "カカオで続ける",
+    "continueWithApple": "Appleで続ける",
     "noAccount": "アカウントをお持ちでないですか？新規登録",
     "createAccount": "アカウントを作成",
     "passwordMinLength": "パスワードは8文字以上で入力してください",

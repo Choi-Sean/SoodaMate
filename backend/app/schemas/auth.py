@@ -21,6 +21,10 @@ class KakaoAuthRequest(BaseModel):
     access_token: str
 
 
+class AppleAuthRequest(BaseModel):
+    identity_token: str
+
+
 class RefreshRequest(BaseModel):
     refresh_token: str
 

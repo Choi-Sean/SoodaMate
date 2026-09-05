@@ -17,6 +17,11 @@ class Settings(BaseSettings):
 
     google_oauth_client_id: str = ""
     kakao_rest_api_key: str = ""
+    # Sign in with Apple's identityToken audience is the app's bundle id, not
+    # a separate OAuth client — defaults to the real bundle id already used
+    # in mobile/app.config.js, so no extra account/config is needed beyond
+    # the paid Apple Developer account App Store submission already requires.
+    apple_bundle_id: str = "com.sudalist.sudadate"
 
     gcs_bucket_name: str = "suda-date-photos"
     google_application_credentials: str = ""

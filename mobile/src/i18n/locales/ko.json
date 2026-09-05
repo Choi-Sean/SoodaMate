@@ -23,6 +23,7 @@
     "logIn": "로그인",
     "continueWithGoogle": "구글로 계속하기",
     "continueWithKakao": "카카오로 계속하기",
+    "continueWithApple": "Apple로 계속하기",
     "noAccount": "계정이 없으신가요? 회원가입",
     "createAccount": "계정 만들기",
     "passwordMinLength": "비밀번호는 8자 이상이어야 해요",

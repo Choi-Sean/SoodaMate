@@ -21,6 +21,15 @@ Everything below assumes steps 1–3 are done and `mobile/.env` / `eas.json`'s e
 
 ## 1. iOS
 
+### 1.0 App ID capabilities (Apple Developer portal → Identifiers → your App ID)
+
+Enable these two capabilities when creating (or editing) the `com.sudalist.sudadate` App ID:
+
+- **Push Notifications** — required for FCM/APNs delivery of match and message alerts.
+- **Sign In with Apple** — required by App Store Review Guideline 4.8: since this app offers Google Sign-In, Apple requires an equivalent "Sign in with Apple" option too, or the build risks rejection at review. The backend (`app/services/oauth/apple.py`) and mobile (`expo-apple-authentication`, iOS-only per Apple's own scope for this requirement) already implement this — enabling the capability here just grants the entitlement EAS Build needs to sign it in.
+
+No other capability (In-App Purchase, Sign In with Apple's "server-to-server notifications", etc.) is needed — this app deliberately has no native IAP (payments are Stripe web checkout, see `docs/ARCHITECTURE.md`).
+
 ### 1.1 Build
 
 ```bash

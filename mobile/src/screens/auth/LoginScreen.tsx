@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, Text, TextInput, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Platform, Pressable, Text, TextInput, View, StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 
@@ -7,6 +7,7 @@ import * as authApi from "../../api/auth";
 import { useAuthStore } from "../../store/authStore";
 import { signInWithGoogle } from "../../services/googleAuth";
 import { signInWithKakao } from "../../services/kakaoAuth";
+import { signInWithApple } from "../../services/appleAuth";
 import type { AuthStackParamList } from "../../navigation/AuthStack";
 import { colors } from "../../theme";
 
@@ -40,6 +41,11 @@ export default function LoginScreen({ navigation }: Props) {
     });
   const handleKakaoLogin = () =>
     run("kakao", async () => login(await authApi.loginWithKakao(await signInWithKakao())));
+  const handleAppleLogin = () =>
+    run("apple", async () => {
+      const identityToken = await signInWithApple();
+      if (identityToken) login(await authApi.loginWithApple(identityToken));
+    });
 
   return (
     <View style={styles.container}>
@@ -75,6 +81,12 @@ export default function LoginScreen({ navigation }: Props) {
         {loading === "kakao" ? <ActivityIndicator /> : <Text style={styles.kakaoButtonText}>{t("auth.continueWithKakao")}</Text>}
       </Pressable>
 
+      {Platform.OS === "ios" && (
+        <Pressable style={styles.appleButton} onPress={handleAppleLogin} disabled={loading !== null}>
+          {loading === "apple" ? <ActivityIndicator color="#fff" /> : <Text style={styles.appleButtonText}>{t("auth.continueWithApple")}</Text>}
+        </Pressable>
+      )}
+
       <Pressable onPress={() => navigation.navigate("Signup")}>
         <Text style={styles.link}>{t("auth.noAccount")}</Text>
       </Pressable>
@@ -107,5 +119,7 @@ const styles = StyleSheet.create({
   googleButtonText: { fontSize: 16, fontWeight: "500", color: colors.ink },
   kakaoButton: { backgroundColor: colors.kakaoYellow, borderRadius: 10, padding: 14, alignItems: "center", marginTop: 12 },
   kakaoButtonText: { fontSize: 16, fontWeight: "500", color: "#000" },
+  appleButton: { backgroundColor: "#000", borderRadius: 10, padding: 14, alignItems: "center", marginTop: 12 },
+  appleButtonText: { fontSize: 16, fontWeight: "500", color: "#fff" },
   link: { textAlign: "center", marginTop: 24, color: colors.accentDark },
 });

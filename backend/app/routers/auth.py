@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.schemas.auth import (
+    AppleAuthRequest,
     GoogleAuthRequest,
     KakaoAuthRequest,
     LoginRequest,
@@ -11,6 +12,7 @@ from app.schemas.auth import (
     TokenResponse,
 )
 from app.services import auth_service
+from app.services.oauth.apple import apple_verifier
 from app.services.oauth.google import google_verifier
 from app.services.oauth.kakao import kakao_verifier
 
@@ -48,3 +50,12 @@ async def kakao_login(body: KakaoAuthRequest, db: AsyncSession = Depends(get_db)
     except ValueError as exc:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, str(exc)) from exc
     return await auth_service.login_or_signup_with_provider(db, "kakao", identity)
+
+
+@router.post("/apple", response_model=TokenResponse)
+async def apple_login(body: AppleAuthRequest, db: AsyncSession = Depends(get_db)) -> TokenResponse:
+    try:
+        identity = await apple_verifier.verify(body.identity_token)
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, str(exc)) from exc
+    return await auth_service.login_or_signup_with_provider(db, "apple", identity)

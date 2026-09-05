@@ -23,6 +23,7 @@
     "logIn": "登录",
     "continueWithGoogle": "使用谷歌继续",
     "continueWithKakao": "使用Kakao继续",
+    "continueWithApple": "使用Apple继续",
     "noAccount": "还没有账号？注册",
     "createAccount": "创建账号",
     "passwordMinLength": "密码至少需要8位字符",

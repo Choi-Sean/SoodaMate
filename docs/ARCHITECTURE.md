@@ -30,7 +30,9 @@ All UUID columns use SQLAlchemy's portable `Uuid` type (native `UNIQUEIDENTIFIER
 
 ## Auth
 
-All three providers (Google, Kakao, email) converge on the same app-level JWT via `app/services/auth_service.py`. Adding a new provider (e.g. phone OTP later) means implementing `OAuthProviderVerifier` (`app/core/auth_provider_base.py`) and adding one router endpoint — the issuance/session logic never changes.
+All four providers (Google, Kakao, Apple, email) converge on the same app-level JWT via `app/services/auth_service.py`. Adding a new provider (e.g. phone OTP later) means implementing `OAuthProviderVerifier` (`app/core/auth_provider_base.py`) and adding one router endpoint — the issuance/session logic never changes.
+
+**Sign in with Apple** (`app/services/oauth/apple.py`) isn't optional polish — Apple App Store Review Guideline 4.8 requires any app offering a third-party login (this app offers Google) to also offer Sign in with Apple, or risk rejection at review. Unlike Kakao's opaque access token (verified via a live `kapi.kakao.com` call) or Google's SDK-verified id_token, Apple's `identityToken` is a JWT the backend verifies locally against Apple's public JWKS (`https://appleid.apple.com/auth/keys`), checking signature, issuer, expiry, and audience (the app's bundle id). Apple only includes the user's email in the token on their very first sign-in for this app — later sign-ins omit it, which `login_or_signup_with_provider` already handles generically (a missing `identity.email` is normal for pure-OAuth users). Mobile-side, `expo-apple-authentication`'s `AppleAuthenticationButton` is shown only on iOS (Android has no Apple Sign-In capability and Apple's own guideline doesn't require it there).
 
 ## Bumble-style first-message rule + 24h match expiry (Phase 14)
 

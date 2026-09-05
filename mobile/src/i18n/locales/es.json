@@ -23,6 +23,7 @@
     "logIn": "Iniciar sesión",
     "continueWithGoogle": "Continuar con Google",
     "continueWithKakao": "Continuar con Kakao",
+    "continueWithApple": "Continuar con Apple",
     "noAccount": "¿No tienes cuenta? Regístrate",
     "createAccount": "Crea tu cuenta",
     "passwordMinLength": "La contraseña debe tener al menos 8 caracteres",

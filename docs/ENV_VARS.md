@@ -8,6 +8,7 @@
 | `DATABASE_URL` | your hosted SQL Server instance | `mssql+aioodbc://user:pass@host:1433/db?driver=ODBC+Driver+17+for+SQL+Server&Encrypt=yes&TrustServerCertificate=yes&MARS_Connection=yes` — **no Docker/local container**, connect directly to a real MSSQL instance for every environment including tests. `MARS_Connection=yes` is required or aioodbc throws "Connection is busy with results for another command." |
 | `GOOGLE_OAUTH_CLIENT_ID` | Google Cloud Console → APIs & Services → Credentials → OAuth client (type: Web application) | Used as the audience when verifying id_tokens from the mobile app |
 | `KAKAO_REST_API_KEY` | Kakao Developers → App → App Keys | REST API key |
+| `APPLE_BUNDLE_ID` | — | Defaults to `com.sudalist.sudadate` (the real bundle id, already set in `mobile/app.config.js`) — only override if the bundle id ever changes. No separate Apple account/key needed beyond the paid Apple Developer Program membership App Store submission already requires; just enable the "Sign In with Apple" capability on the App ID in the developer portal |
 | `GCS_BUCKET_NAME` | GCP Console → Cloud Storage | Bucket for profile photos |
 | `GOOGLE_APPLICATION_CREDENTIALS` | GCP Console → IAM → Service Accounts → Keys | Path to service account JSON, needs Storage Object Admin on the bucket |
 | `FIREBASE_CREDENTIALS_PATH` | Firebase Console → Project Settings → Service Accounts | Path to service account JSON for FCM push |
