@@ -45,7 +45,8 @@
     "all": "すべて",
     "continue": "続ける",
     "validationMissing": "ニックネームと生年月日 (YYYY-MM-DD) を入力してください",
-    "needPhoto": "写真を1枚以上追加してください"
+    "needPhoto": "写真を1枚以上追加してください",
+    "needLocation": "位置情報を設定してください"
   },
   "discover": {
     "loadError": "プロフィールを読み込めませんでした。下に引っ張って再試行してください。",
@@ -142,6 +143,17 @@
     "active": "トラベルモード有効",
     "activeUntil": "{{date}}まで",
     "turnOff": "トラベルモードをオフにする"
+  },
+  "location": {
+    "title": "現在地",
+    "currentValue": "現在の設定：{{lat}}, {{lng}}",
+    "useMyLocation": "現在地を自動で取得",
+    "enterManually": "手動で入力",
+    "latitude": "緯度",
+    "longitude": "経度",
+    "apply": "適用",
+    "permissionDeniedTitle": "位置情報の許可が必要です",
+    "permissionDeniedBody": "位置情報を共有したくない場合は、下から手動で入力してください。"
   },
   "verification": {
     "title": "職場/学校認証",

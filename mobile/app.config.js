@@ -43,6 +43,9 @@ const admobIosAppId =
 const userTrackingUsageDescription =
   "We use this to show you more relevant ads and support the free features of the app.";
 
+const locationUsageDescription =
+  "We use your location to show your distance to other users and find matches near you.";
+
 // The @react-native-firebase/* config plugins hard-fail prebuild (not just
 // a runtime no-op, unlike this app's other "no real account yet" defaults)
 // if expo.android.googleServicesFile / expo.ios.googleServicesFile aren't
@@ -144,6 +147,13 @@ module.exports = {
       [
         "expo-tracking-transparency",
         { userTrackingPermission: userTrackingUsageDescription },
+      ],
+      [
+        "expo-location",
+        {
+          locationAlwaysAndWhenInUsePermission: locationUsageDescription,
+          locationWhenInUsePermission: locationUsageDescription,
+        },
       ],
       [
         "expo-image-picker",

@@ -45,7 +45,8 @@
     "all": "todos",
     "continue": "Continuar",
     "validationMissing": "Ingresa un nombre y fecha de nacimiento (AAAA-MM-DD)",
-    "needPhoto": "Añade al menos una foto"
+    "needPhoto": "Añade al menos una foto",
+    "needLocation": "Configura tu ubicación"
   },
   "discover": {
     "loadError": "No se pudieron cargar los perfiles. Desliza hacia abajo para reintentar.",
@@ -142,6 +143,17 @@
     "active": "Modo viaje activado",
     "activeUntil": "Hasta {{date}}",
     "turnOff": "Desactivar modo viaje"
+  },
+  "location": {
+    "title": "Mi ubicación",
+    "currentValue": "Actual: {{lat}}, {{lng}}",
+    "useMyLocation": "Usar mi ubicación actual",
+    "enterManually": "Ingresar manualmente",
+    "latitude": "Latitud",
+    "longitude": "Longitud",
+    "apply": "Aplicar",
+    "permissionDeniedTitle": "Se necesita permiso de ubicación",
+    "permissionDeniedBody": "Si no quieres compartir tu ubicación, ingrésala manualmente abajo."
   },
   "verification": {
     "title": "Verificación laboral/escolar",

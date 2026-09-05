@@ -5,6 +5,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 
 import { getMyProfile, updateMyProfile } from "../../api/profiles";
+import LocationPicker from "../../components/LocationPicker";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
 import type { Gender, InterestedIn } from "../../types";
 import { colors } from "../../theme";
@@ -26,6 +27,8 @@ export default function EditProfileScreen({ navigation }: Props) {
   const [minAge, setMinAge] = useState("18");
   const [maxAge, setMaxAge] = useState("99");
   const [maxDistanceKm, setMaxDistanceKm] = useState("50");
+  const [locationLat, setLocationLat] = useState<number | null>(null);
+  const [locationLng, setLocationLng] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +41,8 @@ export default function EditProfileScreen({ navigation }: Props) {
     setMinAge(String(profile.min_age_pref));
     setMaxAge(String(profile.max_age_pref));
     setMaxDistanceKm(String(profile.max_distance_km));
+    setLocationLat(profile.location_lat);
+    setLocationLng(profile.location_lng);
   }, [profile]);
 
   async function handleSave() {
@@ -51,6 +56,8 @@ export default function EditProfileScreen({ navigation }: Props) {
         gender,
         interested_in: interestedIn,
         bio: bio.trim() || null,
+        location_lat: locationLat,
+        location_lng: locationLng,
         min_age_pref: Number(minAge) || 18,
         max_age_pref: Number(maxAge) || 99,
         max_distance_km: Number(maxDistanceKm) || 50,
@@ -121,6 +128,15 @@ export default function EditProfileScreen({ navigation }: Props) {
         keyboardType="number-pad"
         value={maxDistanceKm}
         onChangeText={setMaxDistanceKm}
+      />
+
+      <LocationPicker
+        lat={locationLat}
+        lng={locationLng}
+        onChange={(lat, lng) => {
+          setLocationLat(lat);
+          setLocationLng(lng);
+        }}
       />
 
       <Pressable style={styles.photosLink} onPress={() => navigation.navigate("PhotoManager")}>

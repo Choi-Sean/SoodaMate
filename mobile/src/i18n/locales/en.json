@@ -45,7 +45,8 @@
     "all": "all",
     "continue": "Continue",
     "validationMissing": "Enter a display name and birth date (YYYY-MM-DD)",
-    "needPhoto": "Add at least one photo"
+    "needPhoto": "Add at least one photo",
+    "needLocation": "Set your location"
   },
   "discover": {
     "loadError": "Couldn't load candidates. Pull to retry.",
@@ -142,6 +143,17 @@
     "active": "Travel mode is on",
     "activeUntil": "Until {{date}}",
     "turnOff": "Turn off travel mode"
+  },
+  "location": {
+    "title": "My location",
+    "currentValue": "Current: {{lat}}, {{lng}}",
+    "useMyLocation": "Use my current location",
+    "enterManually": "Enter manually",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "apply": "Apply",
+    "permissionDeniedTitle": "Location permission needed",
+    "permissionDeniedBody": "If you don't want to share your location, enter it manually below."
   },
   "verification": {
     "title": "Work/school verification",

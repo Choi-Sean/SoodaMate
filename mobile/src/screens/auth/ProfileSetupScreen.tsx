@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { confirmPhoto, updateMyProfile } from "../../api/profiles";
 import { presignUpload, uploadToPresignedUrl } from "../../api/uploads";
+import LocationPicker from "../../components/LocationPicker";
 import type { Gender, InterestedIn } from "../../types";
 import { colors } from "../../theme";
 
@@ -22,6 +23,8 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   const [gender, setGender] = useState<Gender>("male");
   const [interestedIn, setInterestedIn] = useState<InterestedIn>("female");
   const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [locationLat, setLocationLat] = useState<number | null>(null);
+  const [locationLng, setLocationLng] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,6 +54,10 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
       setError(t("profileSetup.needPhoto"));
       return;
     }
+    if (locationLat == null || locationLng == null) {
+      setError(t("profileSetup.needLocation"));
+      return;
+    }
 
     setError(null);
     setLoading(true);
@@ -60,6 +67,8 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         birth_date: birthDate,
         gender,
         interested_in: interestedIn,
+        location_lat: locationLat,
+        location_lng: locationLng,
       });
 
       const contentType = "image/jpeg";
@@ -127,6 +136,15 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
           </Pressable>
         ))}
       </View>
+
+      <LocationPicker
+        lat={locationLat}
+        lng={locationLng}
+        onChange={(lat, lng) => {
+          setLocationLat(lat);
+          setLocationLng(lng);
+        }}
+      />
 
       <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={loading}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>{t("profileSetup.continue")}</Text>}

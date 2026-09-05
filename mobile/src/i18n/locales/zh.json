@@ -45,7 +45,8 @@
     "all": "不限",
     "continue": "继续",
     "validationMissing": "请输入昵称和出生日期 (YYYY-MM-DD)",
-    "needPhoto": "请至少添加一张照片"
+    "needPhoto": "请至少添加一张照片",
+    "needLocation": "请设置你的位置"
   },
   "discover": {
     "loadError": "无法加载推荐用户，请下拉重试。",
@@ -142,6 +143,17 @@
     "active": "旅行模式已开启",
     "activeUntil": "至 {{date}}",
     "turnOff": "关闭旅行模式"
+  },
+  "location": {
+    "title": "我的位置",
+    "currentValue": "当前：{{lat}}, {{lng}}",
+    "useMyLocation": "使用我的当前位置",
+    "enterManually": "手动输入",
+    "latitude": "纬度",
+    "longitude": "经度",
+    "apply": "应用",
+    "permissionDeniedTitle": "需要位置权限",
+    "permissionDeniedBody": "如果不想分享位置，请在下方手动输入。"
   },
   "verification": {
     "title": "职场/学校认证",
