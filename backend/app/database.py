@@ -11,13 +11,20 @@ from app.config import settings
 _engine_kwargs = {"deprecate_large_types": True}
 
 if settings.app_env == "test":
-    # Tests mix pytest-asyncio's per-function loop with Starlette TestClient's
-    # own background-thread loop (for WebSocket tests). aioodbc wraps
-    # blocking pyodbc calls in a thread executor rather than doing raw
-    # asyncio socket I/O the way asyncpg did, so this may be unnecessary here
-    # — kept as a safe default since it's unverified against a live loop
-    # switch with this driver; NullPool makes every checkout a fresh
-    # connection either way, at some perf cost only in tests.
+    # Confirmed (not just theorized) empirically: switching this to a normal
+    # pooled engine to chase down an intermittent
+    # `Windows fatal exception: access violation` crash made things *worse*
+    # — aioodbc connections reused across pytest-asyncio's per-function event
+    # loop / TestClient's background-thread portal loop failed with
+    # "RuntimeError: ... attached to a different loop" (aioodbc wraps pyodbc
+    # calls in a thread executor, but the Future/Task bookkeeping around that
+    # is still loop-bound). NullPool avoids that by never reusing a
+    # connection across checkouts. The rarer access-violation crash (pyodbc
+    # connection teardown racing Python's GC finalizer on another thread,
+    # roughly 1-in-4 full runs) is real but strictly less disruptive than the
+    # cross-loop failure mode a real pool introduces here — pytest-timeout
+    # bounds the damage either way. Re-evaluate if aioodbc/pyodbc ships a fix
+    # for either failure mode.
     engine = create_async_engine(settings.database_url, poolclass=NullPool, **_engine_kwargs)
 else:
     engine = create_async_engine(settings.database_url, pool_pre_ping=True, **_engine_kwargs)
