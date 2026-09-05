@@ -79,7 +79,7 @@ Produces a signed `.aab` (Android App Bundle); EAS manages the upload keystore u
 
 In [Play Console](https://play.google.com/console/) → Create app:
 
-- Package name: `com.soodamate.myapp` (must match `mobile/app.config.js`'s `android.package` — deliberately different from the iOS bundle id above; this is whatever was set when the Play Console app record was first created there, and package names are immutable afterward)
+- Package name: `com.sudalist.sudamate` (must match `mobile/app.config.js`'s `android.package` — same as the iOS bundle id above; package names are immutable in Play Console once the app record exists, so double-check this before first upload)
 - App category: Dating
 - Complete the **Data safety** section — this app collects email, profile data, location, photos, messages, and device tokens; declare each honestly (see `web/privacy-policy.html` for the authoritative list) since this is a common source of Play Store rejections if it doesn't match actual behavior
 - Complete the **Content rating** questionnaire (dating apps are typically rated for mature audiences)
