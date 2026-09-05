@@ -125,6 +125,23 @@ module.exports = {
       ...(hasAndroidFirebase || hasIosFirebase
         ? ["@react-native-firebase/app", "@react-native-firebase/messaging"]
         : []),
+      [
+        "expo-build-properties",
+        {
+          // Google's own play-services-ads AAR (pulled in transitively by
+          // react-native-google-mobile-ads) is compiled with Kotlin 2.3.0
+          // metadata — Expo SDK 57's default Kotlin (2.1.0) can't read
+          // that and fails compileReleaseKotlin with "Module was compiled
+          // with an incompatible version of Kotlin" (found via a real EAS
+          // build attempt, not a guess). Bumping the whole project's
+          // Kotlin compiler is the correct direction here since Kotlin
+          // compilers can read older metadata but not newer, and every
+          // other native Kotlin module (google-signin, kakao-login) still
+          // compiled fine under 2.1.0 — nothing here needed the *old*
+          // version specifically.
+          android: { kotlinVersion: "2.3.0" },
+        },
+      ],
     ],
     extra: {
       eas: {

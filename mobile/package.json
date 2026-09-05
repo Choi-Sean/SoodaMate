@@ -15,6 +15,7 @@
     "axios": "^1.20.0",
     "expo": "~57.0.20",
     "expo-apple-authentication": "~57.0.1",
+    "expo-build-properties": "~57.0.17",
     "expo-image-picker": "~57.0.16",
     "expo-localization": "~57.0.1",
     "expo-secure-store": "~57.0.3",
