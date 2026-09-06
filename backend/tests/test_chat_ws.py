@@ -16,6 +16,7 @@ def _signup_and_complete_profile(client: TestClient, email: str, gender: str, in
         headers=headers,
         json={
             "display_name": "Test",
+            "legal_first_name": "Test",
             "birth_date": f"{birth_year}-01-01",
             "gender": gender,
             "interested_in": interested_in,

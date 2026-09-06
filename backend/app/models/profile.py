@@ -26,6 +26,9 @@ class Profile(Base):
         Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
     )
     display_name: Mapped[str] = mapped_column(Unicode(50), nullable=False)
+    # Required, but never shown to other users (see display_name for that) —
+    # collected for identity/legal purposes only.
+    legal_first_name: Mapped[str] = mapped_column(Unicode(50), nullable=False)
     birth_date: Mapped[date] = mapped_column(Date, nullable=False)
     gender: Mapped[str] = mapped_column(Unicode(10), nullable=False)  # 'male' | 'female' | 'other'
     interested_in: Mapped[str] = mapped_column(Unicode(10), nullable=False)  # 'male' | 'female' | 'other' | 'all'
@@ -51,6 +54,42 @@ class Profile(Base):
     travel_lat: Mapped[float | None] = mapped_column(nullable=True)
     travel_lng: Mapped[float | None] = mapped_column(nullable=True)
     travel_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Collected at signup for every user (free), shown on the profile like
+    # gender/bio — not paywalled to set. Free-text category strings rather
+    # than an enum since the allowed option lists are UI-owned, not enforced
+    # server-side.
+    race_ethnicity: Mapped[str | None] = mapped_column(Unicode(50), nullable=True)
+    religion: Mapped[str | None] = mapped_column(Unicode(50), nullable=True)
+    political_view: Mapped[str | None] = mapped_column(Unicode(50), nullable=True)
+
+    # Premium membership: gates race_filter/religion_filter below. A
+    # one-time Stripe purchase (like superlike/boost) extends this instead
+    # of a true recurring Stripe Subscription — see payment_service.py.
+    premium_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Comma-separated allow-lists of race_ethnicity/religion values to
+    # restrict Discover to — only ever applied by discovery_service if
+    # is_premium_member(profile) is true; the free tier only gets the
+    # existing age/distance filters above.
+    race_filter: Mapped[str | None] = mapped_column(Unicode(255), nullable=True)
+    religion_filter: Mapped[str | None] = mapped_column(Unicode(255), nullable=True)
+
+    # Optional extended profile fields — all free-text category strings
+    # (like race_ethnicity/religion above), collected at signup but not
+    # filterable/searchable in v1. interests/languages are comma-separated
+    # lists, same storage convention as race_filter/religion_filter.
+    height_cm: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    occupation: Mapped[str | None] = mapped_column(Unicode(100), nullable=True)
+    education: Mapped[str | None] = mapped_column(Unicode(100), nullable=True)
+    hometown: Mapped[str | None] = mapped_column(Unicode(100), nullable=True)
+    smoking: Mapped[str | None] = mapped_column(Unicode(30), nullable=True)
+    cannabis: Mapped[str | None] = mapped_column(Unicode(30), nullable=True)
+    exercise_frequency: Mapped[str | None] = mapped_column(Unicode(30), nullable=True)
+    relationship_goal: Mapped[str | None] = mapped_column(Unicode(30), nullable=True)
+    wants_kids: Mapped[str | None] = mapped_column(Unicode(30), nullable=True)
+    has_kids: Mapped[str | None] = mapped_column(Unicode(30), nullable=True)
+    interests: Mapped[str | None] = mapped_column(Unicode(500), nullable=True)
+    languages: Mapped[str | None] = mapped_column(Unicode(255), nullable=True)
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

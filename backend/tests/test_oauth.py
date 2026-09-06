@@ -90,3 +90,24 @@ async def test_google_and_email_signup_with_same_address_link_to_one_account(cli
     resp = await client.post("/auth/google", json={"id_token": "whatever"})
     assert resp.status_code == 200
     assert resp.json()["user_id"] == email_user_id
+
+
+@pytest.mark.asyncio
+async def test_email_signup_after_google_points_user_at_google_login(client, monkeypatch):
+    # Reverse order from the test above: Google first, then a plain
+    # email/password signup attempt with the same address. Unlike the
+    # Google-second case, this can't silently auto-link — anyone who knows
+    # the address could type it into the signup form, so it's rejected, but
+    # the 409 should say *which* provider to log in with instead of a bare
+    # "already registered" dead end.
+    async def fake_verify(token: str) -> ExternalIdentity:
+        return ExternalIdentity(provider_user_id="google-uid-3", email="shared2@example.com", raw_claims={})
+
+    monkeypatch.setattr(auth_router.google_verifier, "verify", fake_verify)
+    await client.post("/auth/google", json={"id_token": "whatever"})
+
+    resp = await client.post(
+        "/auth/signup", json={"email": "shared2@example.com", "password": "password123"}
+    )
+    assert resp.status_code == 409
+    assert resp.json()["detail"]["providers"] == ["google"]

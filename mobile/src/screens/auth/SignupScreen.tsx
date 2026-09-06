@@ -10,6 +10,25 @@ import { colors } from "../../theme";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Signup">;
 
+const PROVIDER_DISPLAY_NAMES: Record<string, string> = { google: "Google", kakao: "Kakao", apple: "Apple" };
+
+// signup_with_email (see backend/app/services/auth_service.py) returns a
+// structured 409 detail — {message, providers} — when the email is already
+// linked to an OAuth account, so this can point the user at the right login
+// method instead of a dead-end "already registered" message.
+function describeSignupError(e: any, t: (key: string, opts?: Record<string, unknown>) => string): string {
+  const detail = e?.response?.data?.detail;
+  if (detail && typeof detail === "object" && Array.isArray(detail.providers)) {
+    const providers = detail.providers as string[];
+    if (providers.length > 0 && providers[0] !== "email") {
+      const providerLabel = providers.map((p) => PROVIDER_DISPLAY_NAMES[p] ?? p).join(", ");
+      return t("auth.alreadyRegisteredWithProvider", { provider: providerLabel });
+    }
+    return t("auth.emailAlreadyRegistered");
+  }
+  return typeof detail === "string" ? detail : e?.message ?? t("common.somethingWentWrong");
+}
+
 export default function SignupScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
@@ -36,7 +55,7 @@ export default function SignupScreen({ navigation }: Props) {
       // RootNavigator swaps to MainTabs once isAuthenticated flips true; the
       // profile-completion gate inside it routes to ProfileSetup first.
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));
+      setError(describeSignupError(e, t));
     } finally {
       setLoading(false);
     }

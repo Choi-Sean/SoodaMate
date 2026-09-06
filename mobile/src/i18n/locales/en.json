@@ -29,7 +29,9 @@
     "passwordMinLength": "Password must be at least 8 characters",
     "passwordMismatch": "Passwords don't match",
     "signUp": "Sign up",
-    "haveAccount": "Already have an account? Log in"
+    "haveAccount": "Already have an account? Log in",
+    "alreadyRegisteredWithProvider": "You already signed up with {{provider}}. Please log in with {{provider}}.",
+    "emailAlreadyRegistered": "That email is already registered. Please log in."
   },
   "profileSetup": {
     "title": "Complete your profile",
@@ -46,7 +48,91 @@
     "continue": "Continue",
     "validationMissing": "Enter a display name and birth date (YYYY-MM-DD)",
     "needPhoto": "Add at least one photo",
-    "needLocation": "Set your location"
+    "needLocation": "Set your location",
+    "raceEthnicity": "Race/ethnicity (optional)",
+    "religion": "Religion (optional)",
+    "race": {
+      "east_asian": "East Asian",
+      "southeast_asian": "Southeast Asian",
+      "south_asian": "South Asian",
+      "middle_eastern": "Middle Eastern",
+      "black": "Black / African descent",
+      "white": "White / Caucasian",
+      "hispanic_latino": "Hispanic / Latino",
+      "mixed": "Mixed",
+      "other": "Other",
+      "prefer_not_to_say": "Prefer not to say"
+    },
+    "religionOption": {
+      "none": "No religion",
+      "christian": "Christian",
+      "catholic": "Catholic",
+      "buddhist": "Buddhist",
+      "muslim": "Muslim",
+      "other": "Other",
+      "prefer_not_to_say": "Prefer not to say"
+    },
+    "legalFirstName": "Legal first name",
+    "optionalSection": "More about you (optional)",
+    "politicalView": "Political views (optional)",
+    "politicalViewOption": {
+      "liberal": "Liberal",
+      "moderate": "Moderate",
+      "conservative": "Conservative",
+      "not_political": "Not political",
+      "other": "Other",
+      "prefer_not_to_say": "Prefer not to say"
+    },
+    "heightCm": "Height (cm)",
+    "occupation": "Occupation",
+    "education": "Education",
+    "hometown": "Hometown",
+    "smoking": "Smoking",
+    "smokingOption": {
+      "never": "Never",
+      "sometimes": "Sometimes",
+      "regularly": "Regularly",
+      "prefer_not_to_say": "Prefer not to say"
+    },
+    "cannabis": "Cannabis",
+    "cannabisOption": {
+      "never": "Never",
+      "sometimes": "Sometimes",
+      "regularly": "Regularly",
+      "prefer_not_to_say": "Prefer not to say"
+    },
+    "exerciseFrequency": "Exercise",
+    "exerciseFrequencyOption": {
+      "never": "Never",
+      "sometimes": "Sometimes",
+      "often": "Often",
+      "daily": "Daily"
+    },
+    "relationshipGoal": "Looking for",
+    "relationshipGoalOption": {
+      "friends": "Just friends",
+      "long_term": "Long-term relationship",
+      "marriage": "Marriage",
+      "short_term": "Something casual",
+      "not_sure": "Not sure yet"
+    },
+    "wantsKids": "Want kids",
+    "wantsKidsOption": {
+      "yes": "Want kids",
+      "no": "Don't want kids",
+      "maybe": "Not sure",
+      "have_want_more": "Have kids, want more",
+      "have_dont_want_more": "Have kids, don't want more",
+      "prefer_not_to_say": "Prefer not to say"
+    },
+    "hasKids": "Have kids",
+    "hasKidsOption": {
+      "yes": "Yes",
+      "no": "No",
+      "prefer_not_to_say": "Prefer not to say"
+    },
+    "interestsPlaceholder": "Interests (comma-separated, e.g. hiking, movies, cooking)",
+    "languagesPlaceholder": "Languages you speak (comma-separated, e.g. Korean, English)"
   },
   "discover": {
     "loadError": "Couldn't load candidates. Pull to retry.",
@@ -167,5 +253,13 @@
     "alreadyVerified": "Already verified ({{kind}})",
     "codeSent": "We sent a code — check your email.",
     "verifiedSuccess": "Verification complete!"
+  },
+  "premiumFilters": {
+    "title": "Premium Filters",
+    "raceLabel": "Filter by race/ethnicity",
+    "religionLabel": "Filter by religion",
+    "save": "Save filters",
+    "lockedBody": "Filtering by race/ethnicity or religion requires an active premium membership.",
+    "upgrade": "Get membership"
   }
 }

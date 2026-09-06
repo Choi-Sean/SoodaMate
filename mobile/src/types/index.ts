@@ -11,6 +11,7 @@ export interface Photo {
 export interface Profile {
   user_id: string;
   display_name: string;
+  legal_first_name: string;
   birth_date: string;
   gender: Gender;
   interested_in: InterestedIn;
@@ -29,6 +30,25 @@ export interface Profile {
   travel_lat: number | null;
   travel_lng: number | null;
   travel_expires_at: string | null;
+  race_ethnicity: string | null;
+  religion: string | null;
+  political_view: string | null;
+  premium_until: string | null;
+  is_premium_member: boolean;
+  race_filter: string[];
+  religion_filter: string[];
+  height_cm: number | null;
+  occupation: string | null;
+  education: string | null;
+  hometown: string | null;
+  smoking: string | null;
+  cannabis: string | null;
+  exercise_frequency: string | null;
+  relationship_goal: string | null;
+  wants_kids: string | null;
+  has_kids: string | null;
+  interests: string[];
+  languages: string[];
   updated_at: string;
   photos: Photo[];
 }

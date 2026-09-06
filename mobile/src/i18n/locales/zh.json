@@ -29,7 +29,9 @@
     "passwordMinLength": "密码至少需要8位字符",
     "passwordMismatch": "两次密码不一致",
     "signUp": "注册",
-    "haveAccount": "已有账号？登录"
+    "haveAccount": "已有账号？登录",
+    "alreadyRegisteredWithProvider": "你已经用{{provider}}注册过了，请用{{provider}}登录。",
+    "emailAlreadyRegistered": "该邮箱已注册，请直接登录。"
   },
   "profileSetup": {
     "title": "完善你的个人主页",
@@ -46,7 +48,91 @@
     "continue": "继续",
     "validationMissing": "请输入昵称和出生日期 (YYYY-MM-DD)",
     "needPhoto": "请至少添加一张照片",
-    "needLocation": "请设置你的位置"
+    "needLocation": "请设置你的位置",
+    "raceEthnicity": "种族/民族（可选）",
+    "religion": "宗教信仰（可选）",
+    "race": {
+      "east_asian": "东亚",
+      "southeast_asian": "东南亚",
+      "south_asian": "南亚",
+      "middle_eastern": "中东",
+      "black": "黑人/非洲裔",
+      "white": "白人",
+      "hispanic_latino": "拉丁裔",
+      "mixed": "混血",
+      "other": "其他",
+      "prefer_not_to_say": "不愿透露"
+    },
+    "religionOption": {
+      "none": "无宗教信仰",
+      "christian": "基督教",
+      "catholic": "天主教",
+      "buddhist": "佛教",
+      "muslim": "伊斯兰教",
+      "other": "其他",
+      "prefer_not_to_say": "不愿透露"
+    },
+    "legalFirstName": "法定名字",
+    "optionalSection": "更多信息（可选）",
+    "politicalView": "政治倾向（可选）",
+    "politicalViewOption": {
+      "liberal": "自由派",
+      "moderate": "中立",
+      "conservative": "保守派",
+      "not_political": "不关心政治",
+      "other": "其他",
+      "prefer_not_to_say": "不愿透露"
+    },
+    "heightCm": "身高（厘米）",
+    "occupation": "职业",
+    "education": "学历",
+    "hometown": "家乡",
+    "smoking": "吸烟情况",
+    "smokingOption": {
+      "never": "从不",
+      "sometimes": "偶尔",
+      "regularly": "经常",
+      "prefer_not_to_say": "不愿透露"
+    },
+    "cannabis": "大麻使用情况",
+    "cannabisOption": {
+      "never": "从不",
+      "sometimes": "偶尔",
+      "regularly": "经常",
+      "prefer_not_to_say": "不愿透露"
+    },
+    "exerciseFrequency": "运动频率",
+    "exerciseFrequencyOption": {
+      "never": "从不",
+      "sometimes": "偶尔",
+      "often": "经常",
+      "daily": "每天"
+    },
+    "relationshipGoal": "想找的关系",
+    "relationshipGoalOption": {
+      "friends": "仅做朋友",
+      "long_term": "长期关系",
+      "marriage": "婚姻",
+      "short_term": "短期关系",
+      "not_sure": "还没想好"
+    },
+    "wantsKids": "是否想要孩子",
+    "wantsKidsOption": {
+      "yes": "想要孩子",
+      "no": "不想要孩子",
+      "maybe": "还没想好",
+      "have_want_more": "已有孩子，还想要",
+      "have_dont_want_more": "已有孩子，不想再要",
+      "prefer_not_to_say": "不愿透露"
+    },
+    "hasKids": "是否已有孩子",
+    "hasKidsOption": {
+      "yes": "有",
+      "no": "没有",
+      "prefer_not_to_say": "不愿透露"
+    },
+    "interestsPlaceholder": "兴趣爱好（用逗号分隔，例如：爬山、电影、烹饪）",
+    "languagesPlaceholder": "会说的语言（用逗号分隔，例如：韩语、英语）"
   },
   "discover": {
     "loadError": "无法加载推荐用户，请下拉重试。",
@@ -167,5 +253,13 @@
     "alreadyVerified": "已认证（{{kind}}）",
     "codeSent": "验证码已发送，请查看邮箱。",
     "verifiedSuccess": "认证成功！"
+  },
+  "premiumFilters": {
+    "title": "高级筛选",
+    "raceLabel": "按种族/民族筛选",
+    "religionLabel": "按宗教筛选",
+    "save": "保存筛选条件",
+    "lockedBody": "按种族/民族或宗教筛选需要有效的高级会员资格。",
+    "upgrade": "开通会员"
   }
 }

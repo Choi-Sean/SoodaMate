@@ -29,7 +29,9 @@
     "passwordMinLength": "La contraseña debe tener al menos 8 caracteres",
     "passwordMismatch": "Las contraseñas no coinciden",
     "signUp": "Registrarse",
-    "haveAccount": "¿Ya tienes cuenta? Inicia sesión"
+    "haveAccount": "¿Ya tienes cuenta? Inicia sesión",
+    "alreadyRegisteredWithProvider": "Ya te registraste con {{provider}}. Inicia sesión con {{provider}}.",
+    "emailAlreadyRegistered": "Ese correo ya está registrado. Inicia sesión."
   },
   "profileSetup": {
     "title": "Completa tu perfil",
@@ -46,7 +48,91 @@
     "continue": "Continuar",
     "validationMissing": "Ingresa un nombre y fecha de nacimiento (AAAA-MM-DD)",
     "needPhoto": "Añade al menos una foto",
-    "needLocation": "Configura tu ubicación"
+    "needLocation": "Configura tu ubicación",
+    "raceEthnicity": "Raza/etnia (opcional)",
+    "religion": "Religión (opcional)",
+    "race": {
+      "east_asian": "Asiático oriental",
+      "southeast_asian": "Asiático sudoriental",
+      "south_asian": "Asiático del sur",
+      "middle_eastern": "Medio Oriente",
+      "black": "Negro / afrodescendiente",
+      "white": "Blanco / caucásico",
+      "hispanic_latino": "Hispano / latino",
+      "mixed": "Mestizo",
+      "other": "Otro",
+      "prefer_not_to_say": "Prefiero no decirlo"
+    },
+    "religionOption": {
+      "none": "Sin religión",
+      "christian": "Cristiano",
+      "catholic": "Católico",
+      "buddhist": "Budista",
+      "muslim": "Musulmán",
+      "other": "Otra",
+      "prefer_not_to_say": "Prefiero no decirlo"
+    },
+    "legalFirstName": "Nombre legal",
+    "optionalSection": "Más sobre ti (opcional)",
+    "politicalView": "Opinión política (opcional)",
+    "politicalViewOption": {
+      "liberal": "Liberal",
+      "moderate": "Moderado",
+      "conservative": "Conservador",
+      "not_political": "No político",
+      "other": "Otro",
+      "prefer_not_to_say": "Prefiero no decirlo"
+    },
+    "heightCm": "Altura (cm)",
+    "occupation": "Ocupación",
+    "education": "Educación",
+    "hometown": "Ciudad natal",
+    "smoking": "Fuma",
+    "smokingOption": {
+      "never": "Nunca",
+      "sometimes": "A veces",
+      "regularly": "Frecuentemente",
+      "prefer_not_to_say": "Prefiero no decirlo"
+    },
+    "cannabis": "Cannabis",
+    "cannabisOption": {
+      "never": "Nunca",
+      "sometimes": "A veces",
+      "regularly": "Frecuentemente",
+      "prefer_not_to_say": "Prefiero no decirlo"
+    },
+    "exerciseFrequency": "Ejercicio",
+    "exerciseFrequencyOption": {
+      "never": "Nunca",
+      "sometimes": "A veces",
+      "often": "A menudo",
+      "daily": "A diario"
+    },
+    "relationshipGoal": "Buscando",
+    "relationshipGoalOption": {
+      "friends": "Solo amigos",
+      "long_term": "Relación a largo plazo",
+      "marriage": "Matrimonio",
+      "short_term": "Algo casual",
+      "not_sure": "Aún no lo sé"
+    },
+    "wantsKids": "Quiere hijos",
+    "wantsKidsOption": {
+      "yes": "Quiero hijos",
+      "no": "No quiero hijos",
+      "maybe": "No estoy seguro/a",
+      "have_want_more": "Tengo hijos, quiero más",
+      "have_dont_want_more": "Tengo hijos, no quiero más",
+      "prefer_not_to_say": "Prefiero no decirlo"
+    },
+    "hasKids": "Tiene hijos",
+    "hasKidsOption": {
+      "yes": "Sí",
+      "no": "No",
+      "prefer_not_to_say": "Prefiero no decirlo"
+    },
+    "interestsPlaceholder": "Intereses (separados por comas, ej: senderismo, cine, cocina)",
+    "languagesPlaceholder": "Idiomas que hablas (separados por comas, ej: coreano, inglés)"
   },
   "discover": {
     "loadError": "No se pudieron cargar los perfiles. Desliza hacia abajo para reintentar.",
@@ -167,5 +253,13 @@
     "alreadyVerified": "Ya verificado ({{kind}})",
     "codeSent": "Enviamos un código — revisa tu correo.",
     "verifiedSuccess": "¡Verificación completa!"
+  },
+  "premiumFilters": {
+    "title": "Filtros premium",
+    "raceLabel": "Filtrar por raza/etnia",
+    "religionLabel": "Filtrar por religión",
+    "save": "Guardar filtros",
+    "lockedBody": "Filtrar por raza/etnia o religión requiere una membresía premium activa.",
+    "upgrade": "Obtener membresía"
   }
 }

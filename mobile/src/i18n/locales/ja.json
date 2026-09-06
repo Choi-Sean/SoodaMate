@@ -29,7 +29,9 @@
     "passwordMinLength": "パスワードは8文字以上で入力してください",
     "passwordMismatch": "パスワードが一致しません",
     "signUp": "新規登録",
-    "haveAccount": "すでにアカウントをお持ちですか？ログイン"
+    "haveAccount": "すでにアカウントをお持ちですか？ログイン",
+    "alreadyRegisteredWithProvider": "すでに{{provider}}で登録済みです。{{provider}}でログインしてください。",
+    "emailAlreadyRegistered": "このメールアドレスはすでに登録されています。ログインしてください。"
   },
   "profileSetup": {
     "title": "プロフィールを完成させましょう",
@@ -46,7 +48,91 @@
     "continue": "続ける",
     "validationMissing": "ニックネームと生年月日 (YYYY-MM-DD) を入力してください",
     "needPhoto": "写真を1枚以上追加してください",
-    "needLocation": "位置情報を設定してください"
+    "needLocation": "位置情報を設定してください",
+    "raceEthnicity": "人種/民族（任意）",
+    "religion": "宗教（任意）",
+    "race": {
+      "east_asian": "東アジア系",
+      "southeast_asian": "東南アジア系",
+      "south_asian": "南アジア系",
+      "middle_eastern": "中東系",
+      "black": "黒人/アフリカ系",
+      "white": "白人",
+      "hispanic_latino": "ヒスパニック/ラテン系",
+      "mixed": "ミックス",
+      "other": "その他",
+      "prefer_not_to_say": "回答しない"
+    },
+    "religionOption": {
+      "none": "無宗教",
+      "christian": "キリスト教",
+      "catholic": "カトリック",
+      "buddhist": "仏教",
+      "muslim": "イスラム教",
+      "other": "その他",
+      "prefer_not_to_say": "回答しない"
+    },
+    "legalFirstName": "法的な名前（本名）",
+    "optionalSection": "その他の情報（任意）",
+    "politicalView": "政治的立場（任意）",
+    "politicalViewOption": {
+      "liberal": "リベラル",
+      "moderate": "中道",
+      "conservative": "保守",
+      "not_political": "政治に関心なし",
+      "other": "その他",
+      "prefer_not_to_say": "回答しない"
+    },
+    "heightCm": "身長（cm）",
+    "occupation": "職業",
+    "education": "学歴",
+    "hometown": "出身地",
+    "smoking": "喫煙",
+    "smokingOption": {
+      "never": "吸わない",
+      "sometimes": "時々",
+      "regularly": "よく吸う",
+      "prefer_not_to_say": "回答しない"
+    },
+    "cannabis": "大麻の使用",
+    "cannabisOption": {
+      "never": "使わない",
+      "sometimes": "時々",
+      "regularly": "よく使う",
+      "prefer_not_to_say": "回答しない"
+    },
+    "exerciseFrequency": "運動頻度",
+    "exerciseFrequencyOption": {
+      "never": "しない",
+      "sometimes": "時々",
+      "often": "よくする",
+      "daily": "毎日"
+    },
+    "relationshipGoal": "求めている関係",
+    "relationshipGoalOption": {
+      "friends": "友達だけ",
+      "long_term": "長期的な関係",
+      "marriage": "結婚",
+      "short_term": "気軽な関係",
+      "not_sure": "まだわからない"
+    },
+    "wantsKids": "子供が欲しいか",
+    "wantsKidsOption": {
+      "yes": "欲しい",
+      "no": "欲しくない",
+      "maybe": "わからない",
+      "have_want_more": "いる・もっと欲しい",
+      "have_dont_want_more": "いる・もう欲しくない",
+      "prefer_not_to_say": "回答しない"
+    },
+    "hasKids": "子供の有無",
+    "hasKidsOption": {
+      "yes": "いる",
+      "no": "いない",
+      "prefer_not_to_say": "回答しない"
+    },
+    "interestsPlaceholder": "興味・関心（カンマ区切り、例：登山、映画、料理）",
+    "languagesPlaceholder": "話せる言語（カンマ区切り、例：韓国語、英語）"
   },
   "discover": {
     "loadError": "プロフィールを読み込めませんでした。下に引っ張って再試行してください。",
@@ -167,5 +253,13 @@
     "alreadyVerified": "認証済み（{{kind}}）",
     "codeSent": "認証コードを送信しました。メールをご確認ください。",
     "verifiedSuccess": "認証が完了しました！"
+  },
+  "premiumFilters": {
+    "title": "プレミアムフィルター",
+    "raceLabel": "人種/民族で絞り込む",
+    "religionLabel": "宗教で絞り込む",
+    "save": "フィルターを保存",
+    "lockedBody": "人種・民族や宗教での絞り込みには有効なプレミアム会員資格が必要です。",
+    "upgrade": "会員になる"
   }
 }

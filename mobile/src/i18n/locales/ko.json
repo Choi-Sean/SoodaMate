@@ -29,7 +29,9 @@
     "passwordMinLength": "비밀번호는 8자 이상이어야 해요",
     "passwordMismatch": "비밀번호가 일치하지 않아요",
     "signUp": "회원가입",
-    "haveAccount": "이미 계정이 있으신가요? 로그인"
+    "haveAccount": "이미 계정이 있으신가요? 로그인",
+    "alreadyRegisteredWithProvider": "이미 {{provider}} 계정으로 가입되어 있어요. {{provider}}로 로그인해주세요.",
+    "emailAlreadyRegistered": "이미 가입된 이메일이에요. 로그인해주세요."
   },
   "profileSetup": {
     "title": "프로필을 완성해주세요",
@@ -46,7 +48,91 @@
     "continue": "계속하기",
     "validationMissing": "닉네임과 생년월일(YYYY-MM-DD)을 입력해주세요",
     "needPhoto": "사진을 최소 1장 추가해주세요",
-    "needLocation": "위치 정보를 설정해주세요"
+    "needLocation": "위치 정보를 설정해주세요",
+    "raceEthnicity": "인종/민족 (선택)",
+    "religion": "종교 (선택)",
+    "race": {
+      "east_asian": "동아시아",
+      "southeast_asian": "동남아시아",
+      "south_asian": "남아시아",
+      "middle_eastern": "중동",
+      "black": "흑인/아프리카계",
+      "white": "백인/코카시안",
+      "hispanic_latino": "히스패닉/라틴계",
+      "mixed": "혼혈",
+      "other": "기타",
+      "prefer_not_to_say": "선택 안 함"
+    },
+    "religionOption": {
+      "none": "무교",
+      "christian": "기독교",
+      "catholic": "천주교",
+      "buddhist": "불교",
+      "muslim": "이슬람교",
+      "other": "기타",
+      "prefer_not_to_say": "선택 안 함"
+    },
+    "legalFirstName": "법적 이름 (실명)",
+    "optionalSection": "추가 정보 (선택)",
+    "politicalView": "정치적 성향 (선택)",
+    "politicalViewOption": {
+      "liberal": "진보",
+      "moderate": "중도",
+      "conservative": "보수",
+      "not_political": "정치에 관심 없음",
+      "other": "기타",
+      "prefer_not_to_say": "선택 안 함"
+    },
+    "heightCm": "키 (cm)",
+    "occupation": "직업",
+    "education": "학력",
+    "hometown": "고향",
+    "smoking": "흡연 여부",
+    "smokingOption": {
+      "never": "안 함",
+      "sometimes": "가끔",
+      "regularly": "자주",
+      "prefer_not_to_say": "선택 안 함"
+    },
+    "cannabis": "대마초 사용 여부",
+    "cannabisOption": {
+      "never": "안 함",
+      "sometimes": "가끔",
+      "regularly": "자주",
+      "prefer_not_to_say": "선택 안 함"
+    },
+    "exerciseFrequency": "운동 빈도",
+    "exerciseFrequencyOption": {
+      "never": "안 함",
+      "sometimes": "가끔",
+      "often": "자주",
+      "daily": "매일"
+    },
+    "relationshipGoal": "찾는 관계",
+    "relationshipGoalOption": {
+      "friends": "그냥 친구",
+      "long_term": "롱텀 관계",
+      "marriage": "결혼/배우자",
+      "short_term": "가벼운 만남",
+      "not_sure": "아직 잘 모르겠음"
+    },
+    "wantsKids": "자녀 희망 여부",
+    "wantsKidsOption": {
+      "yes": "원해요",
+      "no": "원하지 않아요",
+      "maybe": "잘 모르겠어요",
+      "have_want_more": "있고, 더 원해요",
+      "have_dont_want_more": "있고, 더는 원하지 않아요",
+      "prefer_not_to_say": "선택 안 함"
+    },
+    "hasKids": "자녀 유무",
+    "hasKidsOption": {
+      "yes": "있어요",
+      "no": "없어요",
+      "prefer_not_to_say": "선택 안 함"
+    },
+    "interestsPlaceholder": "관심사 (쉼표로 구분, 예: 등산, 영화, 요리)",
+    "languagesPlaceholder": "구사 언어 (쉼표로 구분, 예: 한국어, 영어)"
   },
   "discover": {
     "loadError": "프로필을 불러오지 못했어요. 아래로 당겨서 다시 시도하세요.",
@@ -167,5 +253,13 @@
     "alreadyVerified": "이미 인증되었어요 ({{kind}})",
     "codeSent": "인증 코드를 보냈어요. 이메일을 확인해주세요.",
     "verifiedSuccess": "인증이 완료됐어요!"
+  },
+  "premiumFilters": {
+    "title": "프리미엄 필터",
+    "raceLabel": "인종/민족 필터",
+    "religionLabel": "종교 필터",
+    "save": "필터 저장",
+    "lockedBody": "인종·종교로 상대를 필터링하려면 프리미엄 멤버십이 필요해요.",
+    "upgrade": "멤버십 구매하기"
   }
 }

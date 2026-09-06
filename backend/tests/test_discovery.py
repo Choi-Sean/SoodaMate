@@ -91,6 +91,7 @@ async def test_distance_filter_excludes_far_away_candidate(client):
         headers=viewer_headers,
         json={
             "display_name": "Test User",
+            "legal_first_name": "Test User",
             "birth_date": "1999-01-01",
             "gender": "male",
             "interested_in": "female",

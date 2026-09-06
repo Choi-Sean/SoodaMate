@@ -32,6 +32,14 @@ PRODUCTS: dict[str, dict] = {
         "credits": 1,
         "price_usd_cents": 399,
     },
+    "membership_30d": {
+        "name": "프리미엄 멤버십 (30일)",
+        "credit_kind": "membership",
+        # Days, not a credit count — reusing the "credits" key rather than
+        # adding a membership-only field to this ad-hoc catalog dict.
+        "credits": 30,
+        "price_usd_cents": 1999,
+    },
 }
 
 BOOST_DURATION_MINUTES = 30
@@ -113,7 +121,26 @@ async def handle_webhook_event(db: AsyncSession, payload: bytes, sig_header: str
         profile.superlike_credits += product["credits"]
     elif product["credit_kind"] == "boost":
         profile.boost_credits += product["credits"]
+    elif product["credit_kind"] == "membership":
+        now = datetime.now(timezone.utc)
+        current = profile.premium_until
+        if current is not None and current.tzinfo is None:
+            current = current.replace(tzinfo=timezone.utc)
+        # Stacks on top of remaining time rather than resetting it, so
+        # buying another pack before the current one expires doesn't waste
+        # the days still left.
+        base = current if current is not None and current > now else now
+        profile.premium_until = base + timedelta(days=product["credits"])
     await db.commit()
+
+
+def is_premium_member(profile: Profile) -> bool:
+    if profile.premium_until is None:
+        return False
+    premium_until = profile.premium_until
+    if premium_until.tzinfo is None:
+        premium_until = premium_until.replace(tzinfo=timezone.utc)
+    return premium_until > datetime.now(timezone.utc)
 
 
 async def activate_boost(db: AsyncSession, user_id: uuid.UUID) -> datetime:

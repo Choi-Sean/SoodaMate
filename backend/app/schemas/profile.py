@@ -1,7 +1,7 @@
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
 from app.config import settings
 
@@ -23,6 +23,7 @@ class PhotoOut(BaseModel):
 
 class ProfileUpdate(BaseModel):
     display_name: str = Field(min_length=1, max_length=50)
+    legal_first_name: str = Field(min_length=1, max_length=50)
     birth_date: date
     gender: str = Field(pattern="^(male|female|other)$")
     interested_in: str = Field(pattern="^(male|female|other|all)$")
@@ -32,6 +33,21 @@ class ProfileUpdate(BaseModel):
     min_age_pref: int = Field(default=18, ge=18, le=99)
     max_age_pref: int = Field(default=99, ge=18, le=99)
     max_distance_km: int = Field(default=50, ge=1, le=500)
+    race_ethnicity: str | None = Field(default=None, max_length=50)
+    religion: str | None = Field(default=None, max_length=50)
+    political_view: str | None = Field(default=None, max_length=50)
+    height_cm: int | None = Field(default=None, ge=50, le=272)
+    occupation: str | None = Field(default=None, max_length=100)
+    education: str | None = Field(default=None, max_length=100)
+    hometown: str | None = Field(default=None, max_length=100)
+    smoking: str | None = Field(default=None, max_length=30)
+    cannabis: str | None = Field(default=None, max_length=30)
+    exercise_frequency: str | None = Field(default=None, max_length=30)
+    relationship_goal: str | None = Field(default=None, max_length=30)
+    wants_kids: str | None = Field(default=None, max_length=30)
+    has_kids: str | None = Field(default=None, max_length=30)
+    interests: list[str] = Field(default_factory=list)
+    languages: list[str] = Field(default_factory=list)
 
 
 class ProfileOut(BaseModel):
@@ -39,6 +55,7 @@ class ProfileOut(BaseModel):
 
     user_id: uuid.UUID
     display_name: str
+    legal_first_name: str
     birth_date: date
     gender: str
     interested_in: str
@@ -57,8 +74,45 @@ class ProfileOut(BaseModel):
     travel_lat: float | None = None
     travel_lng: float | None = None
     travel_expires_at: datetime | None = None
+    race_ethnicity: str | None = None
+    religion: str | None = None
+    political_view: str | None = None
+    premium_until: datetime | None = None
+    race_filter: list[str] = []
+    religion_filter: list[str] = []
+    height_cm: int | None = None
+    occupation: str | None = None
+    education: str | None = None
+    hometown: str | None = None
+    smoking: str | None = None
+    cannabis: str | None = None
+    exercise_frequency: str | None = None
+    relationship_goal: str | None = None
+    wants_kids: str | None = None
+    has_kids: str | None = None
+    interests: list[str] = []
+    languages: list[str] = []
     updated_at: datetime
     photos: list[PhotoOut] = []
+
+    @field_validator("race_filter", "religion_filter", "interests", "languages", mode="before")
+    @classmethod
+    def _split_comma_list(cls, value: object) -> list[str]:
+        # Stored as a single comma-separated column (see models/profile.py);
+        # the API surface is a plain list so mobile doesn't need to know that.
+        if value is None or isinstance(value, list):
+            return value or []
+        return [v for v in str(value).split(",") if v]
+
+    @computed_field
+    @property
+    def is_premium_member(self) -> bool:
+        if self.premium_until is None:
+            return False
+        premium_until = self.premium_until
+        if premium_until.tzinfo is None:
+            premium_until = premium_until.replace(tzinfo=timezone.utc)
+        return premium_until > datetime.now(timezone.utc)
 
 
 class PresignRequest(BaseModel):
@@ -78,6 +132,14 @@ class PhotoConfirmRequest(BaseModel):
 
 class IncognitoUpdate(BaseModel):
     is_incognito: bool
+
+
+class PremiumFilterUpdate(BaseModel):
+    # Premium-gated (402 if the caller isn't an active premium member — see
+    # routers/profiles.py::set_premium_filters). Empty/omitted list clears
+    # the filter, showing everyone again regardless of this field.
+    race_filter: list[str] = Field(default_factory=list)
+    religion_filter: list[str] = Field(default_factory=list)
 
 
 class TravelModeRequest(BaseModel):

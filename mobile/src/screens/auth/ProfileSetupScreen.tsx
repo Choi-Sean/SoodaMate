@@ -5,12 +5,31 @@ import { useTranslation } from "react-i18next";
 
 import { confirmPhoto, updateMyProfile } from "../../api/profiles";
 import { presignUpload, uploadToPresignedUrl } from "../../api/uploads";
+import ChipSelect from "../../components/ChipSelect";
 import LocationPicker from "../../components/LocationPicker";
+import {
+  CANNABIS_KEYS,
+  EXERCISE_FREQUENCY_KEYS,
+  HAS_KIDS_KEYS,
+  POLITICAL_VIEW_KEYS,
+  RACE_ETHNICITY_KEYS,
+  RELATIONSHIP_GOAL_KEYS,
+  RELIGION_KEYS,
+  SMOKING_KEYS,
+  WANTS_KIDS_KEYS,
+} from "../../constants/demographicOptions";
 import type { Gender, InterestedIn } from "../../types";
 import { colors } from "../../theme";
 
 const GENDERS: Gender[] = ["male", "female", "other"];
 const INTERESTS: InterestedIn[] = ["male", "female", "other", "all"];
+
+function parseCommaList(value: string): string[] {
+  return value
+    .split(",")
+    .map((v) => v.trim())
+    .filter((v) => v.length > 0);
+}
 
 interface Props {
   onComplete: () => void;
@@ -19,12 +38,31 @@ interface Props {
 export default function ProfileSetupScreen({ onComplete }: Props) {
   const { t } = useTranslation();
   const [displayName, setDisplayName] = useState("");
+  const [legalFirstName, setLegalFirstName] = useState("");
   const [birthDate, setBirthDate] = useState(""); // YYYY-MM-DD
   const [gender, setGender] = useState<Gender>("male");
   const [interestedIn, setInterestedIn] = useState<InterestedIn>("female");
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [locationLat, setLocationLat] = useState<number | null>(null);
   const [locationLng, setLocationLng] = useState<number | null>(null);
+
+  // Optional extended profile fields.
+  const [raceEthnicity, setRaceEthnicity] = useState<string | null>(null);
+  const [religion, setReligion] = useState<string | null>(null);
+  const [politicalView, setPoliticalView] = useState<string | null>(null);
+  const [heightCm, setHeightCm] = useState("");
+  const [occupation, setOccupation] = useState("");
+  const [education, setEducation] = useState("");
+  const [hometown, setHometown] = useState("");
+  const [smoking, setSmoking] = useState<string | null>(null);
+  const [cannabis, setCannabis] = useState<string | null>(null);
+  const [exerciseFrequency, setExerciseFrequency] = useState<string | null>(null);
+  const [relationshipGoal, setRelationshipGoal] = useState<string | null>(null);
+  const [wantsKids, setWantsKids] = useState<string | null>(null);
+  const [hasKids, setHasKids] = useState<string | null>(null);
+  const [interestsText, setInterestsText] = useState("");
+  const [languagesText, setLanguagesText] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +84,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   }
 
   async function handleSubmit() {
-    if (!displayName.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+    if (!displayName.trim() || !legalFirstName.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
       setError(t("profileSetup.validationMissing"));
       return;
     }
@@ -64,11 +102,27 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
     try {
       await updateMyProfile({
         display_name: displayName.trim(),
+        legal_first_name: legalFirstName.trim(),
         birth_date: birthDate,
         gender,
         interested_in: interestedIn,
         location_lat: locationLat,
         location_lng: locationLng,
+        race_ethnicity: raceEthnicity,
+        religion,
+        political_view: politicalView,
+        height_cm: heightCm ? Number(heightCm) : null,
+        occupation: occupation.trim() || null,
+        education: education.trim() || null,
+        hometown: hometown.trim() || null,
+        smoking,
+        cannabis,
+        exercise_frequency: exerciseFrequency,
+        relationship_goal: relationshipGoal,
+        wants_kids: wantsKids,
+        has_kids: hasKids,
+        interests: parseCommaList(interestsText),
+        languages: parseCommaList(languagesText),
       });
 
       const contentType = "image/jpeg";
@@ -103,6 +157,12 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         placeholder={t("profileSetup.displayName")}
         value={displayName}
         onChangeText={setDisplayName}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder={t("profileSetup.legalFirstName")}
+        value={legalFirstName}
+        onChangeText={setLegalFirstName}
       />
       <TextInput
         style={styles.input}
@@ -146,6 +206,119 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         }}
       />
 
+      <Text style={styles.sectionTitle}>{t("profileSetup.optionalSection")}</Text>
+
+      <ChipSelect
+        label={t("profileSetup.raceEthnicity")}
+        options={RACE_ETHNICITY_KEYS}
+        translatePrefix="profileSetup.race"
+        value={raceEthnicity}
+        onChange={setRaceEthnicity}
+      />
+
+      <ChipSelect
+        label={t("profileSetup.religion")}
+        options={RELIGION_KEYS}
+        translatePrefix="profileSetup.religionOption"
+        value={religion}
+        onChange={setReligion}
+      />
+
+      <ChipSelect
+        label={t("profileSetup.politicalView")}
+        options={POLITICAL_VIEW_KEYS}
+        translatePrefix="profileSetup.politicalViewOption"
+        value={politicalView}
+        onChange={setPoliticalView}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder={t("profileSetup.heightCm")}
+        keyboardType="number-pad"
+        value={heightCm}
+        onChangeText={setHeightCm}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder={t("profileSetup.occupation")}
+        value={occupation}
+        onChangeText={setOccupation}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder={t("profileSetup.education")}
+        value={education}
+        onChangeText={setEducation}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder={t("profileSetup.hometown")}
+        value={hometown}
+        onChangeText={setHometown}
+      />
+
+      <ChipSelect
+        label={t("profileSetup.smoking")}
+        options={SMOKING_KEYS}
+        translatePrefix="profileSetup.smokingOption"
+        value={smoking}
+        onChange={setSmoking}
+      />
+
+      <ChipSelect
+        label={t("profileSetup.cannabis")}
+        options={CANNABIS_KEYS}
+        translatePrefix="profileSetup.cannabisOption"
+        value={cannabis}
+        onChange={setCannabis}
+      />
+
+      <ChipSelect
+        label={t("profileSetup.exerciseFrequency")}
+        options={EXERCISE_FREQUENCY_KEYS}
+        translatePrefix="profileSetup.exerciseFrequencyOption"
+        value={exerciseFrequency}
+        onChange={setExerciseFrequency}
+      />
+
+      <ChipSelect
+        label={t("profileSetup.relationshipGoal")}
+        options={RELATIONSHIP_GOAL_KEYS}
+        translatePrefix="profileSetup.relationshipGoalOption"
+        value={relationshipGoal}
+        onChange={setRelationshipGoal}
+      />
+
+      <ChipSelect
+        label={t("profileSetup.wantsKids")}
+        options={WANTS_KIDS_KEYS}
+        translatePrefix="profileSetup.wantsKidsOption"
+        value={wantsKids}
+        onChange={setWantsKids}
+      />
+
+      <ChipSelect
+        label={t("profileSetup.hasKids")}
+        options={HAS_KIDS_KEYS}
+        translatePrefix="profileSetup.hasKidsOption"
+        value={hasKids}
+        onChange={setHasKids}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder={t("profileSetup.interestsPlaceholder")}
+        value={interestsText}
+        onChangeText={setInterestsText}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder={t("profileSetup.languagesPlaceholder")}
+        value={languagesText}
+        onChangeText={setLanguagesText}
+      />
+
       <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={loading}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>{t("profileSetup.continue")}</Text>}
       </Pressable>
@@ -156,6 +329,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
 const styles = StyleSheet.create({
   container: { padding: 24, backgroundColor: colors.white, flexGrow: 1 },
   title: { fontSize: 24, fontWeight: "700", marginBottom: 24, marginTop: 24, color: colors.navy },
+  sectionTitle: { fontSize: 16, fontWeight: "700", color: colors.navy, marginTop: 24, marginBottom: 4 },
   error: { color: colors.danger, marginBottom: 12 },
   photoPicker: {
     width: 140,

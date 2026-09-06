@@ -8,6 +8,7 @@ from app.database import engine
 from app.models.interaction import Block, Swipe
 from app.models.profile import Photo, Profile
 from app.models.user import User
+from app.services.payment_service import is_premium_member
 
 # MSSQL has no RANDOM() (T-SQL's idiom is ORDER BY NEWID()) — resolved once
 # from the live engine's dialect rather than per-request.
@@ -87,6 +88,17 @@ async def get_candidates(
     gender_filters = [Profile.gender == viewer_profile.interested_in] if viewer_profile.interested_in != "all" else []
     mutual_interest = or_(Profile.interested_in == "all", Profile.interested_in == viewer_profile.gender)
 
+    # Free tier only ever gets the age/distance filters above — race/religion
+    # filtering is gated here (read time), not just when the filter is set
+    # (routers/profiles.py::set_premium_filters), so a lapsed membership
+    # can't keep benefiting from filters configured while it was active.
+    premium_filters = []
+    if is_premium_member(viewer_profile):
+        if viewer_profile.race_filter:
+            premium_filters.append(Profile.race_ethnicity.in_(viewer_profile.race_filter.split(",")))
+        if viewer_profile.religion_filter:
+            premium_filters.append(Profile.religion.in_(viewer_profile.religion_filter.split(",")))
+
     # Profile has no ORM relationship to Photo, so photos are fetched with a
     # separate query in the router layer (see routers/discovery.py).
     stmt = (
@@ -105,6 +117,7 @@ async def get_candidates(
             Profile.birth_date <= max_birth,
             mutual_interest,
             *gender_filters,
+            *premium_filters,
             ~already_swiped,
             ~blocked_either_direction,
         )

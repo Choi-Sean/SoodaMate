@@ -12,10 +12,12 @@ from app.schemas.profile import (
     IncognitoUpdate,
     PhotoConfirmRequest,
     PhotoOut,
+    PremiumFilterUpdate,
     ProfileOut,
     ProfileUpdate,
     TravelModeRequest,
 )
+from app.services.payment_service import is_premium_member
 
 router = APIRouter(prefix="/profiles", tags=["profiles"])
 
@@ -49,11 +51,17 @@ async def update_my_profile(
     photo_count = await db.scalar(select(Photo).where(Photo.user_id == user.id).limit(1))
     is_complete = photo_count is not None
 
+    # interests/languages are lists on the wire but a single comma-separated
+    # column in the DB (same convention as race_filter/religion_filter).
+    profile_data = body.model_dump()
+    profile_data["interests"] = ",".join(body.interests) if body.interests else None
+    profile_data["languages"] = ",".join(body.languages) if body.languages else None
+
     if profile is None:
-        profile = Profile(user_id=user.id, **body.model_dump(), is_profile_complete=is_complete)
+        profile = Profile(user_id=user.id, **profile_data, is_profile_complete=is_complete)
         db.add(profile)
     else:
-        for field, value in body.model_dump().items():
+        for field, value in profile_data.items():
             setattr(profile, field, value)
         profile.is_profile_complete = is_complete
 
@@ -117,6 +125,27 @@ async def set_incognito(
     # updated_at is server-computed (onupdate=func.now()) and left unloaded
     # after commit — refresh so ProfileOut's response model doesn't trigger
     # a lazy load outside of an await (see update_my_profile's same fix).
+    await db.refresh(profile)
+    return await _load_profile_out(db, user.id)
+
+
+@router.put("/me/premium-filters", response_model=ProfileOut)
+async def set_premium_filters(
+    body: PremiumFilterUpdate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> ProfileOut:
+    profile = await db.get(Profile, user.id)
+    if profile is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "complete your profile first")
+    if not is_premium_member(profile):
+        raise HTTPException(
+            status.HTTP_402_PAYMENT_REQUIRED,
+            "an active premium membership is required to filter by race/ethnicity or religion",
+        )
+    profile.race_filter = ",".join(body.race_filter) if body.race_filter else None
+    profile.religion_filter = ",".join(body.religion_filter) if body.religion_filter else None
+    await db.commit()
     await db.refresh(profile)
     return await _load_profile_out(db, user.id)
 

@@ -3,6 +3,7 @@ import type { Gender, InterestedIn, Profile } from "../types";
 
 export interface ProfileUpdateInput {
   display_name: string;
+  legal_first_name: string;
   birth_date: string; // YYYY-MM-DD
   gender: Gender;
   interested_in: InterestedIn;
@@ -12,6 +13,21 @@ export interface ProfileUpdateInput {
   min_age_pref?: number;
   max_age_pref?: number;
   max_distance_km?: number;
+  race_ethnicity?: string | null;
+  religion?: string | null;
+  political_view?: string | null;
+  height_cm?: number | null;
+  occupation?: string | null;
+  education?: string | null;
+  hometown?: string | null;
+  smoking?: string | null;
+  cannabis?: string | null;
+  exercise_frequency?: string | null;
+  relationship_goal?: string | null;
+  wants_kids?: string | null;
+  has_kids?: string | null;
+  interests?: string[];
+  languages?: string[];
 }
 
 export async function getMyProfile(): Promise<Profile> {
@@ -52,5 +68,15 @@ export async function setTravelMode(lat: number, lng: number, durationHours = 24
 
 export async function clearTravelMode(): Promise<Profile> {
   const resp = await apiClient.delete<Profile>("/profiles/me/travel");
+  return resp.data;
+}
+
+/** 402s if the caller isn't an active premium member — see
+ * routers/profiles.py::set_premium_filters. */
+export async function setPremiumFilters(raceFilter: string[], religionFilter: string[]): Promise<Profile> {
+  const resp = await apiClient.put<Profile>("/profiles/me/premium-filters", {
+    race_filter: raceFilter,
+    religion_filter: religionFilter,
+  });
   return resp.data;
 }

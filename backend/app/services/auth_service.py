@@ -21,7 +21,17 @@ def issue_tokens(user_id: uuid.UUID) -> TokenResponse:
 async def signup_with_email(db: AsyncSession, email: str, password: str) -> TokenResponse:
     existing = await db.scalar(select(User).where(User.email == email))
     if existing is not None:
-        raise HTTPException(status.HTTP_409_CONFLICT, "email already registered")
+        # Tell the client *which* provider(s) this email is already linked
+        # to (e.g. signed up via Google first) so it can show "log in with
+        # Google" instead of a generic "already registered" dead end.
+        linked = (
+            await db.execute(select(AuthProvider.provider).where(AuthProvider.user_id == existing.id))
+        ).scalars().all()
+        oauth_providers = [p for p in linked if p != "email"]
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            {"message": "email already registered", "providers": oauth_providers or ["email"]},
+        )
 
     user = User(email=email, password_hash=hash_password(password))
     db.add(user)
