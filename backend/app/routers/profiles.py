@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -9,6 +10,7 @@ from app.deps import get_current_user
 from app.models.profile import Photo, Profile
 from app.models.user import User
 from app.schemas.profile import (
+    AgeFilterUpdate,
     IncognitoUpdate,
     PhotoConfirmRequest,
     PhotoOut,
@@ -147,10 +149,52 @@ async def set_premium_filters(
     if not is_premium_member(profile):
         raise HTTPException(
             status.HTTP_402_PAYMENT_REQUIRED,
-            "an active premium membership is required to filter by race/ethnicity or religion",
+            "an active premium membership is required to filter by these fields",
         )
     profile.race_filter = ",".join(body.race_filter) if body.race_filter else None
     profile.religion_filter = ",".join(body.religion_filter) if body.religion_filter else None
+
+    # Everything else lives in one JSON blob (Profile.premium_filters_json —
+    # see that column's comment). Full-replace semantics, same as
+    # race_filter/religion_filter above: the client always sends its whole
+    # current filter selection, and an empty list/null bound here clears
+    # that one dimension (omitted from the stored JSON) rather than leaving
+    # a stale value behind.
+    extra = {
+        "political_view_filter": body.political_view_filter,
+        "exercise_frequency_filter": body.exercise_frequency_filter,
+        "smoking_filter": body.smoking_filter,
+        "cannabis_filter": body.cannabis_filter,
+        "relationship_goal_filter": body.relationship_goal_filter,
+        "wants_kids_filter": body.wants_kids_filter,
+        "has_kids_filter": body.has_kids_filter,
+    }
+    extra = {k: v for k, v in extra.items() if v}
+    if body.height_min is not None:
+        extra["height_min"] = body.height_min
+    if body.height_max is not None:
+        extra["height_max"] = body.height_max
+    profile.premium_filters_json = json.dumps(extra) if extra else None
+
+    await db.commit()
+    await db.refresh(profile)
+    return await _load_profile_out(db, user.id)
+
+
+@router.put("/me/age-filter", response_model=ProfileOut)
+async def set_age_filter(
+    body: AgeFilterUpdate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> ProfileOut:
+    """Free for everyone, unlike set_premium_filters above — age range has
+    always been an unpaywalled part of discovery (discovery_service.py
+    applies min_age_pref/max_age_pref unconditionally)."""
+    profile = await db.get(Profile, user.id)
+    if profile is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "complete your profile first")
+    profile.min_age_pref = body.min_age_pref
+    profile.max_age_pref = body.max_age_pref
     await db.commit()
     await db.refresh(profile)
     return await _load_profile_out(db, user.id)

@@ -71,12 +71,35 @@ export async function clearTravelMode(): Promise<Profile> {
   return resp.data;
 }
 
-/** 402s if the caller isn't an active premium member — see
- * routers/profiles.py::set_premium_filters. */
-export async function setPremiumFilters(raceFilter: string[], religionFilter: string[]): Promise<Profile> {
-  const resp = await apiClient.put<Profile>("/profiles/me/premium-filters", {
-    race_filter: raceFilter,
-    religion_filter: religionFilter,
+export interface PremiumFilterInput {
+  race_filter?: string[];
+  religion_filter?: string[];
+  political_view_filter?: string[];
+  exercise_frequency_filter?: string[];
+  smoking_filter?: string[];
+  cannabis_filter?: string[];
+  relationship_goal_filter?: string[];
+  wants_kids_filter?: string[];
+  has_kids_filter?: string[];
+  height_min?: number | null;
+  height_max?: number | null;
+}
+
+/** Full replace, not a merge — 402s if the caller isn't an active premium
+ * member (see routers/profiles.py::set_premium_filters). Any field left
+ * out of `input` is sent as empty/null and clears that dimension, so
+ * callers that only mean to change one thing must spread the rest of the
+ * profile's current premium_filters in too (see EditProfileScreen). */
+export async function setPremiumFilters(input: PremiumFilterInput): Promise<Profile> {
+  const resp = await apiClient.put<Profile>("/profiles/me/premium-filters", input);
+  return resp.data;
+}
+
+/** Free for everyone, unlike setPremiumFilters above. */
+export async function setAgeFilter(minAgePref: number, maxAgePref: number): Promise<Profile> {
+  const resp = await apiClient.put<Profile>("/profiles/me/age-filter", {
+    min_age_pref: minAgePref,
+    max_age_pref: maxAgePref,
   });
   return resp.data;
 }

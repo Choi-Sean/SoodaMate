@@ -160,7 +160,15 @@ export default function EditProfileScreen({ navigation }: Props) {
   async function handleSaveFilters() {
     setSavingFilters(true);
     try {
-      await setPremiumFilters(raceFilter, religionFilter);
+      // Round-trips the other premium filter dimensions unchanged (set via
+      // the Swipe tab's filter modal) — set_premium_filters is a full
+      // replace, so sending only race/religion here would silently clear
+      // whatever was set there.
+      await setPremiumFilters({
+        race_filter: raceFilter,
+        religion_filter: religionFilter,
+        ...(profile?.premium_filters ?? {}),
+      });
       await queryClient.invalidateQueries({ queryKey: ["myProfile"] });
     } catch (e: any) {
       Alert.alert(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));

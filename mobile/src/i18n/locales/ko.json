@@ -277,5 +277,24 @@
     "title": "좋아요",
     "empty": "아직 좋아요가 없어요 — 프로필을 완성해서 눈에 띄어보세요!",
     "loadError": "좋아요 목록을 불러오지 못했어요. 당겨서 새로고침하세요."
+  },
+  "profileDetail": {
+    "bio": "소개",
+    "about": "정보",
+    "lookingFor": "찾고 있는 것",
+    "interests": "관심사",
+    "languages": "구사 언어",
+    "heightValue": "{{cm}}cm"
+  },
+  "filters": {
+    "title": "필터",
+    "minAge": "최소 나이",
+    "maxAge": "최대 나이",
+    "minHeight": "최소 키",
+    "maxHeight": "최대 키",
+    "premiumLockedTitle": "더 많은 필터 잠금 해제",
+    "premiumLockedBody": "무료 회원은 나이로만 필터링할 수 있어요. 프리미엄으로 업그레이드하면 키, 종교 등 더 많은 조건으로 필터링할 수 있습니다.",
+    "upgrade": "프리미엄 업그레이드",
+    "apply": "필터 적용"
   }
 }

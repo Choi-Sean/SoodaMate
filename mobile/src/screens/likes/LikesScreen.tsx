@@ -128,7 +128,7 @@ export default function LikesScreen() {
           {selected && (
             <>
               <View style={styles.detailCardWrap}>
-                <ProfileCard candidate={selected} />
+                <ProfileCard key={selected.user_id} candidate={selected} />
               </View>
               <ActionButtons
                 onPass={() => handleAction(selected, "pass")}

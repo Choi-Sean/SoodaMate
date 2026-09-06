@@ -157,3 +157,85 @@ async def test_expired_membership_stops_applying_filter(client, monkeypatch):
     # Membership lapsed, so the (still-stored) race_filter must no longer
     # exclude anyone — the free tier only ever gets age/distance filtering.
     assert non_matching_id in ids
+
+
+@pytest.mark.asyncio
+async def test_free_user_can_set_age_filter(client):
+    _, headers = await create_user_with_profile(client, "free_age@example.com")
+    resp = await client.put(
+        "/profiles/me/age-filter", headers=headers, json={"min_age_pref": 25, "max_age_pref": 35}
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["min_age_pref"] == 25
+    assert body["max_age_pref"] == 35
+
+
+@pytest.mark.asyncio
+async def test_height_and_exercise_filter_exclude_non_matching_candidates(client, monkeypatch):
+    viewer_id, viewer_headers = await create_user_with_profile(
+        client, "viewer_height@example.com", gender="male", interested_in="female"
+    )
+    await _grant_membership(client, monkeypatch, viewer_id, event_id="evt_height_1")
+    filter_resp = await client.put(
+        "/profiles/me/premium-filters",
+        headers=viewer_headers,
+        json={"height_min": 160, "height_max": 170, "exercise_frequency_filter": ["daily"]},
+    )
+    assert filter_resp.status_code == 200
+    assert filter_resp.json()["premium_filters"]["height_min"] == 160
+    assert filter_resp.json()["premium_filters"]["exercise_frequency_filter"] == ["daily"]
+
+    matching_id, _ = await create_user_with_profile(
+        client,
+        "match_height@example.com",
+        gender="female",
+        interested_in="male",
+        height_cm=165,
+        exercise_frequency="daily",
+    )
+    wrong_height_id, _ = await create_user_with_profile(
+        client,
+        "nomatch_height@example.com",
+        gender="female",
+        interested_in="male",
+        height_cm=180,
+        exercise_frequency="daily",
+    )
+    wrong_exercise_id, _ = await create_user_with_profile(
+        client,
+        "nomatch_exercise@example.com",
+        gender="female",
+        interested_in="male",
+        height_cm=165,
+        exercise_frequency="never",
+    )
+
+    resp = await client.get("/discovery/candidates", headers=viewer_headers)
+    ids = [c["user_id"] for c in resp.json()]
+    assert matching_id in ids
+    assert wrong_height_id not in ids
+    assert wrong_exercise_id not in ids
+
+
+@pytest.mark.asyncio
+async def test_premium_filters_full_replace_clears_omitted_dimensions(client, monkeypatch):
+    viewer_id, viewer_headers = await create_user_with_profile(
+        client, "viewer_replace@example.com", gender="male", interested_in="female"
+    )
+    await _grant_membership(client, monkeypatch, viewer_id, event_id="evt_replace_1")
+    await client.put(
+        "/profiles/me/premium-filters",
+        headers=viewer_headers,
+        json={"exercise_frequency_filter": ["daily"], "height_min": 150},
+    )
+    # A second request that only sets a different dimension is a full
+    # replace, not a merge — the earlier exercise/height filters are gone.
+    resp = await client.put(
+        "/profiles/me/premium-filters", headers=viewer_headers, json={"smoking_filter": ["never"]}
+    )
+    assert resp.status_code == 200
+    filters = resp.json()["premium_filters"]
+    assert filters["smoking_filter"] == ["never"]
+    assert filters["exercise_frequency_filter"] == []
+    assert filters["height_min"] is None

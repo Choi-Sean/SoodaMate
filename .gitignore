@@ -37,6 +37,11 @@ keystore/*.keystore
 mobile/secrets/
 *.p8
 
+# Local design-reference screenshots (real photos of real people from other
+# apps, pasted in for UI inspiration — not project assets, never committed)
+/bumble/
+/hinge/
+
 # OS
 .DS_Store
 Thumbs.db

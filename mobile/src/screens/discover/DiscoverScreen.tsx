@@ -88,7 +88,7 @@ export default function DiscoverScreen() {
         <View style={styles.detailContainer}>
           {selected && (
             <View style={styles.detailCardWrap}>
-              <ProfileCard candidate={selected} />
+              <ProfileCard key={selected.user_id} candidate={selected} />
             </View>
           )}
           <Pressable style={styles.closeButton} onPress={() => setSelected(null)}>

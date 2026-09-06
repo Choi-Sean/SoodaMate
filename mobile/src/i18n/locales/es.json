@@ -277,5 +277,24 @@
     "title": "Me gusta",
     "empty": "Aún no hay likes — ¡completa tu perfil para destacar!",
     "loadError": "No se pudieron cargar los likes. Desliza para reintentar."
+  },
+  "profileDetail": {
+    "bio": "Sobre mí",
+    "about": "Información",
+    "lookingFor": "Busco",
+    "interests": "Intereses",
+    "languages": "Idiomas",
+    "heightValue": "{{cm}} cm"
+  },
+  "filters": {
+    "title": "Filtros",
+    "minAge": "Edad mínima",
+    "maxAge": "Edad máxima",
+    "minHeight": "Altura mínima",
+    "maxHeight": "Altura máxima",
+    "premiumLockedTitle": "Desbloquea más filtros",
+    "premiumLockedBody": "Los miembros gratuitos solo pueden filtrar por edad. Hazte Premium para filtrar por altura, religión y más.",
+    "upgrade": "Actualizar a Premium",
+    "apply": "Aplicar filtros"
   }
 }

@@ -277,5 +277,24 @@
     "title": "Likes",
     "empty": "No likes yet — complete your profile to get noticed!",
     "loadError": "Couldn't load likes. Pull to retry."
+  },
+  "profileDetail": {
+    "bio": "About me",
+    "about": "About",
+    "lookingFor": "Looking for",
+    "interests": "Interests",
+    "languages": "Languages",
+    "heightValue": "{{cm}} cm"
+  },
+  "filters": {
+    "title": "Filters",
+    "minAge": "Min age",
+    "maxAge": "Max age",
+    "minHeight": "Min height",
+    "maxHeight": "Max height",
+    "premiumLockedTitle": "Unlock more filters",
+    "premiumLockedBody": "Free members can filter by age. Go Premium to filter by height, religion, and more.",
+    "upgrade": "Upgrade to Premium",
+    "apply": "Apply filters"
   }
 }

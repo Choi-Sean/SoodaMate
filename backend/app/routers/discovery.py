@@ -19,6 +19,10 @@ def _age(birth_date: date) -> int:
     return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
 
 
+def _comma_list(value: str | None) -> list[str]:
+    return [v for v in (value or "").split(",") if v]
+
+
 async def _to_candidates_out(
     db: AsyncSession, results: list[tuple[Profile, float | None, bool]]
 ) -> list[CandidateOut]:
@@ -28,10 +32,27 @@ async def _to_candidates_out(
             user_id=profile.user_id,
             display_name=profile.display_name,
             age=_age(profile.birth_date),
+            gender=profile.gender,
             bio=profile.bio,
             photos=[PhotoOut.model_validate(p) for p in photos_by_user.get(profile.user_id, [])],
             distance_km=distance_km,
             superliked_me=superliked_me,
+            height_cm=profile.height_cm,
+            occupation=profile.occupation,
+            education=profile.education,
+            hometown=profile.hometown,
+            race_ethnicity=profile.race_ethnicity,
+            religion=profile.religion,
+            political_view=profile.political_view,
+            smoking=profile.smoking,
+            cannabis=profile.cannabis,
+            exercise_frequency=profile.exercise_frequency,
+            relationship_goal=profile.relationship_goal,
+            wants_kids=profile.wants_kids,
+            has_kids=profile.has_kids,
+            interests=_comma_list(profile.interests),
+            languages=_comma_list(profile.languages),
+            verified_badge=profile.verified_badge,
         )
         for profile, distance_km, superliked_me in results
     ]

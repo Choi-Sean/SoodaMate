@@ -1,3 +1,4 @@
+import json
 import uuid
 from datetime import date, datetime, timezone
 
@@ -18,6 +19,23 @@ class PhotoOut(BaseModel):
     @property
     def url(self) -> str:
         return build_public_url(self.gcs_object_path)
+
+
+class PremiumFilters(BaseModel):
+    """The premium_filters_json-backed dimensions only — race_filter/
+    religion_filter stay top-level ProfileOut fields as before (pre-existing,
+    unchanged) rather than being folded in here, to avoid disturbing
+    anything already reading them there."""
+
+    political_view_filter: list[str] = []
+    exercise_frequency_filter: list[str] = []
+    smoking_filter: list[str] = []
+    cannabis_filter: list[str] = []
+    relationship_goal_filter: list[str] = []
+    wants_kids_filter: list[str] = []
+    has_kids_filter: list[str] = []
+    height_min: int | None = None
+    height_max: int | None = None
 
 
 class ProfileUpdate(BaseModel):
@@ -79,6 +97,10 @@ class ProfileOut(BaseModel):
     premium_until: datetime | None = None
     race_filter: list[str] = []
     religion_filter: list[str] = []
+    # Raw storage column, never serialized directly — see the premium_filters
+    # computed_field below, which parses this into the typed shape the
+    # client actually consumes.
+    premium_filters_json: str | None = Field(default=None, exclude=True)
     height_cm: int | None = None
     occupation: str | None = None
     education: str | None = None
@@ -113,6 +135,18 @@ class ProfileOut(BaseModel):
             premium_until = premium_until.replace(tzinfo=timezone.utc)
         return premium_until > datetime.now(timezone.utc)
 
+    @computed_field
+    @property
+    def premium_filters(self) -> PremiumFilters:
+        if not self.premium_filters_json:
+            return PremiumFilters()
+        try:
+            return PremiumFilters(**json.loads(self.premium_filters_json))
+        except (ValueError, TypeError):
+            # Malformed stored JSON should never 500 a profile read — treat
+            # it the same as "no filters set" rather than crashing.
+            return PremiumFilters()
+
 
 class PresignRequest(BaseModel):
     # One video slot per profile (position convention enforced by the
@@ -137,10 +171,30 @@ class IncognitoUpdate(BaseModel):
 
 class PremiumFilterUpdate(BaseModel):
     # Premium-gated (402 if the caller isn't an active premium member — see
-    # routers/profiles.py::set_premium_filters). Empty/omitted list clears
-    # the filter, showing everyone again regardless of this field.
+    # routers/profiles.py::set_premium_filters). Empty/omitted list (or null
+    # height bound) clears that filter, showing everyone again regardless.
+    # race_filter/religion_filter are their own DB columns (pre-existing);
+    # everything else here is stored as one JSON blob (Profile.
+    # premium_filters_json) — see that column's comment for why.
     race_filter: list[str] = Field(default_factory=list)
     religion_filter: list[str] = Field(default_factory=list)
+    political_view_filter: list[str] = Field(default_factory=list)
+    exercise_frequency_filter: list[str] = Field(default_factory=list)
+    smoking_filter: list[str] = Field(default_factory=list)
+    cannabis_filter: list[str] = Field(default_factory=list)
+    relationship_goal_filter: list[str] = Field(default_factory=list)
+    wants_kids_filter: list[str] = Field(default_factory=list)
+    has_kids_filter: list[str] = Field(default_factory=list)
+    height_min: int | None = Field(default=None, ge=50, le=272)
+    height_max: int | None = Field(default=None, ge=50, le=272)
+
+
+class AgeFilterUpdate(BaseModel):
+    """Free for everyone — unlike PremiumFilterUpdate above, no premium
+    gating (see routers/profiles.py::set_age_filter)."""
+
+    min_age_pref: int = Field(default=18, ge=18, le=99)
+    max_age_pref: int = Field(default=99, ge=18, le=99)
 
 
 class TravelModeRequest(BaseModel):

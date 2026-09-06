@@ -1,3 +1,4 @@
+import json
 import uuid
 from datetime import date, datetime, timedelta, timezone
 
@@ -14,6 +15,43 @@ from app.services.payment_service import is_premium_member
 # MSSQL has no RANDOM() (T-SQL's idiom is ORDER BY NEWID()) — resolved once
 # from the live engine's dialect rather than per-request.
 _ORDER_RANDOM = func.newid() if engine.dialect.name == "mssql" else func.random()
+
+# Profile column each premium_filters_json list-key restricts on.
+_LIST_FILTER_COLUMNS = {
+    "political_view_filter": Profile.political_view,
+    "exercise_frequency_filter": Profile.exercise_frequency,
+    "smoking_filter": Profile.smoking,
+    "cannabis_filter": Profile.cannabis,
+    "relationship_goal_filter": Profile.relationship_goal,
+    "wants_kids_filter": Profile.wants_kids,
+    "has_kids_filter": Profile.has_kids,
+}
+
+
+def _extra_premium_filters(viewer_profile: Profile) -> list:
+    """The premium_filters_json-backed dimensions (everything beyond
+    race_filter/religion_filter, which have their own columns and are
+    handled inline in get_candidates) — see schemas/profile.py's
+    PremiumFilters for the typed shape this mirrors."""
+    if not viewer_profile.premium_filters_json:
+        return []
+    try:
+        stored = json.loads(viewer_profile.premium_filters_json)
+    except (ValueError, TypeError):
+        return []
+
+    filters = []
+    for key, column in _LIST_FILTER_COLUMNS.items():
+        values = stored.get(key)
+        if values:
+            filters.append(column.in_(values))
+    height_min = stored.get("height_min")
+    height_max = stored.get("height_max")
+    if height_min is not None:
+        filters.append(Profile.height_cm >= height_min)
+    if height_max is not None:
+        filters.append(Profile.height_cm <= height_max)
+    return filters
 
 
 def _age_to_birth_date_bounds(min_age: int, max_age: int) -> tuple[date, date]:
@@ -99,6 +137,7 @@ async def get_candidates(
             premium_filters.append(Profile.race_ethnicity.in_(viewer_profile.race_filter.split(",")))
         if viewer_profile.religion_filter:
             premium_filters.append(Profile.religion.in_(viewer_profile.religion_filter.split(",")))
+        premium_filters.extend(_extra_premium_filters(viewer_profile))
 
     # Profile has no ORM relationship to Photo, so photos are fetched with a
     # separate query in the router layer (see routers/discovery.py).

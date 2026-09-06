@@ -81,6 +81,14 @@ class Profile(Base):
     # existing age/distance filters above.
     race_filter: Mapped[str | None] = mapped_column("RaceFilter", Unicode(255), nullable=True)
     religion_filter: Mapped[str | None] = mapped_column("ReligionFilter", Unicode(255), nullable=True)
+    # Every other premium filter dimension (political_view/exercise_frequency/
+    # smoking/cannabis/relationship_goal/wants_kids/has_kids as lists, plus
+    # height_min/height_max) as one JSON blob rather than 9 more dedicated
+    # columns — same premium gating as race_filter/religion_filter above,
+    # just parsed in Python instead of matched in SQL param binding. See
+    # services/discovery_service.py for how it's applied and
+    # schemas/profile.py's PremiumFilters for the typed shape.
+    premium_filters_json: Mapped[str | None] = mapped_column("PremiumFiltersJson", Unicode(2000), nullable=True)
 
     # Optional extended profile fields — all free-text category strings
     # (like race_ethnicity/religion above), collected at signup but not

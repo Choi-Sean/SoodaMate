@@ -1,11 +1,13 @@
 import { useRef, useState } from "react";
 import { ActivityIndicator, Pressable, Text, View, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 
 import ProfileCard from "../../components/ProfileCard";
 import AdCard from "../../components/AdCard";
 import ActionButtons from "../../components/ActionButtons";
+import FilterModal from "../../components/FilterModal";
 import MatchCelebrationModal from "../matches/MatchCelebrationModal";
 import { useCandidates } from "../../hooks/useCandidates";
 import { useSwipeAction } from "../../hooks/useSwipeAction";
@@ -35,6 +37,7 @@ export default function SwipeScreen() {
 
   const swipeCountRef = useRef(0);
   const [showAd, setShowAd] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const [matchInfo, setMatchInfo] = useState<{
     matchId: string;
@@ -85,21 +88,25 @@ export default function SwipeScreen() {
 
   return (
     <View style={styles.container}>
-      {swipeLimit && (
-        <View style={styles.limitBar}>
+      <View style={styles.topBar}>
+        <Pressable style={styles.filterPill} onPress={() => setShowFilters(true)}>
+          <Ionicons name="options-outline" size={16} color={colors.navy} />
+          <Text style={styles.filterPillText}>{t("filters.title")}</Text>
+        </Pressable>
+        {swipeLimit && (
           <Text style={styles.limitText}>
             {limitReached
               ? t("swipe.limitReached", { time: formatCountdown(swipeLimit.resets_at!) })
               : t("swipe.remaining", { count: swipeLimit.remaining, limit: swipeLimit.limit })}
           </Text>
-        </View>
-      )}
+        )}
+      </View>
 
       <View style={styles.cardArea}>
         {showAd ? (
           <AdCard onUnavailable={() => setShowAd(false)} />
         ) : current ? (
-          <ProfileCard candidate={current} />
+          <ProfileCard key={current.user_id} candidate={current} />
         ) : (
           <View style={styles.centered}>
             <Text style={styles.emptyText}>
@@ -137,13 +144,33 @@ export default function SwipeScreen() {
           });
         }}
       />
+
+      <FilterModal visible={showFilters} onClose={() => setShowFilters(false)} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
-  limitBar: { alignItems: "center", paddingTop: 12, paddingBottom: 4 },
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  filterPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+  },
+  filterPillText: { fontSize: 13, fontWeight: "700", color: colors.navy },
   limitText: { fontSize: 13, fontWeight: "600", color: colors.muted },
   cardArea: { flex: 1, padding: 16 },
   centered: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },

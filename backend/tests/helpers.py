@@ -56,6 +56,8 @@ async def create_user_with_profile(
     location_lng: float | None = None,
     race_ethnicity: str | None = None,
     religion: str | None = None,
+    height_cm: int | None = None,
+    exercise_frequency: str | None = None,
 ) -> tuple[str, dict]:
     """Signs up, completes a profile, returns (user_id, auth_headers)."""
     signup = await client.post("/auth/signup", json={"email": email, "password": "password123"})
@@ -79,6 +81,8 @@ async def create_user_with_profile(
             "location_lng": location_lng,
             "race_ethnicity": race_ethnicity,
             "religion": religion,
+            "height_cm": height_cm,
+            "exercise_frequency": exercise_frequency,
         },
     )
     assert resp.status_code == 200, resp.text

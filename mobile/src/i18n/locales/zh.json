@@ -277,5 +277,24 @@
     "title": "喜欢我的人",
     "empty": "还没有人喜欢你 — 完善资料让更多人看到你吧！",
     "loadError": "无法加载喜欢列表，请下拉重试。"
+  },
+  "profileDetail": {
+    "bio": "关于我",
+    "about": "基本信息",
+    "lookingFor": "正在寻找",
+    "interests": "兴趣爱好",
+    "languages": "语言",
+    "heightValue": "{{cm}} 厘米"
+  },
+  "filters": {
+    "title": "筛选",
+    "minAge": "最小年龄",
+    "maxAge": "最大年龄",
+    "minHeight": "最小身高",
+    "maxHeight": "最大身高",
+    "premiumLockedTitle": "解锁更多筛选条件",
+    "premiumLockedBody": "免费会员只能按年龄筛选。升级为高级会员即可按身高、宗教等更多条件筛选。",
+    "upgrade": "升级为高级会员",
+    "apply": "应用筛选"
   }
 }

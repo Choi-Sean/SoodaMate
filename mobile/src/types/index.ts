@@ -9,6 +9,18 @@ export interface Photo {
   media_type: "photo" | "video";
 }
 
+export interface PremiumFilters {
+  political_view_filter: string[];
+  exercise_frequency_filter: string[];
+  smoking_filter: string[];
+  cannabis_filter: string[];
+  relationship_goal_filter: string[];
+  wants_kids_filter: string[];
+  has_kids_filter: string[];
+  height_min: number | null;
+  height_max: number | null;
+}
+
 export interface Profile {
   user_id: string;
   display_name: string;
@@ -38,6 +50,7 @@ export interface Profile {
   is_premium_member: boolean;
   race_filter: string[];
   religion_filter: string[];
+  premium_filters: PremiumFilters;
   height_cm: number | null;
   occupation: string | null;
   education: string | null;
@@ -58,10 +71,27 @@ export interface Candidate {
   user_id: string;
   display_name: string;
   age: number;
+  gender: Gender;
   bio: string | null;
   photos: Photo[];
   distance_km: number | null;
   superliked_me: boolean;
+  height_cm: number | null;
+  occupation: string | null;
+  education: string | null;
+  hometown: string | null;
+  race_ethnicity: string | null;
+  religion: string | null;
+  political_view: string | null;
+  smoking: string | null;
+  cannabis: string | null;
+  exercise_frequency: string | null;
+  relationship_goal: string | null;
+  wants_kids: string | null;
+  has_kids: string | null;
+  interests: string[];
+  languages: string[];
+  verified_badge: "work" | "school" | null;
 }
 
 export interface Match {

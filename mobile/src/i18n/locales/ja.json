@@ -277,5 +277,24 @@
     "title": "いいね",
     "empty": "まだいいねがありません — プロフィールを充実させて注目されましょう！",
     "loadError": "いいね一覧を読み込めませんでした。引っ張って再試行してください。"
+  },
+  "profileDetail": {
+    "bio": "自己紹介",
+    "about": "プロフィール",
+    "lookingFor": "探しているもの",
+    "interests": "興味・関心",
+    "languages": "話せる言語",
+    "heightValue": "{{cm}}cm"
+  },
+  "filters": {
+    "title": "フィルター",
+    "minAge": "最小年齢",
+    "maxAge": "最大年齢",
+    "minHeight": "最小身長",
+    "maxHeight": "最大身長",
+    "premiumLockedTitle": "もっと多くのフィルターを解除",
+    "premiumLockedBody": "無料会員は年齢のみで絞り込めます。プレミアムにアップグレードすると、身長・宗教などさらに多くの条件で絞り込めます。",
+    "upgrade": "プレミアムにアップグレード",
+    "apply": "フィルターを適用"
   }
 }
