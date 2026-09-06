@@ -14,7 +14,7 @@ after that plan shipped. This doc is the living reference as the system evolves.
 
 1. Mobile authenticates via Google/Kakao/email → backend issues app JWT (access + refresh)
 2. Mobile fetches candidates from `/discovery/candidates`, sends Like/Pass/SuperLike to `/interactions/{action}`
-3. Mutual like/superlike → backend creates a `matches` row, pushes a notification to both users. If the pair is exactly `{male, female}`, the match is **restricted**: only the female user may send the first message, within 24h, or the match lazily expires (see Bumble rule below).
+3. Mutual like/superlike → backend creates a `Matches` row, pushes a notification to both users. If the pair is exactly `{male, female}`, the match is **restricted**: only the female user may send the first message, within 24h, or the match lazily expires (see Bumble rule below).
 4. Matched users chat over `/ws/chat` (WebSocket); messages persist to MSSQL; offline delivery falls back to FCM push
 5. The same `/ws/chat` connection also carries WebRTC signaling frames (`call_offer`/`call_answer`/`call_ice_candidate`/`call_end`) for video calls — no second realtime channel
 6. Photos upload directly to GCS via presigned URLs, never proxied through the API
@@ -22,11 +22,13 @@ after that plan shipped. This doc is the living reference as the system evolves.
 
 ## Database schema
 
-See `backend/app/models/` — this is the source of truth; do not duplicate the schema here as it will drift. Tables: `users`, `auth_providers`, `profiles`, `photos`, `swipes`, `matches`, `messages`, `blocks`, `reports`, `push_tokens`, `call_sessions`, `verifications`, `payment_transactions`.
+See `backend/app/models/` — this is the source of truth; do not duplicate the schema here as it will drift. Tables: `Users`, `AuthProviders`, `Profiles`, `Photos`, `Swipes`, `Matches`, `Messages`, `Blocks`, `Reports`, `PushTokens`, `CallSessions`, `Verifications`, `PaymentTransactions`.
+
+Table and column names are PascalCase at the SQL level (`AuthProviders`, `ProviderUserId`, ...) while every model keeps ordinary snake_case Python attributes (`auth_providers`, `provider_user_id`) — each `mapped_column("PascalName", ...)` sets the two independently, so ORM code, Pydantic schemas, and tests never reference the SQL-level name directly.
 
 All UUID columns use SQLAlchemy's portable `Uuid` type (native `UNIQUEIDENTIFIER` on MSSQL); all text columns use `Unicode`/`UnicodeText` so Korean text round-trips correctly (plain `String`/`Text` map to non-Unicode `VARCHAR` on MSSQL and would silently corrupt it).
 
-**MSSQL FK note**: `Swipe`, `Match`, `Block`, `Report`, `CallSession` each have two FKs pointing at `users` — MSSQL rejects multiple cascade paths to the same table, so none of those FKs use `ondelete="CASCADE"`. `DELETE /account/me` (`backend/app/routers/account.py`) explicitly deletes swipes/matches/blocks/reports before deleting the user row; everything else (profile, photos, auth_providers, push_tokens, verifications, payment_transactions) still cascades automatically since it has only one FK path back to `users`.
+**MSSQL FK note**: `Swipe`, `Match`, `Block`, `Report`, `CallSession` each have two FKs pointing at `Users` — MSSQL rejects multiple cascade paths to the same table, so none of those FKs use `ondelete="CASCADE"`. `DELETE /account/me` (`backend/app/routers/account.py`) explicitly deletes swipes/matches/blocks/reports before deleting the user row; everything else (profile, photos, auth_providers, push_tokens, verifications, payment_transactions) still cascades automatically since it has only one FK path back to `Users`.
 
 ## Auth
 

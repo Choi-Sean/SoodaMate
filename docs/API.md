@@ -49,7 +49,7 @@ Every `PhotoOut` (in `ProfileOut.photos` and `CandidateOut.photos`) includes a c
 | GET | `/calls/ice-servers` | — | Returns STUN (always) + TURN (only if `TURN_URL` configured) — never hardcode ICE servers client-side |
 | POST | `/devices/register` | `{fcm_token, platform}` | Upserts by token, so re-registering just updates platform |
 | POST | `/safety/block` | `{user_id}` | Blocks are mutual — a blocked user can't swipe or message either direction |
-| POST | `/safety/report` | `{user_id, reason, detail?}` | Logged to `reports` table with `status="open"` for manual review |
+| POST | `/safety/report` | `{user_id, reason, detail?}` | Logged to `Reports` table with `status="open"` for manual review |
 
 **WS chat frames** (client → server): `{"type":"message","match_id","content"}`, `{"type":"read","match_id"}`, `{"type":"call_offer","match_id","sdp"}`, `{"type":"call_answer","call_id","sdp"}`, `{"type":"call_ice_candidate","call_id","candidate"}`, `{"type":"call_end","call_id","reason"?}`.
 
@@ -66,7 +66,7 @@ At match creation, if the pair is exactly `{male, female}`, the match is restric
 | Method | Path | Body | Notes |
 |---|---|---|---|
 | POST | `/verification/start` | `{kind: "work"\|"school", email}` | Sends a 6-digit code by email; rejects common personal-email domains (gmail/naver/kakao/daum/etc.); 503 if SMTP isn't configured |
-| POST | `/verification/confirm` | `{kind, code}` | 15-min expiry, 5-attempt lockout; sets `profiles.verified_badge` on success |
+| POST | `/verification/confirm` | `{kind, code}` | 15-min expiry, 5-attempt lockout; sets `Profiles.VerifiedBadge` on success |
 
 ## Payments — Stripe web checkout, not in-app purchase (Phase 17)
 
@@ -84,7 +84,7 @@ No native IAP anywhere — store commission was explicitly rejected. All of this
 
 | Method | Path | Notes |
 |---|---|---|
-| DELETE | `/account/me` | Explicitly deletes swipes/matches/blocks/reports first (MSSQL disallows multiple CASCADE paths to `users`), then deletes the user — everything else (profile, photos, auth links, push tokens, verifications, payment transactions) cascades automatically |
+| DELETE | `/account/me` | Explicitly deletes swipes/matches/blocks/reports first (MSSQL disallows multiple CASCADE paths to `Users`), then deletes the user — everything else (profile, photos, auth links, push tokens, verifications, payment transactions) cascades automatically |
 
 ## Health
 

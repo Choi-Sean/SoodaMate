@@ -3,6 +3,11 @@
 -- batch (deploy_procedures.py splits on the "GO" markers below and executes
 -- each block separately — this file is also valid to run as-is in SSMS/
 -- Azure Data Studio where GO is a real batch separator).
+--
+-- Table/column names are PascalCase (Users, Profiles, Blocks, Swipes,
+-- Matches, PushTokens, ...) to match the app's SQLAlchemy models — see
+-- app/models/*.py, where each mapped_column("PascalName", ...) sets this
+-- same SQL-level identifier while the Python attribute stays snake_case.
 
 -- sp_RecordSwipe: the core matching transaction. Upserts the swipe, checks
 -- for a reciprocal like/superlike, and on mutual match creates the Match row
@@ -24,9 +29,9 @@ BEGIN
     DECLARE @MatchId UNIQUEIDENTIFIER = NULL;
 
     IF EXISTS (
-        SELECT 1 FROM blocks
-        WHERE (blocker_id = @FromUserId AND blocked_id = @ToUserId)
-           OR (blocker_id = @ToUserId AND blocked_id = @FromUserId)
+        SELECT 1 FROM Blocks
+        WHERE (BlockerId = @FromUserId AND BlockedId = @ToUserId)
+           OR (BlockerId = @ToUserId AND BlockedId = @FromUserId)
     )
     BEGIN
         SET @Blocked = 1;
@@ -36,13 +41,13 @@ BEGIN
 
     BEGIN TRANSACTION;
 
-    MERGE swipes AS target
-    USING (SELECT @FromUserId AS from_user_id, @ToUserId AS to_user_id) AS src
-        ON target.from_user_id = src.from_user_id AND target.to_user_id = src.to_user_id
+    MERGE Swipes AS target
+    USING (SELECT @FromUserId AS FromUserId, @ToUserId AS ToUserId) AS src
+        ON target.FromUserId = src.FromUserId AND target.ToUserId = src.ToUserId
     WHEN MATCHED THEN
-        UPDATE SET action = @Action, created_at = SYSDATETIMEOFFSET()
+        UPDATE SET Action = @Action, CreatedAt = SYSDATETIMEOFFSET()
     WHEN NOT MATCHED THEN
-        INSERT (id, from_user_id, to_user_id, action, created_at)
+        INSERT (Id, FromUserId, ToUserId, Action, CreatedAt)
         VALUES (NEWID(), @FromUserId, @ToUserId, @Action, SYSDATETIMEOFFSET());
 
     IF @Action NOT IN ('like', 'superlike')
@@ -53,9 +58,9 @@ BEGIN
     END
 
     IF NOT EXISTS (
-        SELECT 1 FROM swipes
-        WHERE from_user_id = @ToUserId AND to_user_id = @FromUserId
-          AND action IN ('like', 'superlike')
+        SELECT 1 FROM Swipes
+        WHERE FromUserId = @ToUserId AND ToUserId = @FromUserId
+          AND Action IN ('like', 'superlike')
     )
     BEGIN
         COMMIT TRANSACTION;
@@ -73,13 +78,13 @@ BEGIN
     ELSE
         SELECT @UserA = @ToUserId, @UserB = @FromUserId;
 
-    SELECT @MatchId = id FROM matches WHERE user_a_id = @UserA AND user_b_id = @UserB;
+    SELECT @MatchId = Id FROM Matches WHERE UserAId = @UserA AND UserBId = @UserB;
 
     IF @MatchId IS NULL
     BEGIN
         DECLARE @GenderA NVARCHAR(10), @GenderB NVARCHAR(10);
-        SELECT @GenderA = gender FROM profiles WHERE user_id = @UserA;
-        SELECT @GenderB = gender FROM profiles WHERE user_id = @UserB;
+        SELECT @GenderA = Gender FROM Profiles WHERE UserId = @UserA;
+        SELECT @GenderB = Gender FROM Profiles WHERE UserId = @UserB;
 
         DECLARE @RestrictedTo UNIQUEIDENTIFIER = NULL;
         DECLARE @Deadline DATETIMEOFFSET = NULL;
@@ -96,9 +101,9 @@ BEGIN
         END
 
         SET @MatchId = NEWID();
-        INSERT INTO matches
-            (id, user_a_id, user_b_id, matched_at, is_active,
-             restricted_to_user_id, first_message_deadline, first_message_sent)
+        INSERT INTO Matches
+            (Id, UserAId, UserBId, MatchedAt, IsActive,
+             RestrictedToUserId, FirstMessageDeadline, FirstMessageSent)
         VALUES
             (@MatchId, @UserA, @UserB, SYSDATETIMEOFFSET(), 1,
              @RestrictedTo, @Deadline, 0);
@@ -118,11 +123,11 @@ CREATE OR ALTER PROCEDURE sp_UpsertBlock
 AS
 BEGIN
     SET NOCOUNT ON;
-    MERGE blocks AS target
-    USING (SELECT @BlockerId AS blocker_id, @BlockedId AS blocked_id) AS src
-        ON target.blocker_id = src.blocker_id AND target.blocked_id = src.blocked_id
+    MERGE Blocks AS target
+    USING (SELECT @BlockerId AS BlockerId, @BlockedId AS BlockedId) AS src
+        ON target.BlockerId = src.BlockerId AND target.BlockedId = src.BlockedId
     WHEN NOT MATCHED THEN
-        INSERT (id, blocker_id, blocked_id, created_at)
+        INSERT (Id, BlockerId, BlockedId, CreatedAt)
         VALUES (NEWID(), @BlockerId, @BlockedId, SYSDATETIMEOFFSET());
 END
 GO
@@ -136,13 +141,13 @@ CREATE OR ALTER PROCEDURE sp_UpsertPushToken
 AS
 BEGIN
     SET NOCOUNT ON;
-    MERGE push_tokens AS target
-    USING (SELECT @FcmToken AS fcm_token) AS src
-        ON target.fcm_token = src.fcm_token
+    MERGE PushTokens AS target
+    USING (SELECT @FcmToken AS FcmToken) AS src
+        ON target.FcmToken = src.FcmToken
     WHEN MATCHED THEN
-        UPDATE SET user_id = @UserId, platform = @Platform
+        UPDATE SET UserId = @UserId, Platform = @Platform
     WHEN NOT MATCHED THEN
-        INSERT (id, user_id, fcm_token, platform, created_at)
+        INSERT (Id, UserId, FcmToken, Platform, CreatedAt)
         VALUES (NEWID(), @UserId, @FcmToken, @Platform, SYSDATETIMEOFFSET());
 END
 GO
