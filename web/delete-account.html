@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Delete Account — SooDa Mate</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="bar">
+    <a class="logo" href="/">
+      <img src="/assets/logo.svg" alt="" class="logo-mark" width="28" height="28" />
+      수다메이트
+    </a>
+    <nav class="nav-links" aria-label="Site">
+      <a href="/#features" data-i18n="nav.features">기능</a>
+      <a href="/#download" data-i18n="nav.download">다운로드</a>
+    </nav>
+    <div class="nav-right">
+      <div class="lang-switcher" data-lang-switcher aria-label="Language"></div>
+    </div>
+  </header>
+
+  <main class="legal">
+    <a class="back" href="/" data-i18n="legal.back">← 홈으로</a>
+    <h1 data-i18n="deleteAccount.title">계정 삭제 안내</h1>
+    <p class="updated" data-i18n="legal.updated">최종 수정일: 2026년 9월 4일</p>
+
+    <p data-i18n="deleteAccount.intro">
+      수다메이트(SooDa Mate) 앱을 운영하는 SooDaList는 이용자가 언제든지 본인의 계정과 데이터를
+      삭제할 수 있도록 안내합니다.
+    </p>
+
+    <h2 data-i18n="deleteAccount.h1">1. 앱에서 직접 삭제하기</h2>
+    <ol>
+      <li data-i18n="deleteAccount.step1">수다메이트 앱을 열고 로그인합니다.</li>
+      <li data-i18n="deleteAccount.step2">프로필 탭 &gt; 설정으로 이동합니다.</li>
+      <li data-i18n="deleteAccount.step3">"계정 삭제"를 선택하고 안내에 따라 확인합니다.</li>
+    </ol>
+
+    <h2 data-i18n="deleteAccount.h2">2. 앱을 사용할 수 없는 경우</h2>
+    <p data-i18n-html="deleteAccount.noAppBody">
+      로그인할 수 없거나 앱을 삭제하셨다면, <a href="mailto:privacy@soodamate.example.com">privacy@soodamate.example.com</a>으로
+      가입 시 사용한 이메일 주소와 함께 계정 삭제를 요청해 주세요. 본인 확인 후 처리해 드립니다.
+    </p>
+
+    <h2 data-i18n="deleteAccount.h3">3. 삭제되는 데이터</h2>
+    <p data-i18n="deleteAccount.dataIntro">계정을 삭제하면 아래 데이터가 지체 없이 영구적으로 삭제됩니다:</p>
+    <ul>
+      <li data-i18n="deleteAccount.data1">프로필 정보(닉네임, 생년월일, 성별, 자기소개, 위치)</li>
+      <li data-i18n="deleteAccount.data2">프로필 사진</li>
+      <li data-i18n="deleteAccount.data3">매칭 및 좋아요/패스/슈퍼좋아요 기록</li>
+      <li data-i18n="deleteAccount.data4">채팅 메시지 전체</li>
+      <li data-i18n="deleteAccount.data5">신고/차단 기록</li>
+    </ul>
+    <p data-i18n="deleteAccount.retention">
+      별도의 보관 기간 없이 즉시 삭제되며, 관계 법령상 보관 의무가 있는 정보만 해당 법령이 정한
+      기간 동안 예외적으로 보관됩니다.
+    </p>
+  </main>
+
+  <footer class="foot">
+    <div class="foot-links">
+      <a href="/privacy-policy.html" data-i18n="footer.privacy">개인정보처리방침</a>
+      <a href="/terms.html" data-i18n="footer.terms">이용약관</a>
+      <a href="/delete-account.html" data-i18n="footer.deleteAccount">계정 삭제</a>
+    </div>
+    <p data-i18n="footer.rights">© 2026 수다리스트. All rights reserved.</p>
+  </footer>
+
+  <script src="/i18n.js"></script>
+</body>
+</html>

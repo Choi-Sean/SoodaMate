@@ -9,7 +9,7 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "http://localhost:8001",
-        "EXPO_PUBLIC_MARKETING_SITE_URL": "https://REPLACE-WITH-YOUR-VERCEL-URL"
+        "EXPO_PUBLIC_MARKETING_SITE_URL": "https://sooda-mate.vercel.app"
       }
     },
     "preview": {
@@ -17,7 +17,7 @@
       "channel": "preview",
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://REPLACE-WITH-YOUR-RAILWAY-URL",
-        "EXPO_PUBLIC_MARKETING_SITE_URL": "https://REPLACE-WITH-YOUR-VERCEL-URL"
+        "EXPO_PUBLIC_MARKETING_SITE_URL": "https://sooda-mate.vercel.app"
       }
     },
     "production": {
@@ -25,7 +25,7 @@
       "channel": "production",
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://REPLACE-WITH-YOUR-RAILWAY-URL",
-        "EXPO_PUBLIC_MARKETING_SITE_URL": "https://REPLACE-WITH-YOUR-VERCEL-URL"
+        "EXPO_PUBLIC_MARKETING_SITE_URL": "https://sooda-mate.vercel.app"
       }
     }
   },
