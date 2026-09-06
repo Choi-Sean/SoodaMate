@@ -46,7 +46,7 @@
     "male": "male",
     "female": "female",
     "other": "other",
-    "all": "all",
+    "all": "Everyone",
     "continue": "Continue",
     "validationMissing": "Enter a display name and birth date (YYYY-MM-DD)",
     "needPhoto": "Add at least one photo",
