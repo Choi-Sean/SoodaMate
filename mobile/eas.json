@@ -16,7 +16,7 @@
       "distribution": "internal",
       "channel": "preview",
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://REPLACE-WITH-YOUR-RAILWAY-URL",
+        "EXPO_PUBLIC_API_BASE_URL": "https://soodamate-production.up.railway.app",
         "EXPO_PUBLIC_MARKETING_SITE_URL": "https://www.soodamate.com"
       }
     },
@@ -24,7 +24,7 @@
       "autoIncrement": true,
       "channel": "production",
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://REPLACE-WITH-YOUR-RAILWAY-URL",
+        "EXPO_PUBLIC_API_BASE_URL": "https://soodamate-production.up.railway.app",
         "EXPO_PUBLIC_MARKETING_SITE_URL": "https://www.soodamate.com"
       }
     }
