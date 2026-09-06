@@ -3,11 +3,13 @@ from datetime import date
 from starlette.testclient import TestClient
 
 from app.main import app
+from tests.helpers import track_test_user
 
 
 def _signup_and_complete_profile(client: TestClient, email: str, gender: str, interested_in: str) -> tuple[str, str]:
     signup = client.post("/auth/signup", json={"email": email, "password": "password123"})
     tokens = signup.json()
+    track_test_user(tokens["user_id"])
     headers = {"Authorization": f"Bearer {tokens['access_token']}"}
 
     birth_year = date.today().year - 25
