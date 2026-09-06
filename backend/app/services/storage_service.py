@@ -13,7 +13,7 @@ def _get_client():
     if _client is None:
         _client = boto3.client(
             "s3",
-            endpoint_url=f"https://{settings.r2_account_id}.r2.cloudflarestorage.com",
+            endpoint_url=settings.r2_endpoint_url,
             aws_access_key_id=settings.r2_access_key_id,
             aws_secret_access_key=settings.r2_secret_access_key,
             # R2 speaks the S3 API but isn't region-partitioned like AWS —

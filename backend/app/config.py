@@ -30,7 +30,12 @@ class Settings(BaseSettings):
     # their old "gcs_" prefix on purpose — it's just "the object's storage
     # path" now, provider-agnostic, and renaming a real DB column for pure
     # naming purity isn't worth the migration risk.
-    r2_account_id: str = ""
+    # Full S3-compatible endpoint URL as shown on the R2 API token creation
+    # screen (https://<hash>.r2.cloudflarestorage.com) — stored verbatim
+    # rather than reconstructed from an account id, since the hash Cloudflare
+    # puts in a token's endpoint doesn't always match the account's own
+    # dashboard "Account ID" value.
+    r2_endpoint_url: str = ""
     r2_access_key_id: str = ""
     r2_secret_access_key: str = ""
     r2_bucket_name: str = "sooda-mate-photos"
