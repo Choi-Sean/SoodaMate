@@ -23,13 +23,22 @@ class Settings(BaseSettings):
     # the paid Apple Developer account App Store submission already requires.
     apple_bundle_id: str = "com.soodalist.soodamate"
 
-    gcs_bucket_name: str = "sooda-mate-photos"
-    # Raw service-account key JSON (not a file path) — Railway has no
-    # persistent file mount to point GOOGLE_APPLICATION_CREDENTIALS at, so
-    # storage_service.py reads the key content directly from this env var.
-    # Falls back to GOOGLE_APPLICATION_CREDENTIALS/ADC when unset (local
-    # dev with an actual key file on disk).
-    gcs_service_account_json: str = ""
+    # Cloudflare R2 (S3-compatible) for profile photos — chosen over GCS for
+    # its zero egress fee, which matters a lot for an app that re-serves the
+    # same photos on every swipe/discover/match load. Column/field names
+    # (gcs_object_path, PhotoConfirmRequest.gcs_object_path, etc.) keep
+    # their old "gcs_" prefix on purpose — it's just "the object's storage
+    # path" now, provider-agnostic, and renaming a real DB column for pure
+    # naming purity isn't worth the migration risk.
+    r2_account_id: str = ""
+    r2_access_key_id: str = ""
+    r2_secret_access_key: str = ""
+    r2_bucket_name: str = "sooda-mate-photos"
+    # The bucket's public read base URL — either the free
+    # https://pub-<hash>.r2.dev dev subdomain (enabled per-bucket under
+    # Settings > Public Access) or a custom domain mapped to the bucket.
+    # Photo URLs are built as f"{r2_public_url}/{object_path}".
+    r2_public_url: str = ""
 
     firebase_credentials_path: str = ""
 

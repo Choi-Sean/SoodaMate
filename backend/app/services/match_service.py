@@ -5,11 +5,11 @@ from fastapi import HTTPException, status
 from sqlalchemy import and_, or_, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import settings
 from app.models.interaction import Match, Swipe
 from app.models.profile import Photo, Profile
 from app.schemas.match import MatchOut, SwipeLimitOut, SwipeResponse
 from app.services import push_service
+from app.services.storage_service import build_public_url
 
 VALID_ACTIONS = {"like", "pass", "superlike"}
 
@@ -169,11 +169,7 @@ async def list_matches(db: AsyncSession, user_id: uuid.UUID) -> list[MatchOut]:
                 id=m.id,
                 other_user_id=other_id,
                 other_display_name=profile.display_name if profile else "",
-                other_photo_url=(
-                    f"https://storage.googleapis.com/{settings.gcs_bucket_name}/{photo.gcs_object_path}"
-                    if photo
-                    else None
-                ),
+                other_photo_url=build_public_url(photo.gcs_object_path) if photo else None,
                 matched_at=m.matched_at,
                 is_message_restricted=restricted,
                 can_send_first_message=(not restricted) or (m.restricted_to_user_id == user_id),

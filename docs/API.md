@@ -28,17 +28,17 @@ All three (plus email) return the same `TokenResponse` shape. If the provider's 
 |---|---|---|---|
 | GET | `/profiles/me` | — | Current user's profile + photos + credits + incognito/travel state |
 | PUT | `/profiles/me` | `ProfileUpdate` | Upserts profile; `is_profile_complete` flips true once ≥1 photo exists |
-| POST | `/profiles/me/photos/confirm` | `{gcs_object_path, position}` | Records a photo row after a direct-to-GCS upload |
+| POST | `/profiles/me/photos/confirm` | `{gcs_object_path, position}` | Records a photo row after a direct-to-R2 upload |
 | DELETE | `/profiles/me/photos/{photo_id}` | — | |
 | POST | `/profiles/me/incognito` | `{is_incognito}` | Toggles discovery visibility; doesn't affect existing matches/likes |
 | POST | `/profiles/me/travel` | `{lat, lng, duration_hours}` | Repositions the user for discovery (both as viewer and candidate) until expiry |
 | DELETE | `/profiles/me/travel` | — | Clears travel mode, reverting to `location_lat`/`location_lng` |
-| POST | `/uploads/presign` | `{content_type, position}` | Returns a GCS signed PUT URL; mobile uploads directly, then calls the confirm endpoint above |
+| POST | `/uploads/presign` | `{content_type, position}` | Returns an R2 (S3-compatible) signed PUT URL; mobile uploads directly, then calls the confirm endpoint above |
 | GET | `/discovery/candidates` | — | Filtered by mutual gender preference, age range, distance, excludes already-swiped/blocked/incognito; superliked-me and boosted-user ranked first |
 | POST | `/interactions/like` \| `/pass` \| `/superlike` | `{to_user_id}` | Returns `{matched, match_id}`; mutual like/superlike creates a `Match` via the `sp_RecordSwipe` stored procedure. Superlike: 1 free/day, then consumes `superlike_credits`, else `402` |
 | GET | `/matches` | — | Active matches for the current user; each includes `is_message_restricted`, `can_send_first_message`, `first_message_deadline` (Bumble rule, see below) |
 
-Every `PhotoOut` (in `ProfileOut.photos` and `CandidateOut.photos`) includes a computed `url` — the public `https://storage.googleapis.com/<bucket>/<object_path>` URL — alongside the raw `gcs_object_path`, so the client never has to construct it.
+Every `PhotoOut` (in `ProfileOut.photos` and `CandidateOut.photos`) includes a computed `url` — the public `<R2_PUBLIC_URL>/<object_path>` URL — alongside the raw `gcs_object_path`, so the client never has to construct it.
 
 ## Chat / Video call / Push / Safety (Phase 4, extended Phase 14/15)
 

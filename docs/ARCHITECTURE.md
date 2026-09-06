@@ -17,7 +17,7 @@ after that plan shipped. This doc is the living reference as the system evolves.
 3. Mutual like/superlike → backend creates a `Matches` row, pushes a notification to both users. If the pair is exactly `{male, female}`, the match is **restricted**: only the female user may send the first message, within 24h, or the match lazily expires (see Bumble rule below).
 4. Matched users chat over `/ws/chat` (WebSocket); messages persist to MSSQL; offline delivery falls back to FCM push
 5. The same `/ws/chat` connection also carries WebRTC signaling frames (`call_offer`/`call_answer`/`call_ice_candidate`/`call_end`) for video calls — no second realtime channel
-6. Photos upload directly to GCS via presigned URLs, never proxied through the API
+6. Photos upload directly to Cloudflare R2 via presigned URLs, never proxied through the API
 7. Paid credits (superlike packs, boost) are bought on the **website**, not in-app — Stripe Checkout, webhook-granted, deep-linked back into the app via `soodamate://shop`
 
 ## Database schema

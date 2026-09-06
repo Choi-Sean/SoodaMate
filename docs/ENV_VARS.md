@@ -9,9 +9,10 @@
 | `GOOGLE_OAUTH_CLIENT_ID` | Google Cloud Console → APIs & Services → Credentials → OAuth client (type: Web application) | Used as the audience when verifying id_tokens from the mobile app |
 | `KAKAO_REST_API_KEY` | Kakao Developers → App → App Keys | REST API key |
 | `APPLE_BUNDLE_ID` | — | Defaults to `com.soodalist.soodamate` (the real bundle id, already set in `mobile/app.config.js`) — only override if the bundle id ever changes. No separate Apple account/key needed beyond the paid Apple Developer Program membership App Store submission already requires; just enable the "Sign In with Apple" capability on the App ID in the developer portal |
-| `GCS_BUCKET_NAME` | GCP Console → Cloud Storage | Bucket for profile photos |
-| `GOOGLE_APPLICATION_CREDENTIALS` | GCP Console → IAM → Service Accounts → Keys | Path to service account JSON on disk, needs Storage Object Admin on the bucket — local dev only |
-| `GCS_SERVICE_ACCOUNT_JSON` | Same service account key as above | The raw JSON *content* (paste the whole key file), not a path — used on Railway, which has no persistent file to point `GOOGLE_APPLICATION_CREDENTIALS` at. Required for `/uploads/presign` to work in production; without it that endpoint 500s (`google.auth.exceptions.DefaultCredentialsError`) |
+| `R2_ACCOUNT_ID` | Cloudflare dashboard → R2 → Overview (right side, "Account ID") | Used to build the S3-compatible endpoint `https://<account_id>.r2.cloudflarestorage.com` |
+| `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` | Cloudflare dashboard → R2 → Manage R2 API Tokens → Create API Token (permission: Object Read & Write, scoped to the bucket below) | S3-style credential pair; the secret is only shown once at creation |
+| `R2_BUCKET_NAME` | Cloudflare dashboard → R2 → Create bucket | Bucket for profile photos |
+| `R2_PUBLIC_URL` | Cloudflare dashboard → R2 → (bucket) → Settings → Public Access → enable "R2.dev subdomain" (or attach a custom domain) | Base URL photos are served from, e.g. `https://pub-xxxxxxxx.r2.dev` — `PhotoOut.url` is built as `f"{R2_PUBLIC_URL}/{gcs_object_path}"` |
 | `FIREBASE_CREDENTIALS_PATH` | Firebase Console → Project Settings → Service Accounts | Path to service account JSON for FCM push |
 | `CORS_ORIGINS` | — | Comma-separated allowed origins for the mobile app / web |
 | `STUN_URLS` | — | Defaults to Google's public STUN (`stun:stun.l.google.com:19302`), no account needed |

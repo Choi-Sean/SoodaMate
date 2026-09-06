@@ -70,5 +70,6 @@ async def test_matches_include_other_users_photo_url(client):
     matches = (await client.get("/matches", headers=a_headers)).json()
     assert len(matches) == 1
     assert matches[0]["other_photo_url"] is not None
-    assert matches[0]["other_photo_url"].startswith("https://storage.googleapis.com/")
+    # Full host depends on R2_PUBLIC_URL, which isn't set in the test env —
+    # just confirm the object path landed in the URL.
     assert "photos/0.jpg" in matches[0]["other_photo_url"]

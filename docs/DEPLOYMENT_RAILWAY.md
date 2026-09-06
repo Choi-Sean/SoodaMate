@@ -23,13 +23,13 @@ In the service's **Variables** tab, set everything `backend/.env` has locally, p
 | `SECRET_KEY` | a real random value (`openssl rand -hex 32`), not the dev placeholder |
 | `DATABASE_URL` | the real MSSQL connection string (same shape as local `.env` — `mssql+aioodbc://...&MARS_Connection=yes`) |
 | `GOOGLE_OAUTH_CLIENT_ID`, `KAKAO_REST_API_KEY` | once those accounts exist |
-| `GCS_BUCKET_NAME`, `GOOGLE_APPLICATION_CREDENTIALS` | photo storage — GCS is still used for this even though the DB moved off GCP; `GOOGLE_APPLICATION_CREDENTIALS` needs the service-account JSON's *contents*, not just a path, since there's no persistent disk to read a file from — see note below |
-| `FIREBASE_CREDENTIALS_PATH` | same file-vs-path issue as above |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` | photo storage — Cloudflare R2 (S3-compatible), chosen for its zero egress fee. Plain access-key/secret pair, not a credential file, so none of the Railway file-path issues below apply to this one |
+| `FIREBASE_CREDENTIALS_PATH` | file-vs-path issue below still applies to this one (push notifications) |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | from the Stripe Dashboard, once that account exists |
 | `WEB_BASE_URL` | the deployed marketing site's real URL (Vercel), used for Stripe Checkout success/cancel redirects |
 | `CORS_ORIGINS` | the mobile app doesn't need CORS (native, not browser), but the web shop page's `fetch()` calls do — include the Vercel site's URL |
 
-**Credential-file variables on Railway**: Railway's filesystem is ephemeral and there's no simple "upload a file" step for env vars the way some other host UIs offer. The pragmatic fix once GCS/Firebase are actually needed: change `storage_service.py` / `push_service.py` to accept the service-account JSON *content* from an env var (`GOOGLE_APPLICATION_CREDENTIALS_JSON`) and write it to a temp file at startup, or use `google.oauth2.service_account.Credentials.from_service_account_info(json.loads(...))` directly instead of a file path. Not yet done — flagging so it isn't a surprise when Phase 10-equivalent GCS wiring actually gets exercised on Railway.
+**Credential-file variables on Railway**: Railway's filesystem is ephemeral and there's no simple "upload a file" step for env vars the way some other host UIs offer. This bit `/uploads/presign` for real once photo upload was actually exercised against production (`google.auth.exceptions.DefaultCredentialsError` — no ADC available in the container) — the migration to R2 above sidesteps it entirely since R2 auth is a plain access-key/secret pair, not a credential file. `FIREBASE_CREDENTIALS_PATH` still has the same issue and is still unresolved (push notifications currently no-op silently on Railway rather than erroring — see `push_service.py`); same fix shape would apply there if/when it's needed: accept the service-account JSON *content* via an env var and use `firebase_admin.credentials.Certificate(json.loads(...))` instead of a file path.
 
 ## 3. First deploy
 

@@ -13,7 +13,7 @@ bcrypt==4.0.1
 httpx==0.27.2
 python-multipart==0.0.9
 websockets==13.1
-google-cloud-storage==2.18.2
+boto3==1.43.89
 firebase-admin==6.5.0
 google-auth==2.34.0
 stripe==11.1.1

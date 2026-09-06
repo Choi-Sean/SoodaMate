@@ -3,7 +3,7 @@ from datetime import date, datetime, timezone
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
-from app.config import settings
+from app.services.storage_service import build_public_url
 
 
 class PhotoOut(BaseModel):
@@ -16,9 +16,7 @@ class PhotoOut(BaseModel):
     @computed_field
     @property
     def url(self) -> str:
-        # Bucket is public-read with non-guessable UUID paths (see
-        # storage_service.py) — no signed GET URL needed for v1.
-        return f"https://storage.googleapis.com/{settings.gcs_bucket_name}/{self.gcs_object_path}"
+        return build_public_url(self.gcs_object_path)
 
 
 class ProfileUpdate(BaseModel):
