@@ -17,7 +17,7 @@ import { colors } from "../theme";
 const realUnitId = Platform.OS === "ios" ? env.admobIosNativeUnitId : env.admobAndroidNativeUnitId;
 // Falls back to Google's test native ad unit ID until a real AdMob account
 // exists and EXPO_PUBLIC_ADMOB_*_NATIVE_UNIT_ID is set (see docs/ENV_VARS.md)
-// — same convention as the banner/interstitial unit ids.
+// — same fallback convention the old banner/interstitial unit ids used.
 const nativeUnitId = realUnitId || TestIds.NATIVE;
 
 interface Props {

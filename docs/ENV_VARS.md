@@ -31,7 +31,6 @@
 | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | same OAuth client as backend's `GOOGLE_OAUTH_CLIENT_ID` | `@react-native-google-signin/google-signin` needs the *web* client id, not an android/iOS one |
 | `EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY` | Kakao Developers → App → App Keys | Native app key, plus URL scheme registration in iOS/Android native config |
 | `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID` / `EXPO_PUBLIC_ADMOB_IOS_APP_ID` | AdMob console, after app registered | The *app*-level IDs (one per platform); falls back to Google's test IDs until set |
-| `EXPO_PUBLIC_ADMOB_ANDROID_INTERSTITIAL_UNIT_ID` / `EXPO_PUBLIC_ADMOB_IOS_INTERSTITIAL_UNIT_ID` | AdMob console → Ad units, after creating an Interstitial unit per platform | Falls back to Google's test interstitial unit ID until set (`src/services/ads.native.ts`) |
 | `EXPO_PUBLIC_ADMOB_ANDROID_NATIVE_UNIT_ID` / `EXPO_PUBLIC_ADMOB_IOS_NATIVE_UNIT_ID` | AdMob console → Ad units, after creating a Native unit per platform | Falls back to Google's test native unit ID until set (`src/components/AdCard.native.tsx`) — the in-swipe-deck sponsored card, replacing the old banner strip |
 | `FIREBASE_CONFIG` | Firebase Console → Project settings → your app | google-services.json / GoogleService-Info.plist |
 
