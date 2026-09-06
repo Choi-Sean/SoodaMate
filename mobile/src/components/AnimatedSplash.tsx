@@ -3,18 +3,11 @@ import { Animated, Easing, Image, StyleSheet, View } from "react-native";
 
 import { colors } from "../theme";
 
-interface Props {
-  /** Called on this view's first layout — the earliest safe point to hide
-   * the native splash without a blank flash in between the two. */
-  onReady: () => void;
-}
-
-/** Shown the instant JS takes over from the native splash screen (see
- * App.tsx — SplashScreen.hideAsync() fires via onReady once this has
- * actually painted), so the handoff is seamless: same background/icon, now
- * with a gentle bounce loop instead of sitting static while init work
- * (i18n, ads) finishes. */
-export default function AnimatedSplash({ onReady }: Props) {
+/** In-JS loading placeholder shown while init work (i18n, ads) runs —
+ * replaces a plain spinner with the mascot bouncing in a gentle spring
+ * loop. Purely a React view with no native splash-screen lifecycle tie-in
+ * (see App.tsx for why). */
+export default function AnimatedSplash() {
   const scale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -39,12 +32,10 @@ export default function AnimatedSplash({ onReady }: Props) {
   }, [scale]);
 
   return (
-    <View style={styles.container} onLayout={onReady}>
-      <Animated.Image
-        source={require("../../assets/splash-icon.png")}
-        style={[styles.icon, { transform: [{ scale }] }]}
-        resizeMode="contain"
-      />
+    <View style={styles.container}>
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <Image source={require("../../assets/splash-icon.png")} style={styles.icon} resizeMode="contain" />
+      </Animated.View>
     </View>
   );
 }

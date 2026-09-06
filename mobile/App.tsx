@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import * as SplashScreen from "expo-splash-screen";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -12,12 +11,6 @@ import { initAds } from "./src/services/ads";
 import { initDeepLinking } from "./src/services/deepLinking";
 import { initI18n } from "./src/i18n";
 
-// Keeps the native (static) splash on screen until we explicitly hide it
-// below, right as AnimatedSplash mounts — otherwise Expo hides the native
-// splash the instant the first JS frame commits, which would flash blank
-// before our own splash view ever appears.
-SplashScreen.preventAutoHideAsync().catch(() => {});
-
 const queryClient = new QueryClient();
 
 export default function App() {
@@ -25,12 +18,25 @@ export default function App() {
 
   useEffect(() => {
     initAds();
-    initI18n().then(() => setI18nReady(true));
+    // .catch() so a broken i18n init (bad locale data, storage error, etc.)
+    // can never leave the app stuck on the loading screen forever — worst
+    // case is untranslated keys, not a permanently blocked splash.
+    initI18n()
+      .then(() => setI18nReady(true))
+      .catch(() => setI18nReady(true));
     return initDeepLinking(queryClient);
   }, []);
 
+  // Expo's own default splash-screen auto-hide (proven across every build
+  // so far) already handles the native splash; this is purely the in-JS
+  // loading placeholder shown after that, replacing a plain spinner with
+  // the bouncing mascot. Deliberately NOT wired to
+  // SplashScreen.preventAutoHideAsync()/hideAsync() — that native-lifecycle
+  // handoff can't be exercised in this sandbox (no emulator/device), so it
+  // isn't worth the risk of a real device getting stuck waiting on a hide
+  // call that never fires.
   if (!i18nReady) {
-    return <AnimatedSplash onReady={() => SplashScreen.hideAsync().catch(() => {})} />;
+    return <AnimatedSplash />;
   }
 
   return (
