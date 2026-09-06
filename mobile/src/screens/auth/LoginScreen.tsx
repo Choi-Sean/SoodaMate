@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ActivityIndicator, Platform, Pressable, Text, TextInput, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Image, Platform, Pressable, Text, TextInput, View, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 
@@ -17,6 +18,7 @@ export default function LoginScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const login = useAuthStore((s) => s.login);
@@ -56,29 +58,52 @@ export default function LoginScreen({ navigation }: Props) {
       <TextInput
         style={styles.input}
         placeholder={t("auth.email")}
+        placeholderTextColor={colors.muted}
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
       />
-      <TextInput
-        style={styles.input}
-        placeholder={t("auth.password")}
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      <View style={styles.passwordRow}>
+        <TextInput
+          style={[styles.input, styles.passwordInput]}
+          placeholder={t("auth.password")}
+          placeholderTextColor={colors.muted}
+          secureTextEntry={!passwordVisible}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <Pressable style={styles.eyeButton} onPress={() => setPasswordVisible((v) => !v)} hitSlop={8}>
+          <Ionicons name={passwordVisible ? "eye-off" : "eye"} size={22} color={colors.muted} />
+        </Pressable>
+      </View>
 
       <Pressable style={styles.primaryButton} onPress={handleEmailLogin} disabled={loading !== null}>
         {loading === "email" ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>{t("auth.logIn")}</Text>}
       </Pressable>
 
       <Pressable style={styles.googleButton} onPress={handleGoogleLogin} disabled={loading !== null}>
-        {loading === "google" ? <ActivityIndicator /> : <Text style={styles.googleButtonText}>{t("auth.continueWithGoogle")}</Text>}
+        {loading === "google" ? (
+          <ActivityIndicator />
+        ) : (
+          <View style={styles.buttonContent}>
+            <Image source={require("../../../assets/google-logo.png")} style={styles.providerLogo} />
+            <Text style={styles.googleButtonText}>{t("auth.continueWithGoogle")}</Text>
+          </View>
+        )}
       </Pressable>
 
+      <View style={styles.divider} />
+
       <Pressable style={styles.kakaoButton} onPress={handleKakaoLogin} disabled={loading !== null}>
-        {loading === "kakao" ? <ActivityIndicator /> : <Text style={styles.kakaoButtonText}>{t("auth.continueWithKakao")}</Text>}
+        {loading === "kakao" ? (
+          <ActivityIndicator />
+        ) : (
+          <View style={styles.buttonContent}>
+            <Image source={require("../../../assets/kakao-logo.png")} style={styles.providerLogo} />
+            <Text style={styles.kakaoButtonText}>{t("auth.continueWithKakao")}</Text>
+          </View>
+        )}
       </Pressable>
 
       {Platform.OS === "ios" && (
@@ -106,8 +131,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontSize: 16,
   },
+  passwordRow: { position: "relative", justifyContent: "center" },
+  passwordInput: { paddingRight: 46 },
+  eyeButton: { position: "absolute", right: 14, top: 0, bottom: 12, justifyContent: "center" },
   primaryButton: { backgroundColor: colors.accent, borderRadius: 10, padding: 14, alignItems: "center", marginTop: 8 },
   primaryButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  buttonContent: { flexDirection: "row", alignItems: "center", justifyContent: "center" },
+  providerLogo: { width: 20, height: 20, marginRight: 10 },
   googleButton: {
     borderWidth: 1,
     borderColor: colors.border,
@@ -117,6 +147,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   googleButtonText: { fontSize: 16, fontWeight: "500", color: colors.ink },
+  divider: { height: 1, backgroundColor: colors.border, marginTop: 16, marginBottom: 4 },
   kakaoButton: { backgroundColor: colors.kakaoYellow, borderRadius: 10, padding: 14, alignItems: "center", marginTop: 12 },
   kakaoButtonText: { fontSize: 16, fontWeight: "500", color: "#000" },
   appleButton: { backgroundColor: "#000", borderRadius: 10, padding: 14, alignItems: "center", marginTop: 12 },
