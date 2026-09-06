@@ -1,4 +1,5 @@
-import { ActivityIndicator, FlatList, Pressable, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, FlatList, Image, Pressable, Text, View, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 
@@ -40,13 +41,20 @@ export default function ChatListScreen({ navigation }: Props) {
         })
       }
     >
-      <View style={styles.avatarPlaceholder} />
+      {item.other_photo_url ? (
+        <Image source={{ uri: item.other_photo_url }} style={styles.avatar} />
+      ) : (
+        <View style={[styles.avatar, styles.avatarPlaceholder]}>
+          <Ionicons name="person" size={22} color={colors.border} />
+        </View>
+      )}
       <View style={styles.rowText}>
         <Text style={styles.name}>{item.other_display_name}</Text>
         <Text style={styles.subtext}>
           {t("chat.matchedOn", { date: new Date(item.matched_at).toLocaleDateString(i18n.language) })}
         </Text>
       </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.border} />
     </Pressable>
   );
 
@@ -60,12 +68,13 @@ export default function ChatListScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
-  header: { fontSize: 24, fontWeight: "700", padding: 16, paddingTop: 48, color: colors.navy },
+  header: { fontSize: 24, fontWeight: "800", padding: 16, paddingTop: 48, color: colors.navy },
   centered: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
   emptyText: { color: colors.muted },
-  row: { flexDirection: "row", alignItems: "center", padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border },
-  avatarPlaceholder: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.creamDeep, marginRight: 12 },
+  row: { flexDirection: "row", alignItems: "center", padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border, gap: 4 },
+  avatar: { width: 52, height: 52, borderRadius: 26, marginRight: 12 },
+  avatarPlaceholder: { backgroundColor: colors.creamDeep, alignItems: "center", justifyContent: "center" },
   rowText: { flex: 1 },
-  name: { fontSize: 16, fontWeight: "600", color: colors.ink },
+  name: { fontSize: 16, fontWeight: "700", color: colors.ink },
   subtext: { fontSize: 13, color: colors.muted, marginTop: 2 },
 });

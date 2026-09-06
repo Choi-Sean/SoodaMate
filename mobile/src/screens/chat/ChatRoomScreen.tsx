@@ -38,7 +38,7 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
   // Phase 14: Bumble first-message restriction state comes from /matches
   // (already recomputed server-side on every fetch, including lazy expiry) —
   // no separate single-match endpoint exists, and react-query caches this
-  // list cheaply since MatchListScreen/ChatListScreen already fetch it too.
+  // list cheaply since ChatListScreen already fetches it too.
   const { data: matches } = useMatches();
   const match = useMemo(() => matches?.find((m) => m.id === matchId), [matches, matchId]);
   const mustWaitForPeer = match?.is_message_restricted && !match?.can_send_first_message;

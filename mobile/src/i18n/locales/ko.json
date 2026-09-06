@@ -3,7 +3,9 @@
     "discover": "둘러보기",
     "matches": "매칭",
     "chat": "채팅",
-    "profile": "프로필"
+    "profile": "프로필",
+    "swipe": "스와이프",
+    "likes": "좋아요"
   },
   "common": {
     "appName": "수다메이트",
@@ -141,7 +143,8 @@
     "kmAway": "{{km}}km 거리",
     "pass": "패스",
     "superLike": "슈퍼좋아요",
-    "like": "좋아요"
+    "like": "좋아요",
+    "title": "발견"
   },
   "match": {
     "title": "매칭 성사!",
@@ -261,5 +264,17 @@
     "save": "필터 저장",
     "lockedBody": "인종·종교로 상대를 필터링하려면 프리미엄 멤버십이 필요해요.",
     "upgrade": "멤버십 구매하기"
+  },
+  "swipe": {
+    "remaining": "스와이프 {{count}}/{{limit}}회 남음",
+    "limitReached": "{{time}} 후에 다시 스와이프할 수 있어요",
+    "limitReachedEmpty": "오늘의 스와이프를 다 썼어요 — 곧 다시 돌아와주세요!",
+    "continue": "계속하기",
+    "sponsored": "광고"
+  },
+  "likes": {
+    "title": "좋아요",
+    "empty": "아직 좋아요가 없어요 — 프로필을 완성해서 눈에 띄어보세요!",
+    "loadError": "좋아요 목록을 불러오지 못했어요. 당겨서 새로고침하세요."
   }
 }

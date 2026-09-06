@@ -2,29 +2,32 @@ import { Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useTranslation } from "react-i18next";
 
-import DiscoverScreen from "../screens/discover/DiscoverScreen";
-import MatchListScreen from "../screens/matches/MatchListScreen";
-import ChatStack from "./ChatStack";
 import ProfileStack from "./ProfileStack";
+import DiscoverScreen from "../screens/discover/DiscoverScreen";
+import SwipeScreen from "../screens/swipe/SwipeScreen";
+import LikesScreen from "../screens/likes/LikesScreen";
+import ChatStack from "./ChatStack";
 import { colors } from "../theme";
 
 export type MainTabsParamList = {
-  Discover: undefined;
-  Matches: undefined;
-  Chat: undefined;
   Profile: undefined;
+  Discover: undefined;
+  Swipe: undefined;
+  Likes: undefined;
+  Chat: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabsParamList>();
 
-// No icon library is bundled (no new native dependency added for a
-// bottom-tab polish pass) — a plain emoji glyph reads clean at tab-bar size
-// and matches the mascot's warm, approachable style.
+// No icon library is bundled beyond @expo/vector-icons' emoji-adjacent glyph
+// set isn't used here on purpose — a plain emoji glyph reads clean at
+// tab-bar size and matches the mascot's warm, approachable style.
 const TAB_ICONS: Record<keyof MainTabsParamList, string> = {
-  Discover: "🔍",
-  Matches: "💛",
-  Chat: "💬",
   Profile: "👤",
+  Discover: "🧭",
+  Swipe: "🔥",
+  Likes: "❤️",
+  Chat: "💬",
 };
 
 export default function MainTabs() {
@@ -42,10 +45,11 @@ export default function MainTabs() {
         ),
       })}
     >
-      <Tab.Screen name="Discover" component={DiscoverScreen} options={{ tabBarLabel: t("tabs.discover") }} />
-      <Tab.Screen name="Matches" component={MatchListScreen} options={{ tabBarLabel: t("tabs.matches") }} />
-      <Tab.Screen name="Chat" component={ChatStack} options={{ tabBarLabel: t("tabs.chat") }} />
       <Tab.Screen name="Profile" component={ProfileStack} options={{ tabBarLabel: t("tabs.profile") }} />
+      <Tab.Screen name="Discover" component={DiscoverScreen} options={{ tabBarLabel: t("tabs.discover") }} />
+      <Tab.Screen name="Swipe" component={SwipeScreen} options={{ tabBarLabel: t("tabs.swipe") }} />
+      <Tab.Screen name="Likes" component={LikesScreen} options={{ tabBarLabel: t("tabs.likes") }} />
+      <Tab.Screen name="Chat" component={ChatStack} options={{ tabBarLabel: t("tabs.chat") }} />
     </Tab.Navigator>
   );
 }

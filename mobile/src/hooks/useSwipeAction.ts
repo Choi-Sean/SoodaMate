@@ -17,6 +17,12 @@ export function useSwipeAction() {
       if (queryClient.getQueryData<Candidate[]>(["candidates"])?.length === 0) {
         queryClient.invalidateQueries({ queryKey: ["candidates"] });
       }
+      // Responding to someone (either direction) drops them out of "who
+      // liked me" on the backend — same optimistic-removal idea as above.
+      queryClient.setQueryData<Candidate[]>(["likedMe"], (prev) =>
+        (prev ?? []).filter((c) => c.user_id !== candidate.user_id)
+      );
+      queryClient.invalidateQueries({ queryKey: ["swipeLimit"] });
     },
   });
 }

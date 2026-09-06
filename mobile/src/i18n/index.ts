@@ -22,6 +22,9 @@ const resources = {
   ja: { translation: ja },
 };
 
+// Kept for a possible future "match my device" language-settings option,
+// but no longer used as the initial default below — the app defaults to
+// English for everyone until the user explicitly picks a language.
 function detectDeviceLanguage(): SupportedLanguage {
   const deviceLang = Localization.getLocales()[0]?.languageCode ?? "en";
   return (SUPPORTED_LANGUAGES as readonly string[]).includes(deviceLang)
@@ -32,9 +35,7 @@ function detectDeviceLanguage(): SupportedLanguage {
 export async function initI18n(): Promise<void> {
   const saved = await secureStorage.getItem(LANG_STORAGE_KEY);
   const initialLanguage =
-    saved && (SUPPORTED_LANGUAGES as readonly string[]).includes(saved)
-      ? (saved as SupportedLanguage)
-      : detectDeviceLanguage();
+    saved && (SUPPORTED_LANGUAGES as readonly string[]).includes(saved) ? (saved as SupportedLanguage) : "en";
 
   await i18n.use(initReactI18next).init({
     resources,

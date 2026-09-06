@@ -3,7 +3,9 @@
     "discover": "发现",
     "matches": "配对",
     "chat": "聊天",
-    "profile": "我的"
+    "profile": "我的",
+    "swipe": "滑动",
+    "likes": "喜欢"
   },
   "common": {
     "appName": "数搭伴侣",
@@ -141,7 +143,8 @@
     "kmAway": "{{km}}公里外",
     "pass": "跳过",
     "superLike": "超级喜欢",
-    "like": "喜欢"
+    "like": "喜欢",
+    "title": "发现"
   },
   "match": {
     "title": "配对成功！",
@@ -261,5 +264,17 @@
     "save": "保存筛选条件",
     "lockedBody": "按种族/民族或宗教筛选需要有效的高级会员资格。",
     "upgrade": "开通会员"
+  },
+  "swipe": {
+    "remaining": "剩余 {{count}}/{{limit}} 次滑动",
+    "limitReached": "{{time}} 后可继续滑动",
+    "limitReachedEmpty": "滑动次数已用完，稍后再来看看吧！",
+    "continue": "继续",
+    "sponsored": "广告"
+  },
+  "likes": {
+    "title": "喜欢我的人",
+    "empty": "还没有人喜欢你 — 完善资料让更多人看到你吧！",
+    "loadError": "无法加载喜欢列表，请下拉重试。"
   }
 }

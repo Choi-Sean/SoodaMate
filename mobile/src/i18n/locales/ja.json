@@ -3,7 +3,9 @@
     "discover": "ディスカバー",
     "matches": "マッチ",
     "chat": "チャット",
-    "profile": "プロフィール"
+    "profile": "プロフィール",
+    "swipe": "スワイプ",
+    "likes": "いいね"
   },
   "common": {
     "appName": "数多メイト",
@@ -141,7 +143,8 @@
     "kmAway": "{{km}}km先",
     "pass": "パス",
     "superLike": "スーパーいいね",
-    "like": "いいね"
+    "like": "いいね",
+    "title": "見つける"
   },
   "match": {
     "title": "マッチしました！",
@@ -261,5 +264,17 @@
     "save": "フィルターを保存",
     "lockedBody": "人種・民族や宗教での絞り込みには有効なプレミアム会員資格が必要です。",
     "upgrade": "会員になる"
+  },
+  "swipe": {
+    "remaining": "スワイプ残り{{count}}/{{limit}}回",
+    "limitReached": "{{time}}後に再度スワイプできます",
+    "limitReachedEmpty": "本日のスワイプ回数はなくなりました。またあとで確認してください！",
+    "continue": "続ける",
+    "sponsored": "広告"
+  },
+  "likes": {
+    "title": "いいね",
+    "empty": "まだいいねがありません — プロフィールを充実させて注目されましょう！",
+    "loadError": "いいね一覧を読み込めませんでした。引っ張って再試行してください。"
   }
 }

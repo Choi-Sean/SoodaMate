@@ -10,7 +10,8 @@
 | `KAKAO_REST_API_KEY` | Kakao Developers → App → App Keys | REST API key |
 | `APPLE_BUNDLE_ID` | — | Defaults to `com.soodalist.soodamate` (the real bundle id, already set in `mobile/app.config.js`) — only override if the bundle id ever changes. No separate Apple account/key needed beyond the paid Apple Developer Program membership App Store submission already requires; just enable the "Sign In with Apple" capability on the App ID in the developer portal |
 | `GCS_BUCKET_NAME` | GCP Console → Cloud Storage | Bucket for profile photos |
-| `GOOGLE_APPLICATION_CREDENTIALS` | GCP Console → IAM → Service Accounts → Keys | Path to service account JSON, needs Storage Object Admin on the bucket |
+| `GOOGLE_APPLICATION_CREDENTIALS` | GCP Console → IAM → Service Accounts → Keys | Path to service account JSON on disk, needs Storage Object Admin on the bucket — local dev only |
+| `GCS_SERVICE_ACCOUNT_JSON` | Same service account key as above | The raw JSON *content* (paste the whole key file), not a path — used on Railway, which has no persistent file to point `GOOGLE_APPLICATION_CREDENTIALS` at. Required for `/uploads/presign` to work in production; without it that endpoint 500s (`google.auth.exceptions.DefaultCredentialsError`) |
 | `FIREBASE_CREDENTIALS_PATH` | Firebase Console → Project Settings → Service Accounts | Path to service account JSON for FCM push |
 | `CORS_ORIGINS` | — | Comma-separated allowed origins for the mobile app / web |
 | `STUN_URLS` | — | Defaults to Google's public STUN (`stun:stun.l.google.com:19302`), no account needed |
@@ -29,8 +30,8 @@
 | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | same OAuth client as backend's `GOOGLE_OAUTH_CLIENT_ID` | `@react-native-google-signin/google-signin` needs the *web* client id, not an android/iOS one |
 | `EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY` | Kakao Developers → App → App Keys | Native app key, plus URL scheme registration in iOS/Android native config |
 | `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID` / `EXPO_PUBLIC_ADMOB_IOS_APP_ID` | AdMob console, after app registered | The *app*-level IDs (one per platform); falls back to Google's test IDs until set |
-| `EXPO_PUBLIC_ADMOB_ANDROID_BANNER_UNIT_ID` / `EXPO_PUBLIC_ADMOB_IOS_BANNER_UNIT_ID` | AdMob console → Ad units, after creating a Banner unit per platform | Falls back to Google's test banner unit ID until set (`src/components/AdSlot.native.tsx`) |
 | `EXPO_PUBLIC_ADMOB_ANDROID_INTERSTITIAL_UNIT_ID` / `EXPO_PUBLIC_ADMOB_IOS_INTERSTITIAL_UNIT_ID` | AdMob console → Ad units, after creating an Interstitial unit per platform | Falls back to Google's test interstitial unit ID until set (`src/services/ads.native.ts`) |
+| `EXPO_PUBLIC_ADMOB_ANDROID_NATIVE_UNIT_ID` / `EXPO_PUBLIC_ADMOB_IOS_NATIVE_UNIT_ID` | AdMob console → Ad units, after creating a Native unit per platform | Falls back to Google's test native unit ID until set (`src/components/AdCard.native.tsx`) — the in-swipe-deck sponsored card, replacing the old banner strip |
 | `FIREBASE_CONFIG` | Firebase Console → Project settings → your app | google-services.json / GoogleService-Info.plist |
 
 **iOS App Tracking Transparency**: `app.config.js` already declares `NSUserTrackingUsageDescription` (via the `expo-tracking-transparency` plugin) and `ads.native.ts` requests the permission before initializing AdMob — required by Apple for any app using an IDFA-capable SDK like AdMob, not optional. No env var needed; nothing to configure here beyond having a real AdMob account eventually.

@@ -2,20 +2,50 @@ import { useState } from "react";
 import { ActivityIndicator, FlatList, Image, Modal, Pressable, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 
 import ProfileCard from "../../components/ProfileCard";
-import { useRecommended } from "../../hooks/useRecommended";
+import ActionButtons from "../../components/ActionButtons";
+import MatchCelebrationModal from "../matches/MatchCelebrationModal";
+import { useLikedMe } from "../../hooks/useLikedMe";
+import { useSwipeAction } from "../../hooks/useSwipeAction";
+import type { SwipeAction } from "../../api/interactions";
 import type { Candidate } from "../../types";
 import { colors } from "../../theme";
 
-/** Pure browsing — nearby people matching the viewer's preferences, no
- * like/pass actions. The interactive deck lives on the Swipe tab; this is
- * a lightweight recommendation feed you can look through and tap into. */
-export default function DiscoverScreen() {
+/** People who already liked/superliked the viewer — tap a tile to see the
+ * full profile and like back (instant match) or pass. */
+export default function LikesScreen() {
   const { t } = useTranslation();
-  const { data: candidates, isLoading, isError } = useRecommended();
+  const { data: candidates, isLoading, isError } = useLikedMe();
+  const swipeMutation = useSwipeAction();
+  const navigation = useNavigation<any>();
   const [selected, setSelected] = useState<Candidate | null>(null);
+  const [matchInfo, setMatchInfo] = useState<{
+    matchId: string;
+    otherUserId: string;
+    otherDisplayName: string;
+  } | null>(null);
+
+  function handleAction(candidate: Candidate, action: SwipeAction) {
+    if (swipeMutation.isPending) return;
+    swipeMutation.mutate(
+      { action, candidate },
+      {
+        onSuccess: (result) => {
+          setSelected(null);
+          if (result.matched && result.match_id) {
+            setMatchInfo({
+              matchId: result.match_id,
+              otherUserId: candidate.user_id,
+              otherDisplayName: candidate.display_name,
+            });
+          }
+        },
+      }
+    );
+  }
 
   if (isLoading) {
     return (
@@ -28,7 +58,7 @@ export default function DiscoverScreen() {
   if (isError) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.emptyText}>{t("discover.loadError")}</Text>
+        <Text style={styles.emptyText}>{t("likes.loadError")}</Text>
       </View>
     );
   }
@@ -54,20 +84,27 @@ export default function DiscoverScreen() {
           <Text style={styles.tileName} numberOfLines={1}>
             {item.display_name}, {item.age}
           </Text>
-          {item.distance_km != null && (
-            <Text style={styles.tileDistance}>{t("discover.kmAway", { km: Math.round(item.distance_km) })}</Text>
-          )}
         </View>
+        <Pressable
+          style={styles.likeBackButton}
+          onPress={(e) => {
+            e.stopPropagation();
+            handleAction(item, "like");
+          }}
+          disabled={swipeMutation.isPending}
+        >
+          <Ionicons name="heart" size={18} color="#fff" />
+        </Pressable>
       </Pressable>
     );
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{t("discover.title")}</Text>
+      <Text style={styles.header}>{t("likes.title")}</Text>
       {!candidates || candidates.length === 0 ? (
         <View style={styles.centered}>
-          <Text style={styles.emptyText}>{t("discover.empty")}</Text>
+          <Text style={styles.emptyText}>{t("likes.empty")}</Text>
         </View>
       ) : (
         <FlatList
@@ -83,15 +120,38 @@ export default function DiscoverScreen() {
       <Modal visible={selected !== null} animationType="slide" onRequestClose={() => setSelected(null)}>
         <View style={styles.detailContainer}>
           {selected && (
-            <View style={styles.detailCardWrap}>
-              <ProfileCard candidate={selected} />
-            </View>
+            <>
+              <View style={styles.detailCardWrap}>
+                <ProfileCard candidate={selected} />
+              </View>
+              <ActionButtons
+                onPass={() => handleAction(selected, "pass")}
+                onLike={() => handleAction(selected, "like")}
+                onSuperLike={() => handleAction(selected, "superlike")}
+                disabled={swipeMutation.isPending}
+              />
+            </>
           )}
           <Pressable style={styles.closeButton} onPress={() => setSelected(null)}>
             <Ionicons name="close" size={26} color="#fff" />
           </Pressable>
         </View>
       </Modal>
+
+      <MatchCelebrationModal
+        visible={matchInfo !== null}
+        otherDisplayName={matchInfo?.otherDisplayName ?? null}
+        onKeepBrowsing={() => setMatchInfo(null)}
+        onSendMessage={() => {
+          if (!matchInfo) return;
+          const { matchId, otherUserId, otherDisplayName } = matchInfo;
+          setMatchInfo(null);
+          navigation.navigate("Chat", {
+            screen: "ChatRoom",
+            params: { matchId, otherUserId, otherDisplayName },
+          });
+        }}
+      />
     </View>
   );
 }
@@ -121,14 +181,29 @@ const styles = StyleSheet.create({
   tileSuperlike: {
     position: "absolute",
     top: 8,
-    right: 8,
+    left: 8,
     backgroundColor: "#3B82F6",
     borderRadius: 12,
     padding: 5,
   },
-  tileTextWrap: { position: "absolute", bottom: 10, left: 10, right: 10 },
+  tileTextWrap: { position: "absolute", bottom: 10, left: 10, right: 44 },
   tileName: { color: "#fff", fontSize: 14, fontWeight: "700" },
-  tileDistance: { color: colors.accentSoft, fontSize: 11, marginTop: 1 },
+  likeBackButton: {
+    position: "absolute",
+    bottom: 8,
+    right: 8,
+    backgroundColor: colors.accent,
+    borderRadius: 16,
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
   detailContainer: { flex: 1, backgroundColor: colors.navyDeep },
   detailCardWrap: { flex: 1, padding: 16, paddingTop: 56 },
   closeButton: {

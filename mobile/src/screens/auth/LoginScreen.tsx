@@ -130,6 +130,7 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
     fontSize: 16,
+    color: colors.ink,
   },
   passwordRow: { position: "relative", justifyContent: "center" },
   passwordInput: { paddingRight: 46 },

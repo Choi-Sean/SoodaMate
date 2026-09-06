@@ -3,9 +3,10 @@ from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy import and_, case, exists, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased
 
 from app.database import engine
-from app.models.interaction import Block, Swipe
+from app.models.interaction import Block, Match, Swipe
 from app.models.profile import Photo, Profile
 from app.models.user import User
 from app.services.payment_service import is_premium_member
@@ -144,6 +145,67 @@ async def get_candidates(
             if distance_km is not None and distance_km > viewer_profile.max_distance_km:
                 continue
         results.append((profile, distance_km, bool(is_superliker)))
+
+    return results
+
+
+async def get_users_who_liked_me(
+    db: AsyncSession, viewer: User, viewer_profile: Profile, limit: int = 50
+) -> list[tuple[Profile, float | None, bool]]:
+    """People who liked/superliked the viewer, most recent first — excludes
+    anyone the viewer already responded to either way (a like would already
+    be a Match; a pass means the viewer already rejected them) and anyone
+    blocked either direction. Returns the same (profile, distance_km,
+    is_superlike) shape as get_candidates so routers/discovery.py can build
+    CandidateOut the exact same way for both."""
+    their_like = aliased(Swipe)
+    my_response = aliased(Swipe)
+
+    already_responded = exists().where(
+        and_(my_response.from_user_id == viewer.id, my_response.to_user_id == their_like.from_user_id)
+    )
+    already_matched = exists().where(
+        or_(
+            and_(Match.user_a_id == viewer.id, Match.user_b_id == their_like.from_user_id),
+            and_(Match.user_a_id == their_like.from_user_id, Match.user_b_id == viewer.id),
+        )
+    )
+    blocked_either_direction = exists().where(
+        or_(
+            and_(Block.blocker_id == viewer.id, Block.blocked_id == their_like.from_user_id),
+            and_(Block.blocker_id == their_like.from_user_id, Block.blocked_id == viewer.id),
+        )
+    )
+
+    stmt = (
+        select(Profile, their_like.action)
+        .join(Profile, Profile.user_id == their_like.from_user_id)
+        .join(User, User.id == Profile.user_id)
+        .where(
+            their_like.to_user_id == viewer.id,
+            their_like.action.in_(["like", "superlike"]),
+            Profile.is_profile_complete,
+            ~User.is_banned,
+            User.is_active,
+            ~already_responded,
+            ~already_matched,
+            ~blocked_either_direction,
+        )
+        .order_by(their_like.created_at.desc())
+        .limit(limit)
+    )
+
+    rows = (await db.execute(stmt)).all()
+
+    viewer_lat, viewer_lng = _effective_location(viewer_profile)
+    results: list[tuple[Profile, float | None, bool]] = []
+    for profile, action in rows:
+        distance_km = None
+        candidate_lat, candidate_lng = _effective_location(profile)
+        if viewer_lat is not None and viewer_lng is not None and candidate_lat is not None and candidate_lng is not None:
+            d = await db.scalar(select(_haversine_km(viewer_lat, viewer_lng, candidate_lat, candidate_lng)))
+            distance_km = float(d) if d is not None else None
+        results.append((profile, distance_km, action == "superlike"))
 
     return results
 

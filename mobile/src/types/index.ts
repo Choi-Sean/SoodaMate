@@ -67,6 +67,7 @@ export interface Match {
   id: string;
   other_user_id: string;
   other_display_name: string;
+  other_photo_url: string | null;
   matched_at: string;
   is_message_restricted: boolean;
   can_send_first_message: boolean;

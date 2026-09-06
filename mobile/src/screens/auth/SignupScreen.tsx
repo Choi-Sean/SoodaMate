@@ -112,6 +112,7 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
     fontSize: 16,
+    color: colors.ink,
   },
   primaryButton: { backgroundColor: colors.accent, borderRadius: 10, padding: 14, alignItems: "center", marginTop: 8 },
   primaryButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },

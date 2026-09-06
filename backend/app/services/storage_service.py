@@ -1,7 +1,9 @@
+import json
 import uuid
 from datetime import timedelta
 
 from google.cloud import storage
+from google.oauth2 import service_account
 
 from app.config import settings
 
@@ -11,7 +13,14 @@ _client: storage.Client | None = None
 def _get_client() -> storage.Client:
     global _client
     if _client is None:
-        _client = storage.Client()
+        if settings.gcs_service_account_json:
+            info = json.loads(settings.gcs_service_account_json)
+            creds = service_account.Credentials.from_service_account_info(info)
+            _client = storage.Client(credentials=creds, project=info.get("project_id"))
+        else:
+            # GOOGLE_APPLICATION_CREDENTIALS (a file path) or another
+            # Application Default Credentials source.
+            _client = storage.Client()
     return _client
 
 

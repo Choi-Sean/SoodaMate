@@ -24,7 +24,12 @@ class Settings(BaseSettings):
     apple_bundle_id: str = "com.soodalist.soodamate"
 
     gcs_bucket_name: str = "sooda-mate-photos"
-    google_application_credentials: str = ""
+    # Raw service-account key JSON (not a file path) — Railway has no
+    # persistent file mount to point GOOGLE_APPLICATION_CREDENTIALS at, so
+    # storage_service.py reads the key content directly from this env var.
+    # Falls back to GOOGLE_APPLICATION_CREDENTIALS/ADC when unset (local
+    # dev with an actual key file on disk).
+    gcs_service_account_json: str = ""
 
     firebase_credentials_path: str = ""
 

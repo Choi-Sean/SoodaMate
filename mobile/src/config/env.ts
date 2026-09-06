@@ -9,10 +9,13 @@ export const env = {
   marketingSiteUrl: process.env.EXPO_PUBLIC_MARKETING_SITE_URL ?? "https://soodamate.example.com",
   // Ad unit IDs (distinct from the AdMob *app* IDs in app.config.js) are
   // per-platform per-ad-format in AdMob's console. Empty until a real AdMob
-  // account exists; ads.native.ts/AdSlot.native.tsx fall back to Google's
+  // account exists; ads.native.ts/AdCard.native.tsx fall back to Google's
   // TestIds when these are unset, so the app is fully functional either way.
-  admobAndroidBannerUnitId: process.env.EXPO_PUBLIC_ADMOB_ANDROID_BANNER_UNIT_ID ?? "",
-  admobIosBannerUnitId: process.env.EXPO_PUBLIC_ADMOB_IOS_BANNER_UNIT_ID ?? "",
+  // No banner unit id — the in-deck native ad card (below) replaced the old
+  // banner strip per product decision.
   admobAndroidInterstitialUnitId: process.env.EXPO_PUBLIC_ADMOB_ANDROID_INTERSTITIAL_UNIT_ID ?? "",
   admobIosInterstitialUnitId: process.env.EXPO_PUBLIC_ADMOB_IOS_INTERSTITIAL_UNIT_ID ?? "",
+  // Native ad unit (AdCard.native.tsx) — the in-swipe-deck sponsored card.
+  admobAndroidNativeUnitId: process.env.EXPO_PUBLIC_ADMOB_ANDROID_NATIVE_UNIT_ID ?? "",
+  admobIosNativeUnitId: process.env.EXPO_PUBLIC_ADMOB_IOS_NATIVE_UNIT_ID ?? "",
 };

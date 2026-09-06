@@ -19,7 +19,14 @@ class MatchOut(BaseModel):
     id: uuid.UUID
     other_user_id: uuid.UUID
     other_display_name: str
+    other_photo_url: str | None = None
     matched_at: datetime
     is_message_restricted: bool = False
     can_send_first_message: bool = True
     first_message_deadline: datetime | None = None
+
+
+class SwipeLimitOut(BaseModel):
+    remaining: int
+    limit: int
+    resets_at: datetime | None = None

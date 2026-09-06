@@ -3,7 +3,9 @@
     "discover": "Descubrir",
     "matches": "Matches",
     "chat": "Chat",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "swipe": "Deslizar",
+    "likes": "Me gusta"
   },
   "common": {
     "appName": "SooDa Mate",
@@ -141,7 +143,8 @@
     "kmAway": "a {{km}} km",
     "pass": "Pasar",
     "superLike": "Super Like",
-    "like": "Me gusta"
+    "like": "Me gusta",
+    "title": "Descubrir"
   },
   "match": {
     "title": "¡Es un Match!",
@@ -261,5 +264,17 @@
     "save": "Guardar filtros",
     "lockedBody": "Filtrar por raza/etnia o religión requiere una membresía premium activa.",
     "upgrade": "Obtener membresía"
+  },
+  "swipe": {
+    "remaining": "{{count}}/{{limit}} deslizamientos restantes",
+    "limitReached": "Vuelve en {{time}} para más deslizamientos",
+    "limitReachedEmpty": "Te quedaste sin deslizamientos por ahora — ¡vuelve pronto!",
+    "continue": "Continuar",
+    "sponsored": "Patrocinado"
+  },
+  "likes": {
+    "title": "Me gusta",
+    "empty": "Aún no hay likes — ¡completa tu perfil para destacar!",
+    "loadError": "No se pudieron cargar los likes. Desliza para reintentar."
   }
 }

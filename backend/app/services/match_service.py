@@ -1,16 +1,46 @@
 import uuid
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import and_, or_, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.interaction import Match
-from app.models.profile import Profile
-from app.schemas.match import MatchOut, SwipeResponse
+from app.config import settings
+from app.models.interaction import Match, Swipe
+from app.models.profile import Photo, Profile
+from app.schemas.match import MatchOut, SwipeLimitOut, SwipeResponse
 from app.services import push_service
 
 VALID_ACTIONS = {"like", "pass", "superlike"}
+
+# Every swipe (like/pass/superlike) counts against this — a deliberate,
+# separate throttle from the Phase 17 superlike-credit system below, which
+# only ever gates superlikes specifically.
+SWIPE_LIMIT = 20
+SWIPE_LIMIT_WINDOW = timedelta(hours=6)
+
+
+async def get_swipe_limit_status(db: AsyncSession, user_id: uuid.UUID) -> SwipeLimitOut:
+    """Rolling window, not a fixed clock-aligned one: your 21st swipe is
+    blocked until your oldest swipe in the last 6h ages out, not until a
+    fixed boundary — so resets_at is that oldest swipe's timestamp + 6h."""
+    window_start = datetime.now(timezone.utc) - SWIPE_LIMIT_WINDOW
+    timestamps = (
+        await db.execute(
+            select(Swipe.created_at)
+            .where(Swipe.from_user_id == user_id, Swipe.created_at >= window_start)
+            .order_by(Swipe.created_at.asc())
+        )
+    ).scalars().all()
+
+    remaining = max(0, SWIPE_LIMIT - len(timestamps))
+    resets_at = None
+    if remaining == 0:
+        oldest = timestamps[0]
+        if oldest.tzinfo is None:
+            oldest = oldest.replace(tzinfo=timezone.utc)
+        resets_at = oldest + SWIPE_LIMIT_WINDOW
+    return SwipeLimitOut(remaining=remaining, limit=SWIPE_LIMIT, resets_at=resets_at)
 
 
 async def _consume_superlike_allowance(db: AsyncSession, user_id: uuid.UUID) -> None:
@@ -36,6 +66,16 @@ async def record_swipe(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid action")
     if from_user_id == to_user_id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "cannot swipe on yourself")
+
+    limit_status = await get_swipe_limit_status(db, from_user_id)
+    if limit_status.remaining <= 0:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            {
+                "message": f"swipe limit reached ({SWIPE_LIMIT} per {int(SWIPE_LIMIT_WINDOW.total_seconds() // 3600)}h)",
+                "resets_at": limit_status.resets_at.isoformat() if limit_status.resets_at else None,
+            },
+        )
 
     if action == "superlike":
         await _consume_superlike_allowance(db, from_user_id)
@@ -103,22 +143,37 @@ async def list_matches(db: AsyncSession, user_id: uuid.UUID) -> list[MatchOut]:
 
     other_ids = [m.user_b_id if m.user_a_id == user_id else m.user_a_id for m in rows]
     profiles_by_user = {}
+    first_photo_by_user: dict[uuid.UUID, Photo] = {}
     if other_ids:
         profile_rows = (
             await db.execute(select(Profile).where(Profile.user_id.in_(other_ids)))
         ).scalars()
         profiles_by_user = {p.user_id: p for p in profile_rows}
 
+        photo_rows = (
+            await db.execute(
+                select(Photo).where(Photo.user_id.in_(other_ids)).order_by(Photo.user_id, Photo.position)
+            )
+        ).scalars()
+        for photo in photo_rows:
+            first_photo_by_user.setdefault(photo.user_id, photo)
+
     out = []
     for m in rows:
         other_id = m.user_b_id if m.user_a_id == user_id else m.user_a_id
         profile = profiles_by_user.get(other_id)
+        photo = first_photo_by_user.get(other_id)
         restricted = _is_restricted_and_waiting(m)
         out.append(
             MatchOut(
                 id=m.id,
                 other_user_id=other_id,
                 other_display_name=profile.display_name if profile else "",
+                other_photo_url=(
+                    f"https://storage.googleapis.com/{settings.gcs_bucket_name}/{photo.gcs_object_path}"
+                    if photo
+                    else None
+                ),
                 matched_at=m.matched_at,
                 is_message_restricted=restricted,
                 can_send_first_message=(not restricted) or (m.restricted_to_user_id == user_id),

@@ -1,4 +1,5 @@
-import { Pressable, Text, View, StyleSheet } from "react-native";
+import { Pressable, View, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
 import { colors } from "../theme";
@@ -16,51 +17,49 @@ export default function ActionButtons({ onPass, onLike, onSuperLike, disabled }:
   return (
     <View style={styles.row}>
       <Pressable
-        style={[styles.button, styles.passButton]}
+        style={({ pressed }) => [styles.button, styles.passButton, pressed && styles.pressed]}
         onPress={onPass}
         disabled={disabled}
         accessibilityLabel={t("discover.pass", { defaultValue: "Pass" })}
       >
-        <Text style={styles.passIcon}>✕</Text>
+        <Ionicons name="close" size={30} color={colors.heart} />
       </Pressable>
 
       <Pressable
-        style={[styles.button, styles.superLikeButton]}
+        style={({ pressed }) => [styles.button, styles.superLikeButton, pressed && styles.pressed]}
         onPress={onSuperLike}
         disabled={disabled}
         accessibilityLabel={t("discover.superLike", { defaultValue: "Super Like" })}
       >
-        <Text style={styles.superLikeIcon}>★</Text>
+        <Ionicons name="star" size={22} color="#3B82F6" />
       </Pressable>
 
       <Pressable
-        style={[styles.button, styles.likeButton]}
+        style={({ pressed }) => [styles.button, styles.likeButton, pressed && styles.pressed]}
         onPress={onLike}
         disabled={disabled}
         accessibilityLabel={t("discover.like", { defaultValue: "Like" })}
       >
-        <Text style={styles.likeIcon}>♥</Text>
+        <Ionicons name="heart" size={30} color="#fff" />
       </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 20, paddingVertical: 16 },
+  row: { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 22, paddingVertical: 18 },
   button: {
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 999,
     shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
   },
-  passButton: { width: 56, height: 56, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
-  passIcon: { fontSize: 24, color: colors.muted },
+  pressed: { transform: [{ scale: 0.92 }], opacity: 0.85 },
+  passButton: { width: 58, height: 58, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   superLikeButton: { width: 48, height: 48, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
-  superLikeIcon: { fontSize: 20, color: "#3B82F6" },
-  likeButton: { width: 64, height: 64, backgroundColor: colors.accent },
-  likeIcon: { fontSize: 28, color: "#fff" },
+  likeButton: { width: 68, height: 68, backgroundColor: colors.accent },
 });
