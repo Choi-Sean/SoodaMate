@@ -12,6 +12,7 @@ class PhotoOut(BaseModel):
     id: uuid.UUID
     gcs_object_path: str
     position: int
+    media_type: str
 
     @computed_field
     @property
@@ -114,7 +115,9 @@ class ProfileOut(BaseModel):
 
 
 class PresignRequest(BaseModel):
-    content_type: str = Field(pattern="^image/(jpeg|png|webp)$")
+    # One video slot per profile (position convention enforced by the
+    # mobile UI, not here) alongside up to 9 photo slots.
+    content_type: str = Field(pattern="^(image/(jpeg|png|webp)|video/mp4)$")
     position: int = Field(ge=0, le=8)
 
 

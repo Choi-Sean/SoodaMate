@@ -24,9 +24,19 @@ def _get_client():
     return _client
 
 
+_EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "video/mp4": "mp4"}
+
+
 def build_object_path(user_id: uuid.UUID, content_type: str) -> str:
-    ext = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}[content_type]
+    ext = _EXTENSIONS[content_type]
     return f"users/{user_id}/photos/{uuid.uuid4()}.{ext}"
+
+
+def media_type_from_object_path(object_path: str) -> str:
+    """Derived server-side from the extension build_object_path gave the
+    upload, never trusted from client input — routers/profiles.py::
+    confirm_photo uses this to set Photo.media_type."""
+    return "video" if object_path.lower().endswith(".mp4") else "photo"
 
 
 def generate_upload_url(object_path: str, content_type: str) -> str:

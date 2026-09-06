@@ -37,7 +37,11 @@ export default function DiscoverScreen() {
     const photo = item.photos[0];
     return (
       <Pressable style={styles.tile} onPress={() => setSelected(item)}>
-        {photo ? (
+        {photo && photo.media_type === "video" ? (
+          <View style={[styles.tileImage, styles.tileVideoPlaceholder]}>
+            <Ionicons name="play-circle" size={40} color="#fff" />
+          </View>
+        ) : photo ? (
           <Image source={{ uri: photo.url }} style={styles.tileImage} />
         ) : (
           <View style={[styles.tileImage, styles.tilePlaceholder]}>
@@ -117,6 +121,7 @@ const styles = StyleSheet.create({
   },
   tileImage: { width: "100%", height: "100%" },
   tilePlaceholder: { alignItems: "center", justifyContent: "center" },
+  tileVideoPlaceholder: { backgroundColor: colors.navy, alignItems: "center", justifyContent: "center" },
   tileGradient: { position: "absolute", left: 0, right: 0, bottom: 0, height: "45%" },
   tileSuperlike: {
     position: "absolute",

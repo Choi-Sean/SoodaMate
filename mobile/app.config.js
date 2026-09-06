@@ -110,6 +110,7 @@ module.exports = {
     plugins: [
       "expo-secure-store",
       "expo-localization",
+      "expo-video",
       [
         "expo-splash-screen",
         {

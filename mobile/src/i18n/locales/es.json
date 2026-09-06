@@ -201,7 +201,8 @@
     "save": "Guardar"
   },
   "photos": {
-    "title": "Fotos"
+    "title": "Fotos",
+    "addVideo": "Agregar un video (hasta {{seconds}}s)"
   },
   "settings": {
     "title": "Ajustes",

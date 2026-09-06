@@ -17,6 +17,7 @@ from app.schemas.profile import (
     ProfileUpdate,
     TravelModeRequest,
 )
+from app.services import storage_service
 from app.services.payment_service import is_premium_member
 
 router = APIRouter(prefix="/profiles", tags=["profiles"])
@@ -79,14 +80,19 @@ async def confirm_photo(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> PhotoOut:
+    media_type = storage_service.media_type_from_object_path(body.gcs_object_path)
+
     existing = await db.scalar(
         select(Photo).where(Photo.user_id == user.id, Photo.position == body.position)
     )
     if existing is not None:
         existing.gcs_object_path = body.gcs_object_path
+        existing.media_type = media_type
         photo = existing
     else:
-        photo = Photo(user_id=user.id, gcs_object_path=body.gcs_object_path, position=body.position)
+        photo = Photo(
+            user_id=user.id, gcs_object_path=body.gcs_object_path, position=body.position, media_type=media_type
+        )
         db.add(photo)
 
     profile = await db.get(Profile, user.id)

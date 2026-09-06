@@ -201,7 +201,8 @@
     "save": "저장"
   },
   "photos": {
-    "title": "사진"
+    "title": "사진",
+    "addVideo": "동영상 추가 (최대 {{seconds}}초)"
   },
   "settings": {
     "title": "설정",

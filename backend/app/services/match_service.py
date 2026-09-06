@@ -152,7 +152,12 @@ async def list_matches(db: AsyncSession, user_id: uuid.UUID) -> list[MatchOut]:
 
         photo_rows = (
             await db.execute(
-                select(Photo).where(Photo.user_id.in_(other_ids)).order_by(Photo.user_id, Photo.position)
+                # media_type == "photo" only — a chat-list avatar can't show
+                # a video frame, so the one video slot a profile can have is
+                # skipped in favor of its first real photo.
+                select(Photo)
+                .where(Photo.user_id.in_(other_ids), Photo.media_type == "photo")
+                .order_by(Photo.user_id, Photo.position)
             )
         ).scalars()
         for photo in photo_rows:

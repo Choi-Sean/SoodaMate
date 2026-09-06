@@ -25,6 +25,7 @@
     "expo-status-bar": "~57.0.1",
     "expo-tracking-transparency": "~57.0.1",
     "expo-updates": "~57.0.21",
+    "expo-video": "~57.0.3",
     "i18next": "^26.4.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",

@@ -26,6 +26,7 @@ export default function LikesScreen() {
     matchId: string;
     otherUserId: string;
     otherDisplayName: string;
+    otherPhotoUrl: string | null;
   } | null>(null);
 
   function handleAction(candidate: Candidate, action: SwipeAction) {
@@ -40,6 +41,7 @@ export default function LikesScreen() {
               matchId: result.match_id,
               otherUserId: candidate.user_id,
               otherDisplayName: candidate.display_name,
+              otherPhotoUrl: candidate.photos.find((p) => p.media_type === "photo")?.url ?? null,
             });
           }
         },
@@ -67,7 +69,11 @@ export default function LikesScreen() {
     const photo = item.photos[0];
     return (
       <Pressable style={styles.tile} onPress={() => setSelected(item)}>
-        {photo ? (
+        {photo && photo.media_type === "video" ? (
+          <View style={[styles.tileImage, styles.tileVideoPlaceholder]}>
+            <Ionicons name="play-circle" size={40} color="#fff" />
+          </View>
+        ) : photo ? (
           <Image source={{ uri: photo.url }} style={styles.tileImage} />
         ) : (
           <View style={[styles.tileImage, styles.tilePlaceholder]}>
@@ -141,6 +147,7 @@ export default function LikesScreen() {
       <MatchCelebrationModal
         visible={matchInfo !== null}
         otherDisplayName={matchInfo?.otherDisplayName ?? null}
+        otherPhotoUrl={matchInfo?.otherPhotoUrl}
         onKeepBrowsing={() => setMatchInfo(null)}
         onSendMessage={() => {
           if (!matchInfo) return;
@@ -177,6 +184,7 @@ const styles = StyleSheet.create({
   },
   tileImage: { width: "100%", height: "100%" },
   tilePlaceholder: { alignItems: "center", justifyContent: "center" },
+  tileVideoPlaceholder: { backgroundColor: colors.navy, alignItems: "center", justifyContent: "center" },
   tileGradient: { position: "absolute", left: 0, right: 0, bottom: 0, height: "45%" },
   tileSuperlike: {
     position: "absolute",

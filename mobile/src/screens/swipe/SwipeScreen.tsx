@@ -40,6 +40,7 @@ export default function SwipeScreen() {
     matchId: string;
     otherUserId: string;
     otherDisplayName: string;
+    otherPhotoUrl: string | null;
   } | null>(null);
 
   const current = candidates?.[0];
@@ -58,6 +59,7 @@ export default function SwipeScreen() {
               matchId: result.match_id,
               otherUserId: current.user_id,
               otherDisplayName: current.display_name,
+              otherPhotoUrl: current.photos.find((p) => p.media_type === "photo")?.url ?? null,
             });
           }
         },
@@ -123,6 +125,7 @@ export default function SwipeScreen() {
       <MatchCelebrationModal
         visible={matchInfo !== null}
         otherDisplayName={matchInfo?.otherDisplayName ?? null}
+        otherPhotoUrl={matchInfo?.otherPhotoUrl}
         onKeepBrowsing={() => setMatchInfo(null)}
         onSendMessage={() => {
           if (!matchInfo) return;

@@ -13,8 +13,8 @@ export async function presignUpload(contentType: string, position: number): Prom
   return resp.data;
 }
 
-/** Uploads raw image bytes directly to GCS via the presigned URL — never
- * routes through our own backend. */
+/** Uploads a photo or video's raw bytes directly to R2 via the presigned
+ * URL — never routes through our own backend. */
 export async function uploadToPresignedUrl(uploadUrl: string, fileUri: string, contentType: string): Promise<void> {
   const fileResp = await fetch(fileUri);
   const blob = await fileResp.blob();

@@ -114,4 +114,10 @@ class Photo(Base):
     )
     gcs_object_path: Mapped[str] = mapped_column("GcsObjectPath", Unicode(512), nullable=False)
     position: Mapped[int] = mapped_column("Position", SmallInteger, nullable=False, default=0)
+    # "photo" | "video" — derived server-side from the upload's extension
+    # (routers/profiles.py::confirm_photo), never trusted from client input.
+    # server_default so ALTER TABLE ADD backfills existing rows as photos.
+    media_type: Mapped[str] = mapped_column(
+        "MediaType", Unicode(10), nullable=False, server_default="photo", default="photo"
+    )
     created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())

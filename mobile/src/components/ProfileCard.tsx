@@ -1,8 +1,9 @@
-import { Image, Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
 
+import ProfileMedia from "./ProfileMedia";
 import type { Candidate } from "../types";
 import { colors } from "../theme";
 
@@ -17,10 +18,15 @@ export default function ProfileCard({ candidate }: Props) {
   return (
     <View style={styles.card}>
       {photo ? (
-        <Image source={{ uri: photo.url }} style={styles.image} />
+        <ProfileMedia media={photo} style={styles.image} />
       ) : (
         <View style={[styles.image, styles.imagePlaceholder]}>
           <Ionicons name="person" size={72} color={colors.border} />
+        </View>
+      )}
+      {photo?.media_type === "video" && (
+        <View style={styles.videoBadge}>
+          <Ionicons name="videocam" size={13} color="#fff" />
         </View>
       )}
 
@@ -76,6 +82,14 @@ const styles = StyleSheet.create({
   },
   image: { width: "100%", height: "100%" },
   imagePlaceholder: { backgroundColor: colors.creamDeep, alignItems: "center", justifyContent: "center" },
+  videoBadge: {
+    position: "absolute",
+    top: 18,
+    left: 18,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    borderRadius: 14,
+    padding: 6,
+  },
   gradient: { position: "absolute", left: 0, right: 0, bottom: 0, height: "55%" },
   superlikeBadge: {
     position: "absolute",

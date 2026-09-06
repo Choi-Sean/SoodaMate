@@ -6,6 +6,7 @@ export interface Photo {
   gcs_object_path: string;
   url: string;
   position: number;
+  media_type: "photo" | "video";
 }
 
 export interface Profile {

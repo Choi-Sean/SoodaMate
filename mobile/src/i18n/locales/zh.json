@@ -201,7 +201,8 @@
     "save": "保存"
   },
   "photos": {
-    "title": "照片"
+    "title": "照片",
+    "addVideo": "添加视频（最长 {{seconds}} 秒）"
   },
   "settings": {
     "title": "设置",

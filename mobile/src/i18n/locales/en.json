@@ -201,7 +201,8 @@
     "save": "Save"
   },
   "photos": {
-    "title": "Photos"
+    "title": "Photos",
+    "addVideo": "Add a video (up to {{seconds}}s)"
   },
   "settings": {
     "title": "Settings",

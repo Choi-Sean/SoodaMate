@@ -201,7 +201,8 @@
     "save": "保存"
   },
   "photos": {
-    "title": "写真"
+    "title": "写真",
+    "addVideo": "動画を追加（最大{{seconds}}秒）"
   },
   "settings": {
     "title": "設定",
