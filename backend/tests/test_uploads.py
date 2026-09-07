@@ -76,7 +76,10 @@ async def test_confirm_photo_derives_media_type_from_extension(client):
 
 @pytest.mark.asyncio
 async def test_display_name_locked_after_initial_creation(client):
-    _, headers = await create_user_with_profile(client, "namelock@example.com", display_name="Original")
+    _, headers = await create_user_with_profile(
+        client, "namelock@example.com", display_name="Original", gender="male"
+    )
+    original = (await client.get("/profiles/me", headers=headers)).json()
 
     resp = await client.put(
         "/profiles/me",
@@ -85,15 +88,19 @@ async def test_display_name_locked_after_initial_creation(client):
             "display_name": "Changed",
             "legal_first_name": "Changed",
             "birth_date": "2000-01-01",
-            "gender": "male",
+            "gender": "female",
             "interested_in": "female",
         },
     )
     assert resp.status_code == 200
-    # The attempted change is silently ignored, not merged — the backend is
-    # the enforcement point regardless of what the client sends.
+    # Every attempted change here is silently ignored, not merged — the
+    # backend is the enforcement point regardless of what the client sends.
+    # A real change goes through support@soodamate.com (photo ID required),
+    # not this endpoint.
     assert resp.json()["display_name"] == "Original"
     assert resp.json()["legal_first_name"] == "Original"
+    assert resp.json()["birth_date"] == original["birth_date"]
+    assert resp.json()["gender"] == "male"
 
 
 @pytest.mark.asyncio
@@ -120,6 +127,22 @@ async def test_reorder_photos(client):
     assert resp.status_code == 200
     body = resp.json()
     assert [p["id"] for p in sorted(body, key=lambda p: p["position"])] == reversed_ids
+
+
+@pytest.mark.asyncio
+async def test_last_photo_cannot_be_deleted(client):
+    _, headers = await create_user_with_profile(client, "lastphoto@example.com")
+
+    # create_user_with_profile's helper already confirms one photo at
+    # position 0 — that's the only one this user has.
+    me = await client.get("/profiles/me", headers=headers)
+    only_photo_id = me.json()["photos"][0]["id"]
+
+    resp = await client.delete(f"/profiles/me/photos/{only_photo_id}", headers=headers)
+    assert resp.status_code == 400
+
+    me_after = await client.get("/profiles/me", headers=headers)
+    assert len(me_after.json()["photos"]) == 1
 
 
 @pytest.mark.asyncio

@@ -35,6 +35,11 @@ class Profile(Base):
         "InterestedIn", Unicode(10), nullable=False
     )  # 'male' | 'female' | 'other' | 'all'
     bio: Mapped[str | None] = mapped_column("Bio", UnicodeText, nullable=True)
+    # Two more free-text prompts alongside the main bio (Hinge/Bumble-style
+    # "a few more things about me"), same nullable/unbounded-length shape —
+    # no separate prompt/question per slot in v1, just more room to write.
+    bio2: Mapped[str | None] = mapped_column("Bio2", UnicodeText, nullable=True)
+    bio3: Mapped[str | None] = mapped_column("Bio3", UnicodeText, nullable=True)
     location_lat: Mapped[float | None] = mapped_column("LocationLat", nullable=True)
     location_lng: Mapped[float | None] = mapped_column("LocationLng", nullable=True)
     min_age_pref: Mapped[int] = mapped_column("MinAgePref", Integer, default=18, nullable=False)

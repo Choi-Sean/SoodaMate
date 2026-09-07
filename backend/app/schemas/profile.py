@@ -45,6 +45,8 @@ class ProfileUpdate(BaseModel):
     gender: str = Field(pattern="^(male|female|other)$")
     interested_in: str = Field(pattern="^(male|female|other|all)$")
     bio: str | None = Field(default=None, max_length=1000)
+    bio2: str | None = Field(default=None, max_length=1000)
+    bio3: str | None = Field(default=None, max_length=1000)
     location_lat: float | None = None
     location_lng: float | None = None
     min_age_pref: int = Field(default=18, ge=18, le=99)
@@ -77,6 +79,8 @@ class ProfileOut(BaseModel):
     gender: str
     interested_in: str
     bio: str | None
+    bio2: str | None = None
+    bio3: str | None = None
     location_lat: float | None
     location_lng: float | None
     min_age_pref: int

@@ -11,6 +11,7 @@ import LocationPicker from "../../components/LocationPicker";
 import HeightInput from "../../components/HeightInput";
 import SelectDropdown, { DropdownOption } from "../../components/SelectDropdown";
 import CityAutocomplete from "../../components/CityAutocomplete";
+import { calculateAge } from "../../utils/age";
 import {
   CANNABIS_KEYS,
   EXERCISE_FREQUENCY_KEYS,
@@ -46,6 +47,9 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   const [locationLng, setLocationLng] = useState<number | null>(null);
 
   // Optional extended profile fields.
+  const [bio, setBio] = useState("");
+  const [bio2, setBio2] = useState("");
+  const [bio3, setBio3] = useState("");
   const [raceEthnicity, setRaceEthnicity] = useState<string | null>(null);
   const [religion, setReligion] = useState<string | null>(null);
   const [politicalView, setPoliticalView] = useState<string | null>(null);
@@ -107,6 +111,9 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         birth_date: birthDate,
         gender,
         interested_in: interestedIn,
+        bio: bio.trim() || null,
+        bio2: bio2.trim() || null,
+        bio3: bio3.trim() || null,
         location_lat: locationLat,
         location_lng: locationLng,
         race_ethnicity: raceEthnicity,
@@ -138,6 +145,8 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
       setLoading(false);
     }
   }
+
+  const ageFromBirthDate = calculateAge(birthDate);
 
   const educationOptions: DropdownOption[] = EDUCATION_KEYS.map((key) => ({
     key,
@@ -175,6 +184,34 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         placeholder={t("profileSetup.birthDate")}
         value={birthDate}
         onChangeText={setBirthDate}
+      />
+      {ageFromBirthDate != null && (
+        <Text style={styles.ageHint}>{t("editProfile.age", { age: ageFromBirthDate })}</Text>
+      )}
+
+      <Text style={styles.fieldLabel}>{t("editProfile.bio")}</Text>
+      <TextInput
+        style={[styles.input, styles.multiline]}
+        placeholder={t("editProfile.bioPlaceholder")}
+        value={bio}
+        onChangeText={setBio}
+        multiline
+      />
+      <Text style={styles.fieldLabel}>{t("editProfile.bio2")}</Text>
+      <TextInput
+        style={[styles.input, styles.multiline]}
+        placeholder={t("editProfile.bio2Placeholder")}
+        value={bio2}
+        onChangeText={setBio2}
+        multiline
+      />
+      <Text style={styles.fieldLabel}>{t("editProfile.bio3")}</Text>
+      <TextInput
+        style={[styles.input, styles.multiline]}
+        placeholder={t("editProfile.bio3Placeholder")}
+        value={bio3}
+        onChangeText={setBio3}
+        multiline
       />
 
       <Text style={styles.label}>{t("profileSetup.iAm")}</Text>
@@ -352,6 +389,8 @@ const styles = StyleSheet.create({
   photoPickerText: { color: colors.muted },
   fieldLabel: { fontSize: 14, fontWeight: "600", marginTop: 12, marginBottom: 8, color: colors.muted },
   nameLockNote: { fontSize: 12.5, color: colors.muted, marginTop: -4, marginBottom: 8, lineHeight: 18 },
+  ageHint: { fontSize: 12.5, color: colors.accentDark, fontWeight: "600", marginTop: -8, marginBottom: 8 },
+  multiline: { minHeight: 70, textAlignVertical: "top" },
   input: {
     borderWidth: 1,
     borderColor: colors.border,

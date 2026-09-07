@@ -27,6 +27,8 @@ export interface Profile {
   gender: Gender;
   interested_in: InterestedIn;
   bio: string | null;
+  bio2: string | null;
+  bio3: string | null;
   location_lat: number | null;
   location_lng: number | null;
   min_age_pref: number;

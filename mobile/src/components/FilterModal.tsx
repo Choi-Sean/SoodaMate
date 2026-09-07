@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
   tabPillActive: { backgroundColor: colors.navy },
   tabPillText: { fontSize: 13.5, fontWeight: "700", color: colors.ink },
   tabPillTextActive: { color: "#fff" },
-  content: { padding: 20, paddingTop: 4, gap: 16, borderTopWidth: 1, borderTopColor: colors.border },
+  content: { padding: 20, paddingTop: 14, gap: 16, borderTopWidth: 1, borderTopColor: colors.border },
   card: {
     backgroundColor: colors.white,
     borderWidth: 1,

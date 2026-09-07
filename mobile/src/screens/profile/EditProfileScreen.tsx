@@ -10,7 +10,6 @@ import { getMyProfile, updateMyProfile } from "../../api/profiles";
 import ChipSelect from "../../components/ChipSelect";
 import MultiChipSelect from "../../components/MultiChipSelect";
 import LocationPicker from "../../components/LocationPicker";
-import RangeSlider from "../../components/RangeSlider";
 import SelectDropdown, { DropdownOption } from "../../components/SelectDropdown";
 import ProfilePhotosGrid from "../../components/ProfilePhotosGrid";
 import VerifiedBadge from "../../components/VerifiedBadge";
@@ -18,6 +17,7 @@ import ProfileCompletenessBar from "../../components/ProfileCompletenessBar";
 import HeightInput from "../../components/HeightInput";
 import CityAutocomplete from "../../components/CityAutocomplete";
 import { calculateProfileCompleteness } from "../../utils/profileCompleteness";
+import { calculateAge, formatDate } from "../../utils/age";
 import {
   CANNABIS_KEYS,
   EXERCISE_FREQUENCY_KEYS,
@@ -31,28 +31,24 @@ import {
 } from "../../constants/demographicOptions";
 import { EDUCATION_KEYS } from "../../constants/educationLevels";
 import { INTEREST_KEYS, LANGUAGE_KEYS } from "../../constants/interestsAndLanguages";
-import { DISTANCE_OPTIONS_KM } from "../../constants/distanceOptions";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
-import type { Gender, InterestedIn } from "../../types";
+import type { InterestedIn } from "../../types";
 import { colors } from "../../theme";
 
 type Props = NativeStackScreenProps<ProfileStackParamList, "EditProfile">;
 
-const GENDERS: Gender[] = ["male", "female", "other"];
 const INTERESTS: InterestedIn[] = ["male", "female", "all"];
 const MAX_INTERESTS = 5;
 
 export default function EditProfileScreen({ navigation }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const { data: profile, isLoading } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
 
   const [bio, setBio] = useState("");
-  const [gender, setGender] = useState<Gender>("male");
+  const [bio2, setBio2] = useState("");
+  const [bio3, setBio3] = useState("");
   const [interestedIn, setInterestedIn] = useState<InterestedIn>("female");
-  const [minAge, setMinAge] = useState(18);
-  const [maxAge, setMaxAge] = useState(99);
-  const [maxDistanceKm, setMaxDistanceKm] = useState<string>("50");
   const [locationLat, setLocationLat] = useState<number | null>(null);
   const [locationLng, setLocationLng] = useState<number | null>(null);
 
@@ -78,11 +74,9 @@ export default function EditProfileScreen({ navigation }: Props) {
   useEffect(() => {
     if (!profile) return;
     setBio(profile.bio ?? "");
-    setGender(profile.gender);
+    setBio2(profile.bio2 ?? "");
+    setBio3(profile.bio3 ?? "");
     setInterestedIn(profile.interested_in === "other" ? "all" : profile.interested_in);
-    setMinAge(profile.min_age_pref);
-    setMaxAge(profile.max_age_pref);
-    setMaxDistanceKm(String(profile.max_distance_km));
     setLocationLat(profile.location_lat);
     setLocationLng(profile.location_lng);
     setRaceEthnicity(profile.race_ethnicity);
@@ -98,8 +92,16 @@ export default function EditProfileScreen({ navigation }: Props) {
     setRelationshipGoal(profile.relationship_goal);
     setWantsKids(profile.wants_kids);
     setHasKids(profile.has_kids);
-    setInterests(profile.interests);
-    setLanguages(profile.languages);
+    // Older profiles (seeded/saved before INTEREST_KEYS/LANGUAGE_KEYS
+    // existed) can still hold free-text values like "여행" instead of the
+    // canonical key "travel" — MultiChipSelect highlights a chip via
+    // values.includes(key), so a stored value that matches no key renders
+    // as "selected but nothing highlighted" (the count still reflects the
+    // raw array length). Dropping unrecognized values here keeps the count
+    // and the highlighted chips honest; saving afterwards naturally
+    // rewrites the stored value to only ever contain valid keys.
+    setInterests(profile.interests.filter((key) => (INTEREST_KEYS as readonly string[]).includes(key)));
+    setLanguages(profile.languages.filter((key) => (LANGUAGE_KEYS as readonly string[]).includes(key)));
   }, [profile]);
 
   async function refreshProfile() {
@@ -112,15 +114,17 @@ export default function EditProfileScreen({ navigation }: Props) {
     setSaving(true);
     try {
       await updateMyProfile({
-        // Locked after signup (see nameLockNote below) — sent back
+        // Locked after signup (see lockedInfoNote below) — sent back
         // unchanged; the backend also ignores any attempt to change these
         // on an existing profile, this just keeps the payload honest.
         display_name: profile.display_name,
         legal_first_name: profile.legal_first_name,
         birth_date: profile.birth_date,
-        gender,
+        gender: profile.gender,
         interested_in: interestedIn,
         bio: bio.trim() || null,
+        bio2: bio2.trim() || null,
+        bio3: bio3.trim() || null,
         location_lat: locationLat,
         location_lng: locationLng,
         race_ethnicity: raceEthnicity,
@@ -138,9 +142,12 @@ export default function EditProfileScreen({ navigation }: Props) {
         has_kids: hasKids,
         interests,
         languages,
-        min_age_pref: minAge,
-        max_age_pref: maxAge,
-        max_distance_km: Number(maxDistanceKm) || 50,
+        // Not editable on this screen anymore (age/distance now live only
+        // in the Swipe tab's Filters modal) — round-tripped unchanged so
+        // this full-replace PUT doesn't reset them to schema defaults.
+        min_age_pref: profile.min_age_pref,
+        max_age_pref: profile.max_age_pref,
+        max_distance_km: profile.max_distance_km,
       });
       await refreshProfile();
       navigation.goBack();
@@ -151,10 +158,6 @@ export default function EditProfileScreen({ navigation }: Props) {
     }
   }
 
-  const distanceOptions: DropdownOption[] = DISTANCE_OPTIONS_KM.map((km) => ({
-    key: String(km),
-    label: km >= 500 ? t("editProfile.distanceAny") : t("editProfile.distanceKm", { km }),
-  }));
   const educationOptions: DropdownOption[] = EDUCATION_KEYS.map((key) => ({
     key,
     label: t(`profileSetup.educationOption.${key}`),
@@ -171,9 +174,10 @@ export default function EditProfileScreen({ navigation }: Props) {
     );
   }
 
+  const age = calculateAge(profile.birth_date);
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{t("editProfile.title")}</Text>
       {error && <Text style={styles.error}>{error}</Text>}
 
       <ProfilePhotosGrid photos={profile.photos} onChanged={refreshProfile} />
@@ -187,7 +191,7 @@ export default function EditProfileScreen({ navigation }: Props) {
         {profile.face_verified ? (
           <VerifiedBadge size={30} />
         ) : (
-          <Text style={styles.verifyCardEmoji}>🪪</Text>
+          <Ionicons name="shield-checkmark-outline" size={28} color={colors.accentDark} />
         )}
         <View style={styles.verifyCardTextWrap}>
           <Text style={styles.verifyCardTitle}>
@@ -198,16 +202,34 @@ export default function EditProfileScreen({ navigation }: Props) {
         {!profile.face_verified && <Ionicons name="chevron-forward" size={18} color={colors.accentDark} />}
       </Pressable>
 
-      <View style={styles.field}>
+      <Text style={styles.sectionTitle}>{t("editProfile.sectionBasicInfo")}</Text>
+      <View style={styles.card}>
         <Text style={styles.fieldLabel}>{t("editProfile.name")}</Text>
         <View style={styles.lockedField}>
           <Text style={styles.lockedFieldText}>{profile.display_name}</Text>
           <Ionicons name="lock-closed" size={14} color={colors.muted} />
         </View>
-        <Text style={styles.nameLockNote}>{t("editProfile.nameLockNote")}</Text>
+
+        <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>{t("editProfile.iAm")}</Text>
+        <View style={styles.lockedField}>
+          <Text style={styles.lockedFieldText}>{t(`profileSetup.${profile.gender}`)}</Text>
+          <Ionicons name="lock-closed" size={14} color={colors.muted} />
+        </View>
+
+        <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>{t("editProfile.birthDate")}</Text>
+        <View style={styles.lockedField}>
+          <Text style={styles.lockedFieldText}>
+            {formatDate(profile.birth_date, i18n.language)}
+            {age != null ? `  ·  ${t("editProfile.age", { age })}` : ""}
+          </Text>
+          <Ionicons name="lock-closed" size={14} color={colors.muted} />
+        </View>
+
+        <Text style={styles.nameLockNote}>{t("editProfile.lockedInfoNote")}</Text>
       </View>
 
-      <View style={styles.field}>
+      <Text style={styles.sectionTitle}>{t("editProfile.sectionAboutMe")}</Text>
+      <View style={styles.card}>
         <Text style={styles.fieldLabel}>{t("editProfile.bio")}</Text>
         <TextInput
           style={[styles.input, styles.multiline]}
@@ -216,64 +238,53 @@ export default function EditProfileScreen({ navigation }: Props) {
           onChangeText={setBio}
           multiline
         />
-      </View>
-
-      <Text style={styles.label}>{t("editProfile.iAm")}</Text>
-      <View style={styles.row}>
-        {GENDERS.map((g) => (
-          <Pressable key={g} style={[styles.chip, gender === g && styles.chipSelected]} onPress={() => setGender(g)}>
-            <Text style={gender === g ? styles.chipTextSelected : styles.chipText}>{t(`profileSetup.${g}`)}</Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <Text style={styles.label}>{t("editProfile.interestedIn")}</Text>
-      <View style={styles.row}>
-        {INTERESTS.map((g) => (
-          <Pressable
-            key={g}
-            style={[styles.chip, interestedIn === g && styles.chipSelected]}
-            onPress={() => setInterestedIn(g)}
-          >
-            <Text style={interestedIn === g ? styles.chipTextSelected : styles.chipText}>{t(`profileSetup.${g}`)}</Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <RangeSlider
-        label={t("editProfile.ageRange")}
-        min={18}
-        max={99}
-        valueMin={minAge}
-        valueMax={maxAge}
-        onChange={(mn, mx) => {
-          setMinAge(mn);
-          setMaxAge(mx);
-        }}
-      />
-
-      <SelectDropdown
-        label={t("editProfile.maxDistance")}
-        placeholder={t("editProfile.maxDistance")}
-        options={distanceOptions}
-        value={maxDistanceKm}
-        onChange={setMaxDistanceKm}
-      />
-
-      <View style={styles.section}>
-        <LocationPicker
-          lat={locationLat}
-          lng={locationLng}
-          onChange={(lat, lng) => {
-            setLocationLat(lat);
-            setLocationLng(lng);
-          }}
+        <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>{t("editProfile.bio2")}</Text>
+        <TextInput
+          style={[styles.input, styles.multiline]}
+          placeholder={t("editProfile.bio2Placeholder")}
+          value={bio2}
+          onChangeText={setBio2}
+          multiline
+        />
+        <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>{t("editProfile.bio3")}</Text>
+        <TextInput
+          style={[styles.input, styles.multiline]}
+          placeholder={t("editProfile.bio3Placeholder")}
+          value={bio3}
+          onChangeText={setBio3}
+          multiline
         />
       </View>
 
-      <Text style={styles.sectionTitle}>{t("profileSetup.optionalSection")}</Text>
+      <Text style={styles.sectionTitle}>{t("editProfile.sectionPreferences")}</Text>
+      <View style={styles.card}>
+        <Text style={styles.fieldLabel}>{t("editProfile.interestedIn")}</Text>
+        <View style={styles.row}>
+          {INTERESTS.map((g) => (
+            <Pressable
+              key={g}
+              style={[styles.chip, interestedIn === g && styles.chipSelected]}
+              onPress={() => setInterestedIn(g)}
+            >
+              <Text style={interestedIn === g ? styles.chipTextSelected : styles.chipText}>{t(`profileSetup.${g}`)}</Text>
+            </Pressable>
+          ))}
+        </View>
 
-      <View style={styles.section}>
+        <View style={styles.fieldGap}>
+          <LocationPicker
+            lat={locationLat}
+            lng={locationLng}
+            onChange={(lat, lng) => {
+              setLocationLat(lat);
+              setLocationLng(lng);
+            }}
+          />
+        </View>
+      </View>
+
+      <Text style={styles.sectionTitle}>{t("profileSetup.optionalSection")}</Text>
+      <View style={styles.card}>
         <ChipSelect
           label={t("profileSetup.raceEthnicity")}
           options={RACE_ETHNICITY_KEYS}
@@ -281,9 +292,7 @@ export default function EditProfileScreen({ navigation }: Props) {
           value={raceEthnicity}
           onChange={setRaceEthnicity}
         />
-      </View>
 
-      <View style={styles.section}>
         <ChipSelect
           label={t("profileSetup.religion")}
           options={RELIGION_KEYS}
@@ -291,9 +300,7 @@ export default function EditProfileScreen({ navigation }: Props) {
           value={religion}
           onChange={setReligion}
         />
-      </View>
 
-      <View style={styles.section}>
         <ChipSelect
           label={t("profileSetup.politicalView")}
           options={POLITICAL_VIEW_KEYS}
@@ -301,39 +308,40 @@ export default function EditProfileScreen({ navigation }: Props) {
           value={politicalView}
           onChange={setPoliticalView}
         />
-      </View>
 
-      <View style={styles.section}>
-        <HeightInput valueCm={heightCm} onChange={setHeightCm} />
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.fieldLabel}>{t("profileSetup.occupation")}</Text>
-        <TextInput
-          style={styles.input}
-          placeholder={t("editProfile.occupationPlaceholder")}
-          value={occupation}
-          onChangeText={setOccupation}
-        />
-      </View>
-      <View style={styles.section}>
-        <SelectDropdown
-          label={t("profileSetup.education")}
-          placeholder={t("profileSetup.education")}
-          options={educationOptions}
-          value={education}
-          onChange={setEducation}
-        />
-      </View>
-      <View style={styles.section}>
-        <CityAutocomplete
-          label={t("profileSetup.hometown")}
-          placeholder={t("editProfile.hometownPlaceholder")}
-          value={hometown}
-          onChange={setHometown}
-        />
-      </View>
+        <View style={styles.fieldGap}>
+          <HeightInput valueCm={heightCm} onChange={setHeightCm} />
+        </View>
 
-      <View style={styles.section}>
+        <View style={styles.fieldGap}>
+          <Text style={styles.fieldLabel}>{t("profileSetup.occupation")}</Text>
+          <TextInput
+            style={styles.input}
+            placeholder={t("editProfile.occupationPlaceholder")}
+            value={occupation}
+            onChangeText={setOccupation}
+          />
+        </View>
+
+        <View style={styles.fieldGap}>
+          <SelectDropdown
+            label={t("profileSetup.education")}
+            placeholder={t("profileSetup.education")}
+            options={educationOptions}
+            value={education}
+            onChange={setEducation}
+          />
+        </View>
+
+        <View style={styles.fieldGap}>
+          <CityAutocomplete
+            label={t("profileSetup.hometown")}
+            placeholder={t("editProfile.hometownPlaceholder")}
+            value={hometown}
+            onChange={setHometown}
+          />
+        </View>
+
         <ChipSelect
           label={t("profileSetup.smoking")}
           options={SMOKING_KEYS}
@@ -341,9 +349,7 @@ export default function EditProfileScreen({ navigation }: Props) {
           value={smoking}
           onChange={setSmoking}
         />
-      </View>
 
-      <View style={styles.section}>
         <ChipSelect
           label={t("profileSetup.cannabis")}
           options={CANNABIS_KEYS}
@@ -351,9 +357,7 @@ export default function EditProfileScreen({ navigation }: Props) {
           value={cannabis}
           onChange={setCannabis}
         />
-      </View>
 
-      <View style={styles.section}>
         <ChipSelect
           label={t("profileSetup.exerciseFrequency")}
           options={EXERCISE_FREQUENCY_KEYS}
@@ -361,9 +365,7 @@ export default function EditProfileScreen({ navigation }: Props) {
           value={exerciseFrequency}
           onChange={setExerciseFrequency}
         />
-      </View>
 
-      <View style={styles.section}>
         <ChipSelect
           label={t("profileSetup.relationshipGoal")}
           options={RELATIONSHIP_GOAL_KEYS}
@@ -371,9 +373,7 @@ export default function EditProfileScreen({ navigation }: Props) {
           value={relationshipGoal}
           onChange={setRelationshipGoal}
         />
-      </View>
 
-      <View style={styles.section}>
         <ChipSelect
           label={t("profileSetup.wantsKids")}
           options={WANTS_KIDS_KEYS}
@@ -381,9 +381,7 @@ export default function EditProfileScreen({ navigation }: Props) {
           value={wantsKids}
           onChange={setWantsKids}
         />
-      </View>
 
-      <View style={styles.section}>
         <ChipSelect
           label={t("profileSetup.hasKids")}
           options={HAS_KIDS_KEYS}
@@ -393,7 +391,8 @@ export default function EditProfileScreen({ navigation }: Props) {
         />
       </View>
 
-      <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{t("editProfile.sectionInterests")}</Text>
+      <View style={styles.card}>
         <MultiChipSelect
           label={t("profileSetup.interests")}
           options={interestOptions}
@@ -402,8 +401,6 @@ export default function EditProfileScreen({ navigation }: Props) {
           onChange={setInterests}
           max={MAX_INTERESTS}
         />
-      </View>
-      <View style={styles.section}>
         <MultiChipSelect
           label={t("profileSetup.languages")}
           options={languageOptions}
@@ -416,13 +413,12 @@ export default function EditProfileScreen({ navigation }: Props) {
       <Pressable style={styles.primaryButton} onPress={handleSave} disabled={saving}>
         {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>{t("editProfile.save")}</Text>}
       </Pressable>
-
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, flexGrow: 1, backgroundColor: colors.white },
+  container: { padding: 24, flexGrow: 1, backgroundColor: colors.white, paddingTop: 0 },
   centered: { flex: 1, alignItems: "center", justifyContent: "center" },
   title: { fontSize: 24, fontWeight: "700", marginBottom: 4, marginTop: 24, color: colors.navy },
   verifyCard: {
@@ -436,15 +432,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   verifyCardDone: { backgroundColor: "#E6F4EA" },
-  verifyCardEmoji: { fontSize: 28 },
   verifyCardTextWrap: { flex: 1 },
   verifyCardTitle: { fontSize: 15, fontWeight: "700", color: colors.navy },
   verifyCardSubtitle: { fontSize: 12.5, color: colors.muted, marginTop: 2 },
-  section: { marginTop: 20 },
-  sectionTitle: { fontSize: 16, fontWeight: "700", color: colors.navy, marginTop: 28, marginBottom: 4 },
+  sectionTitle: { fontSize: 16, fontWeight: "700", color: colors.navy, marginTop: 28, marginBottom: 10 },
+  card: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    padding: 16,
+  },
+  fieldGap: { marginTop: 16 },
   error: { color: colors.danger, marginBottom: 12 },
-  field: { marginTop: 20 },
   fieldLabel: { fontSize: 14, fontWeight: "600", marginBottom: 8, color: colors.muted },
+  fieldLabelSpaced: { marginTop: 16 },
   input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 14, fontSize: 16 },
   multiline: { minHeight: 80, textAlignVertical: "top" },
   lockedField: {
@@ -457,9 +459,8 @@ const styles = StyleSheet.create({
     padding: 14,
     backgroundColor: colors.creamDeep,
   },
-  lockedFieldText: { fontSize: 16, color: colors.ink },
-  nameLockNote: { fontSize: 12.5, color: colors.muted, marginTop: 8, lineHeight: 18 },
-  label: { fontSize: 14, fontWeight: "600", marginTop: 20, marginBottom: 8, color: colors.muted },
+  lockedFieldText: { fontSize: 16, color: colors.ink, flex: 1, marginRight: 8 },
+  nameLockNote: { fontSize: 12.5, color: colors.muted, marginTop: 12, lineHeight: 18 },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" },
   chip: { borderWidth: 1, borderColor: colors.border, borderRadius: 20, paddingVertical: 8, paddingHorizontal: 16 },
   chipSelected: { backgroundColor: colors.accent, borderColor: colors.accent },

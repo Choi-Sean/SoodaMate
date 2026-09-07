@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -66,15 +66,18 @@ async def update_my_profile(
         profile = Profile(user_id=user.id, **profile_data, is_profile_complete=is_complete)
         db.add(profile)
     else:
-        # display_name/legal_first_name are locked after initial profile
-        # creation (a display name that keeps changing makes a user harder
-        # to recognize/report; legal_first_name feeds identity checks
-        # elsewhere). Mobile makes both fields read-only for this reason —
-        # this is the backend enforcing the same rule for direct API calls.
-        # A real change request goes through support (ID verification,
-        # ~7 business days), not this endpoint.
+        # display_name/legal_first_name/birth_date/gender are all locked
+        # after initial profile creation — a name, age, or gender that keeps
+        # changing makes a user harder to recognize/report, and
+        # legal_first_name/birth_date feed identity checks elsewhere.
+        # Mobile makes all four fields read-only for this reason — this is
+        # the backend enforcing the same rule for direct API calls. A real
+        # change request goes through support@soodamate.com (photo ID
+        # required, reviewed by hand), not this endpoint.
         profile_data["display_name"] = profile.display_name
         profile_data["legal_first_name"] = profile.legal_first_name
+        profile_data["birth_date"] = profile.birth_date
+        profile_data["gender"] = profile.gender
         for field, value in profile_data.items():
             setattr(profile, field, value)
         profile.is_profile_complete = is_complete
@@ -157,6 +160,9 @@ async def delete_photo(
     photo = await db.get(Photo, photo_id)
     if photo is None or photo.user_id != user.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "photo not found")
+    remaining = await db.scalar(select(func.count()).select_from(Photo).where(Photo.user_id == user.id))
+    if remaining <= 1:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "at least one photo is required")
     await db.delete(photo)
     await db.commit()
 
