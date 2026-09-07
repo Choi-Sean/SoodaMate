@@ -123,7 +123,10 @@ async def handle_webhook_event(db: AsyncSession, payload: bytes, sig_header: str
         stripe_session_id=session_obj["id"],
         product_id=product_id,
         credit_kind=product["credit_kind"],
-        credits_granted=product["credits"],
+        # Membership products don't have a "credits" count (they grant a
+        # subscription, not a consumable balance) - 0 rather than None
+        # since CreditsGranted is NOT NULL.
+        credits_granted=product.get("credits") or 0,
         raw_payload=str(event),
     )
     inserted = await try_insert(db, transaction)

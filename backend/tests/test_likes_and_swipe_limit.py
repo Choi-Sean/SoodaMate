@@ -8,7 +8,7 @@ async def test_swipe_limit_decrements_and_blocks_at_20(client):
     _, a_headers = await create_user_with_profile(client, "limit-a@example.com", gender="male", interested_in="female")
 
     status0 = (await client.get("/interactions/swipe-limit", headers=a_headers)).json()
-    assert status0 == {"remaining": 20, "limit": 20, "resets_at": None}
+    assert status0 == {"remaining": 20, "limit": 20, "resets_at": None, "unlimited": False}
 
     # sp_RecordSwipe only needs a valid FK on the target, not a complete
     # profile — bare signups are enough here and cut the request count way

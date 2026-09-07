@@ -14,7 +14,8 @@ async def _grant_membership(client, monkeypatch, user_id: str, event_id: str = "
         "data": {
             "object": {
                 "id": f"cs_{event_id}",
-                "metadata": {"user_id": user_id, "product_id": "membership_30d"},
+                "subscription": f"sub_{event_id}",
+                "metadata": {"user_id": user_id, "product_id": "membership_monthly"},
             }
         },
     }

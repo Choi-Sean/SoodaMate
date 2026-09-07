@@ -512,6 +512,15 @@ const translations = {
     zh: '付款完成后，积分将立即在应用内到账。咨询：<a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a>',
     ja: '決済完了後、クレジットはすぐにアプリに反映されます。お問い合わせ：<a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a>',
   },
+  "shop.billedMonthly": { ko: "매달 결제", en: "Billed monthly", es: "Facturación mensual", zh: "按月扣款", ja: "毎月請求" },
+  "shop.billedYearly": { ko: "매년 결제", en: "Billed yearly", es: "Facturación anual", zh: "按年扣款", ja: "毎年請求" },
+  "shop.noRefundNotice": {
+    ko: "멤버십은 앱 안에서 언제든 취소할 수 있어요. 이미 결제된 기간에 대한 환불은 제공되지 않습니다.",
+    en: "Cancel your membership anytime in the app. No refunds are given for the current billing period.",
+    es: "Puedes cancelar tu membresía en cualquier momento desde la app. No se otorgan reembolsos por el periodo de facturación actual.",
+    zh: "你可以随时在应用内取消会员。当前计费周期不予退款。",
+    ja: "メンバーシップはアプリ内でいつでも解約できます。今回の請求期間分の返金はありません。",
+  },
   "shop.buyLabel": { ko: "구매", en: "Buy", es: "Comprar", zh: "购买", ja: "購入" },
   "shop.buyLoading": { ko: "이동 중...", en: "Redirecting...", es: "Redirigiendo...", zh: "跳转中...", ja: "移動中..." },
   "shop.checkoutError": {

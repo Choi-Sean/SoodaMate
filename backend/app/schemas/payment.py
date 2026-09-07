@@ -7,7 +7,11 @@ class ProductOut(BaseModel):
     product_id: str
     name: str
     credit_kind: str
-    credits: int
+    # Consumable products (superlike/boost packs) set credits; membership
+    # products are a recurring subscription instead and set billing_cycle -
+    # each kind only ever populates the field that applies to it.
+    credits: int | None = None
+    billing_cycle: str | None = None
     price_usd_cents: int
 
 

@@ -55,6 +55,8 @@
 
     <div class="product-list" id="productList"></div>
 
+    <p class="shop-notice" id="refundNotice" style="display:none" data-i18n="shop.noRefundNotice">멤버십은 앱 안에서 언제든 취소할 수 있어요. 이미 결제된 기간에 대한 환불은 제공되지 않습니다.</p>
+
     <p class="shop-notice" data-i18n-html="shop.notice">결제 완료 후 크레딧은 앱에 바로 반영됩니다. 문의: <a href="mailto:support@soodamate.example.com">support@soodamate.example.com</a></p>
   </main>
 
@@ -83,6 +85,7 @@
 
     const authErrorEl = document.getElementById("authError");
     const listEl = document.getElementById("productList");
+    const refundNoticeEl = document.getElementById("refundNotice");
 
     if (!token) {
       authErrorEl.style.display = "block";
@@ -100,22 +103,31 @@
     let loadFailed = false;
 
     function renderProducts() {
+      const hasMembership = products.some((p) => p.credit_kind === "membership");
+
       listEl.innerHTML = products
-        .map(
-          (p) => `
+        .map((p) => {
+          const cycleLabel =
+            p.billing_cycle === "yearly" ? tr("shop.billedYearly") : p.billing_cycle === "monthly" ? tr("shop.billedMonthly") : "";
+          return `
         <div class="product-card">
           <div class="info">
             <h3>${p.name}</h3>
-            <p>$${(p.price_usd_cents / 100).toFixed(2)}</p>
+            <p>$${(p.price_usd_cents / 100).toFixed(2)}${cycleLabel ? ` · ${cycleLabel}` : ""}</p>
           </div>
           <button class="buy-btn" data-product-id="${p.product_id}" ${token ? "" : "disabled"}>${tr("shop.buyLabel")}</button>
-        </div>`
-        )
+        </div>`;
+        })
         .join("");
 
       listEl.querySelectorAll(".buy-btn").forEach((btn) => {
         btn.addEventListener("click", () => startCheckout(btn.getAttribute("data-product-id"), btn));
       });
+
+      // Only membership products are a recurring subscription with a
+      // cancellation/refund policy worth stating - a one-time superlike/
+      // boost pack has neither.
+      refundNoticeEl.style.display = hasMembership ? "block" : "none";
     }
 
     async function loadProducts() {
