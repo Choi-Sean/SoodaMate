@@ -19,6 +19,15 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 
+html, body {
+  /* Hard safety net: nothing on this page should ever be able to force a
+     horizontal scrollbar on the page itself (see .lang-switcher below for
+     what actually overflowed — 5 language buttons at Japanese/English
+     label widths no longer fit a 375px header without this). */
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   font-family: "Roboto", "Noto Sans KR", -apple-system, BlinkMacSystemFont,
     "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
@@ -26,12 +35,15 @@ body {
   background: var(--cream);
   -webkit-font-smoothing: antialiased;
   line-height: 1.55;
-  /* Korean text wraps at spaces, never mid-word, matching normal Korean
-     typography conventions (a plain `normal` break here mid-syllable-block
-     looks broken to Korean readers). */
-  word-break: keep-all;
   overflow-wrap: break-word;
 }
+/* keep-all wraps at spaces, never mid-word - correct for Korean (which
+   spaces between words) but wrong for Japanese/Chinese, which have no
+   spaces between words at all: keep-all there means the ENTIRE phrase
+   becomes one unbreakable run, forcing exactly the overflow/clipping bug
+   reported for Japanese. Scope it to Korean only; ja/zh fall back to
+   normal CJK line-breaking (breaks between characters, correct for both). */
+html[lang="ko"] body { word-break: keep-all; }
 
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
@@ -55,11 +67,21 @@ button { font-family: inherit; }
 .logo-mark { width: 34px; height: 34px; }
 .nav-links { display: flex; align-items: center; gap: 30px; font-size: 14.5px; font-weight: 500; color: var(--ink); }
 .nav-links a:hover { color: var(--accent-dark); }
-.nav-right { display: flex; align-items: center; gap: 14px; }
-.lang-switcher { display: flex; gap: 4px; background: var(--cream-deep); border-radius: 999px; padding: 4px; }
+.nav-right { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.lang-switcher {
+  display: flex; gap: 4px; background: var(--cream-deep); border-radius: 999px; padding: 4px;
+  /* 5 language buttons (ko/en/es/zh/ja) at English/Spanish label widths
+     don't reliably fit next to the logo + download button under ~420px —
+     scroll the switcher itself rather than letting it force the whole
+     .bar (and page) wider than the viewport. */
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: none;
+}
+.lang-switcher::-webkit-scrollbar { display: none; }
 .lang-switcher button {
   border: none; background: transparent; cursor: pointer;
-  font-size: 12px; font-weight: 700; color: var(--muted);
+  font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap;
   padding: 6px 10px; border-radius: 999px; transition: background 0.15s ease, color 0.15s ease;
 }
 .lang-switcher button.active { background: var(--navy); color: #fff; }
@@ -86,6 +108,13 @@ button { font-family: inherit; }
   max-width: 1120px;
   margin: 0 auto;
 }
+/* Grid tracks default to a min-width of "auto" (their content's min-content
+   size), not 0 - a single long word/phrase (an English CTA, an unbroken
+   Japanese run, etc.) can force a track wider than the grid itself,
+   overflowing the page. min-width: 0 lets the track actually shrink to the
+   space available and wrap text instead. Real bug, not just a Japanese-
+   locale one - any locale with a long enough phrase could trigger it. */
+.hero-copy, .hero-visual { min-width: 0; }
 .eyebrow {
   display: inline-flex;
   align-items: center;
@@ -377,4 +406,9 @@ section { padding: 88px 24px; }
   .nav-links { display: none; }
   .feature-grid { grid-template-columns: 1fr; }
   .hero-float-card { display: none; }
+  .bar { padding: 12px 16px; gap: 8px; }
+  .logo { flex-shrink: 0; font-size: 16px; }
+  .logo-mark { width: 26px; height: 26px; }
+  .lang-switcher button { padding: 6px 8px; font-size: 11px; }
+  .nav-cta { flex-shrink: 0; padding: 8px 14px; font-size: 13px; }
 }
