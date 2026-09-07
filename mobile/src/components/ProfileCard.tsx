@@ -27,6 +27,7 @@ export default function ProfileCard({ candidate }: Props) {
           distanceKm={candidate.distance_km}
           superlikedMe={candidate.superliked_me}
           verifiedBadge={candidate.verified_badge}
+          faceVerified={candidate.face_verified}
         />
         <ProfileInfoSections candidate={candidate} />
       </ScrollView>
@@ -37,6 +38,9 @@ export default function ProfileCard({ candidate }: Props) {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
+    width: "100%",
+    maxWidth: 480,
+    alignSelf: "center",
     borderRadius: 24,
     overflow: "hidden",
     backgroundColor: colors.creamDeep,

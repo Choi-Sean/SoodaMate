@@ -22,6 +22,7 @@ interface Props {
   distanceKm: number | null;
   superlikedMe: boolean;
   verifiedBadge: "work" | "school" | null;
+  faceVerified?: boolean;
 }
 
 /** Tinder-style tap-to-advance carousel (left third = previous, right two
@@ -36,6 +37,7 @@ export default function MediaCarousel({
   distanceKm,
   superlikedMe,
   verifiedBadge,
+  faceVerified,
 }: Props) {
   const { t } = useTranslation();
   const [index, setIndex] = useState(0);
@@ -106,7 +108,7 @@ export default function MediaCarousel({
             {displayName}
           </Text>
           <Text style={styles.age}>{age}</Text>
-          {verifiedBadge && <Ionicons name="checkmark-circle" size={20} color="#4FC3F7" />}
+          {(verifiedBadge || faceVerified) && <Ionicons name="checkmark-circle" size={20} color="#4FC3F7" />}
         </View>
         {distanceKm != null && (
           <View style={styles.distanceRow}>
@@ -120,7 +122,10 @@ export default function MediaCarousel({
 }
 
 const styles = StyleSheet.create({
-  container: { width: "100%", aspectRatio: 0.72, backgroundColor: colors.creamDeep },
+  // maxWidth keeps the aspectRatio-driven height sane on wide/desktop
+  // viewports (web) — without it, a 900px-wide container becomes a ~1250px
+  // tall image and pushes the name/age overlay off the bottom of the screen.
+  container: { width: "100%", maxWidth: 480, alignSelf: "center", aspectRatio: 0.72, backgroundColor: colors.creamDeep },
   media: { width: "100%", height: "100%" },
   placeholder: { alignItems: "center", justifyContent: "center" },
   tapLeft: { position: "absolute", top: 0, bottom: 0, left: 0, width: "34%" },

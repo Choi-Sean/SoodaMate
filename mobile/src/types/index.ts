@@ -36,6 +36,7 @@ export interface Profile {
   max_distance_km: number;
   is_profile_complete: boolean;
   verified_badge: "work" | "school" | null;
+  face_verified: boolean;
   superlike_credits: number;
   boost_credits: number;
   boost_active_until: string | null;
@@ -92,6 +93,7 @@ export interface Candidate {
   interests: string[];
   languages: string[];
   verified_badge: "work" | "school" | null;
+  face_verified: boolean;
 }
 
 export interface Match {

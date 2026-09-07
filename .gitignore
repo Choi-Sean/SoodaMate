@@ -42,6 +42,9 @@ mobile/secrets/
 /bumble/
 /hinge/
 
+# Local dev tooling config (browser preview launch profiles, etc.)
+/.claude/
+
 # OS
 .DS_Store
 Thumbs.db

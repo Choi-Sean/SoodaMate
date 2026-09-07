@@ -6,7 +6,11 @@ import { useTranslation } from "react-i18next";
 import { confirmPhoto, updateMyProfile } from "../../api/profiles";
 import { presignUpload, uploadToPresignedUrl } from "../../api/uploads";
 import ChipSelect from "../../components/ChipSelect";
+import MultiChipSelect from "../../components/MultiChipSelect";
 import LocationPicker from "../../components/LocationPicker";
+import HeightInput from "../../components/HeightInput";
+import SelectDropdown, { DropdownOption } from "../../components/SelectDropdown";
+import CityAutocomplete from "../../components/CityAutocomplete";
 import {
   CANNABIS_KEYS,
   EXERCISE_FREQUENCY_KEYS,
@@ -18,18 +22,14 @@ import {
   SMOKING_KEYS,
   WANTS_KIDS_KEYS,
 } from "../../constants/demographicOptions";
+import { EDUCATION_KEYS } from "../../constants/educationLevels";
+import { INTEREST_KEYS, LANGUAGE_KEYS } from "../../constants/interestsAndLanguages";
 import type { Gender, InterestedIn } from "../../types";
 import { colors } from "../../theme";
 
 const GENDERS: Gender[] = ["male", "female", "other"];
-const INTERESTS: InterestedIn[] = ["male", "female", "other", "all"];
-
-function parseCommaList(value: string): string[] {
-  return value
-    .split(",")
-    .map((v) => v.trim())
-    .filter((v) => v.length > 0);
-}
+const INTERESTS: InterestedIn[] = ["male", "female", "all"];
+const MAX_INTERESTS = 5;
 
 interface Props {
   onComplete: () => void;
@@ -37,8 +37,7 @@ interface Props {
 
 export default function ProfileSetupScreen({ onComplete }: Props) {
   const { t } = useTranslation();
-  const [displayName, setDisplayName] = useState("");
-  const [legalFirstName, setLegalFirstName] = useState("");
+  const [name, setName] = useState("");
   const [birthDate, setBirthDate] = useState(""); // YYYY-MM-DD
   const [gender, setGender] = useState<Gender>("male");
   const [interestedIn, setInterestedIn] = useState<InterestedIn>("female");
@@ -50,9 +49,9 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   const [raceEthnicity, setRaceEthnicity] = useState<string | null>(null);
   const [religion, setReligion] = useState<string | null>(null);
   const [politicalView, setPoliticalView] = useState<string | null>(null);
-  const [heightCm, setHeightCm] = useState("");
+  const [heightCm, setHeightCm] = useState(170);
   const [occupation, setOccupation] = useState("");
-  const [education, setEducation] = useState("");
+  const [education, setEducation] = useState<string | null>(null);
   const [hometown, setHometown] = useState("");
   const [smoking, setSmoking] = useState<string | null>(null);
   const [cannabis, setCannabis] = useState<string | null>(null);
@@ -60,8 +59,8 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   const [relationshipGoal, setRelationshipGoal] = useState<string | null>(null);
   const [wantsKids, setWantsKids] = useState<string | null>(null);
   const [hasKids, setHasKids] = useState<string | null>(null);
-  const [interestsText, setInterestsText] = useState("");
-  const [languagesText, setLanguagesText] = useState("");
+  const [interests, setInterests] = useState<string[]>([]);
+  const [languages, setLanguages] = useState<string[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +83,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   }
 
   async function handleSubmit() {
-    if (!displayName.trim() || !legalFirstName.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+    if (!name.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
       setError(t("profileSetup.validationMissing"));
       return;
     }
@@ -101,8 +100,10 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
     setLoading(true);
     try {
       await updateMyProfile({
-        display_name: displayName.trim(),
-        legal_first_name: legalFirstName.trim(),
+        // Same name shown to others and used for identity purposes — see
+        // editProfile.nameLockNote, this is locked right after this screen.
+        display_name: name.trim(),
+        legal_first_name: name.trim(),
         birth_date: birthDate,
         gender,
         interested_in: interestedIn,
@@ -111,9 +112,9 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         race_ethnicity: raceEthnicity,
         religion,
         political_view: politicalView,
-        height_cm: heightCm ? Number(heightCm) : null,
+        height_cm: heightCm,
         occupation: occupation.trim() || null,
-        education: education.trim() || null,
+        education,
         hometown: hometown.trim() || null,
         smoking,
         cannabis,
@@ -121,8 +122,8 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         relationship_goal: relationshipGoal,
         wants_kids: wantsKids,
         has_kids: hasKids,
-        interests: parseCommaList(interestsText),
-        languages: parseCommaList(languagesText),
+        interests,
+        languages,
       });
 
       const contentType = "image/jpeg";
@@ -138,6 +139,13 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
     }
   }
 
+  const educationOptions: DropdownOption[] = EDUCATION_KEYS.map((key) => ({
+    key,
+    label: t(`profileSetup.educationOption.${key}`),
+  }));
+  const interestOptions = INTEREST_KEYS as unknown as readonly string[];
+  const languageOptions = LANGUAGE_KEYS as unknown as readonly string[];
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{t("profileSetup.title")}</Text>
@@ -152,18 +160,16 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         )}
       </Pressable>
 
+      <Text style={styles.fieldLabel}>{t("editProfile.name")}</Text>
       <TextInput
         style={styles.input}
-        placeholder={t("profileSetup.displayName")}
-        value={displayName}
-        onChangeText={setDisplayName}
+        placeholder={t("editProfile.displayNamePlaceholder")}
+        value={name}
+        onChangeText={setName}
       />
-      <TextInput
-        style={styles.input}
-        placeholder={t("profileSetup.legalFirstName")}
-        value={legalFirstName}
-        onChangeText={setLegalFirstName}
-      />
+      <Text style={styles.nameLockNote}>{t("editProfile.nameLockNote")}</Text>
+
+      <Text style={styles.fieldLabel}>{t("profileSetup.birthDate")}</Text>
       <TextInput
         style={styles.input}
         placeholder={t("profileSetup.birthDate")}
@@ -232,30 +238,27 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         onChange={setPoliticalView}
       />
 
+      <HeightInput valueCm={heightCm} onChange={setHeightCm} />
+
+      <Text style={styles.fieldLabel}>{t("profileSetup.occupation")}</Text>
       <TextInput
         style={styles.input}
-        placeholder={t("profileSetup.heightCm")}
-        keyboardType="number-pad"
-        value={heightCm}
-        onChangeText={setHeightCm}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder={t("profileSetup.occupation")}
+        placeholder={t("editProfile.occupationPlaceholder")}
         value={occupation}
         onChangeText={setOccupation}
       />
-      <TextInput
-        style={styles.input}
+      <SelectDropdown
+        label={t("profileSetup.education")}
         placeholder={t("profileSetup.education")}
+        options={educationOptions}
         value={education}
-        onChangeText={setEducation}
+        onChange={setEducation}
       />
-      <TextInput
-        style={styles.input}
-        placeholder={t("profileSetup.hometown")}
+      <CityAutocomplete
+        label={t("profileSetup.hometown")}
+        placeholder={t("editProfile.hometownPlaceholder")}
         value={hometown}
-        onChangeText={setHometown}
+        onChange={setHometown}
       />
 
       <ChipSelect
@@ -306,17 +309,20 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         onChange={setHasKids}
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder={t("profileSetup.interestsPlaceholder")}
-        value={interestsText}
-        onChangeText={setInterestsText}
+      <MultiChipSelect
+        label={t("profileSetup.interests")}
+        options={interestOptions}
+        translatePrefix="interests"
+        values={interests}
+        onChange={setInterests}
+        max={MAX_INTERESTS}
       />
-      <TextInput
-        style={styles.input}
-        placeholder={t("profileSetup.languagesPlaceholder")}
-        value={languagesText}
-        onChangeText={setLanguagesText}
+      <MultiChipSelect
+        label={t("profileSetup.languages")}
+        options={languageOptions}
+        translatePrefix="languages"
+        values={languages}
+        onChange={setLanguages}
       />
 
       <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={loading}>
@@ -344,6 +350,8 @@ const styles = StyleSheet.create({
   },
   photo: { width: "100%", height: "100%" },
   photoPickerText: { color: colors.muted },
+  fieldLabel: { fontSize: 14, fontWeight: "600", marginTop: 12, marginBottom: 8, color: colors.muted },
+  nameLockNote: { fontSize: 12.5, color: colors.muted, marginTop: -4, marginBottom: 8, lineHeight: 18 },
   input: {
     borderWidth: 1,
     borderColor: colors.border,

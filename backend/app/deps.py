@@ -31,3 +31,12 @@ async def get_current_user(
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "user not found or inactive")
 
     return user
+
+
+async def require_admin(user: User = Depends(get_current_user)) -> User:
+    """Gates the face-verification review endpoints (soodamate.com/verify).
+    is_admin is never settable through the API — it's flipped directly in
+    the DB for the app owner's own account."""
+    if not user.is_admin:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "admin access required")
+    return user

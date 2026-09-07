@@ -52,6 +52,11 @@ export async function deletePhoto(photoId: string): Promise<void> {
   await apiClient.delete(`/profiles/me/photos/${photoId}`);
 }
 
+export async function reorderPhotos(photoIds: string[]): Promise<Profile["photos"]> {
+  const resp = await apiClient.put<Profile["photos"]>("/profiles/me/photos/reorder", { photo_ids: photoIds });
+  return resp.data;
+}
+
 export async function setIncognito(isIncognito: boolean): Promise<Profile> {
   const resp = await apiClient.post<Profile>("/profiles/me/incognito", { is_incognito: isIncognito });
   return resp.data;

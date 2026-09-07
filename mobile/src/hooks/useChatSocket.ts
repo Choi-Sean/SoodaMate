@@ -67,15 +67,20 @@ export function useChatSocket(
     };
   }, [accessToken, matchId]);
 
+  // Guards against "Still in CONNECTING state" — markRead in particular
+  // tends to fire from a mount effect that runs before ws.onopen has, since
+  // opening a WebSocket is always async.
   const sendMessage = useCallback(
     (content: string) => {
-      wsRef.current?.send(JSON.stringify({ type: "message", match_id: matchId, content }));
+      if (wsRef.current?.readyState !== WebSocket.OPEN) return;
+      wsRef.current.send(JSON.stringify({ type: "message", match_id: matchId, content }));
     },
     [matchId]
   );
 
   const markRead = useCallback(() => {
-    wsRef.current?.send(JSON.stringify({ type: "read", match_id: matchId }));
+    if (wsRef.current?.readyState !== WebSocket.OPEN) return;
+    wsRef.current.send(JSON.stringify({ type: "read", match_id: matchId }));
   }, [matchId]);
 
   return { connected, sendMessage, markRead };

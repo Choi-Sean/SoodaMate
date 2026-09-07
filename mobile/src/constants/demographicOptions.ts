@@ -1,18 +1,7 @@
 // Stored/filtered on by the raw key (language-independent) — the label
 // shown to the user comes from i18n via `profileSetup.race.<key>` /
 // `profileSetup.religion.<key>` (see locales/*.json).
-export const RACE_ETHNICITY_KEYS = [
-  "east_asian",
-  "southeast_asian",
-  "south_asian",
-  "middle_eastern",
-  "black",
-  "white",
-  "hispanic_latino",
-  "mixed",
-  "other",
-  "prefer_not_to_say",
-] as const;
+export const RACE_ETHNICITY_KEYS = ["asian", "black", "white", "hispanic_latino", "mixed", "other"] as const;
 
 export const RELIGION_KEYS = [
   "none",

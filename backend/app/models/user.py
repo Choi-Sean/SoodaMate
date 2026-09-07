@@ -22,6 +22,10 @@ class User(Base):
     password_hash: Mapped[str | None] = mapped_column("PasswordHash", Unicode(255), nullable=True)
     is_active: Mapped[bool] = mapped_column("IsActive", Boolean, default=True, nullable=False)
     is_banned: Mapped[bool] = mapped_column("IsBanned", Boolean, default=False, nullable=False)
+    # Gates the /admin/* face-verification review endpoints. No self-serve
+    # signup path sets this — it's flipped directly in the DB for the
+    # app owner's own account (see docs/ARCHITECTURE.md admin notes).
+    is_admin: Mapped[bool] = mapped_column("IsAdmin", Boolean, default=False, nullable=False, server_default="0")
     last_active_at: Mapped[datetime] = mapped_column(
         "LastActiveAt", DateTime(timezone=True), server_default=func.now()
     )

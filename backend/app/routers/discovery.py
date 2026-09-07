@@ -53,6 +53,7 @@ async def _to_candidates_out(
             interests=_comma_list(profile.interests),
             languages=_comma_list(profile.languages),
             verified_badge=profile.verified_badge,
+            face_verified=profile.face_verified,
         )
         for profile, distance_km, superliked_me in results
     ]

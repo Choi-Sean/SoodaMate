@@ -36,6 +36,7 @@ export default function MyProfileScreen({ navigation }: Props) {
       <View style={styles.nameRow}>
         <Text style={styles.name}>{profile?.display_name ?? "..."}</Text>
         {profile?.verified_badge && <Text style={styles.badge}>🏅</Text>}
+        {profile?.face_verified && <Text style={styles.badge}>✅</Text>}
       </View>
       {profile?.bio && <Text style={styles.bio}>{profile.bio}</Text>}
 
@@ -56,9 +57,6 @@ export default function MyProfileScreen({ navigation }: Props) {
 
       <Pressable style={styles.button} onPress={() => navigation.navigate("EditProfile")}>
         <Text style={styles.buttonText}>{t("profile.editProfile")}</Text>
-      </Pressable>
-      <Pressable style={styles.button} onPress={() => navigation.navigate("PhotoManager")}>
-        <Text style={styles.buttonText}>{t("profile.managePhotos")}</Text>
       </Pressable>
       <Pressable style={styles.button} onPress={() => navigation.navigate("Settings")}>
         <Text style={styles.buttonText}>{t("profile.settings")}</Text>

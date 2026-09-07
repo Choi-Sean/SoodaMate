@@ -66,6 +66,19 @@ async def send_match_notification(db: AsyncSession, user_id: uuid.UUID, match_id
     )
 
 
+async def send_like_notification(db: AsyncSession, user_id: uuid.UUID, superlike: bool) -> None:
+    # Deliberately doesn't name who liked them — that's the Likes tab's own
+    # (free-tier-visible) reveal, this is just an awareness ping, same as
+    # Tinder/Bumble's "someone liked you" push.
+    await send_to_user(
+        db,
+        user_id,
+        "Super Like! ⭐" if superlike else "New like! 💛",
+        "Someone super liked you on SooDa Mate" if superlike else "Someone liked you on SooDa Mate",
+        {"type": "like"},
+    )
+
+
 async def send_message_notification(
     db: AsyncSession, user_id: uuid.UUID, match_id: uuid.UUID, sender_id: uuid.UUID, sender_name: str
 ) -> None:

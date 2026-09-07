@@ -94,6 +94,8 @@ async def record_swipe(
     if row.Blocked:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "cannot interact with this user")
     if not row.Matched:
+        if action in ("like", "superlike"):
+            await push_service.send_like_notification(db, to_user_id, superlike=action == "superlike")
         return SwipeResponse(matched=False)
 
     await push_service.send_match_notification(db, from_user_id, row.MatchId)

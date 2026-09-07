@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Face Verification Review — SooDa Mate</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/assets/favicon.png" type="image/png" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .verify-main { max-width: 960px; margin: 0 auto; padding: 48px 24px 96px; }
+    .verify-main h1 { font-size: 24px; font-weight: 900; color: var(--navy); margin-bottom: 24px; }
+
+    #loginBox { max-width: 360px; margin: 80px auto; }
+    #loginBox input {
+      width: 100%; box-sizing: border-box; padding: 12px 14px; margin-bottom: 10px;
+      border: 1px solid var(--border); border-radius: 10px; font-size: 15px;
+    }
+    #loginBox button {
+      width: 100%; background: var(--navy); color: #fff; font-weight: 700; font-size: 15px;
+      border: none; border-radius: 10px; padding: 12px; cursor: pointer;
+    }
+    #loginError { color: #B3261E; font-size: 13px; margin-top: 8px; display: none; }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .tab-btn {
+      border: 1px solid var(--border); background: var(--white); border-radius: 999px;
+      padding: 8px 18px; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer;
+    }
+    .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--white); border: 1px solid var(--border); border-radius: 16px;
+      overflow: hidden; display: flex; flex-direction: column;
+    }
+    .card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--cream-deep); }
+    .card .body { padding: 12px 14px; }
+    .card .name { font-weight: 800; color: var(--navy); font-size: 14px; margin-bottom: 2px; }
+    .card .date { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+    .card .actions { display: flex; gap: 8px; }
+    .card button {
+      flex: 1; border: none; border-radius: 8px; padding: 8px; font-weight: 700; font-size: 13px; cursor: pointer;
+    }
+    .approve-btn { background: var(--sage, #7FA37A); color: #fff; }
+    .reject-btn { background: #D92D20; color: #fff; }
+    .status-pill {
+      display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px;
+      padding: 3px 10px; margin-bottom: 10px;
+    }
+    .status-approved { background: #E6F4EA; color: #1E7A34; }
+    .status-rejected { background: #FBEAE9; color: #B3261E; }
+    .empty { color: var(--muted); padding: 40px 0; text-align: center; }
+  </style>
+</head>
+<body>
+  <div id="loginBox">
+    <h1 style="font-size:20px;font-weight:900;color:var(--navy);margin-bottom:16px;">Admin sign in</h1>
+    <input id="loginEmail" type="email" placeholder="Email" autocomplete="username" />
+    <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
+    <button id="loginBtn">Sign in</button>
+    <p id="loginError">Sign-in failed or this account isn't an admin.</p>
+  </div>
+
+  <main class="verify-main" id="mainView" style="display:none">
+    <h1>Face verification review</h1>
+    <div class="tabs">
+      <button class="tab-btn active" data-status="pending">Pending</button>
+      <button class="tab-btn" data-status="approved">Approved</button>
+      <button class="tab-btn" data-status="rejected">Rejected</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <p class="empty" id="emptyMsg" style="display:none">Nothing here.</p>
+  </main>
+
+  <script>
+    const API_BASE_URL =
+      window.SUDA_API_BASE_URL ||
+      (location.hostname === "localhost" || location.hostname === "127.0.0.1"
+        ? "http://localhost:8001"
+        : "https://soodamate-production.up.railway.app");
+
+    let token = sessionStorage.getItem("sooda_admin_token");
+    let currentStatus = "pending";
+
+    const loginBox = document.getElementById("loginBox");
+    const mainView = document.getElementById("mainView");
+    const loginError = document.getElementById("loginError");
+    const grid = document.getElementById("grid");
+    const emptyMsg = document.getElementById("emptyMsg");
+
+    function showMain() {
+      loginBox.style.display = "none";
+      mainView.style.display = "block";
+      loadList();
+    }
+
+    if (token) showMain();
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      loginError.style.display = "none";
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+      try {
+        const resp = await fetch(`${API_BASE_URL}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        if (!resp.ok) throw new Error("login failed");
+        const data = await resp.json();
+        // Confirm admin access up front rather than only discovering it's
+        // missing once the list call itself 403s.
+        const check = await fetch(`${API_BASE_URL}/admin/face-verifications?status=pending`, {
+          headers: { Authorization: `Bearer ${data.access_token}` },
+        });
+        if (!check.ok) throw new Error("not an admin");
+        token = data.access_token;
+        sessionStorage.setItem("sooda_admin_token", token);
+        showMain();
+      } catch (e) {
+        loginError.style.display = "block";
+      }
+    });
+
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentStatus = btn.getAttribute("data-status");
+        loadList();
+      });
+    });
+
+    async function loadList() {
+      grid.innerHTML = "";
+      emptyMsg.style.display = "none";
+      const resp = await fetch(`${API_BASE_URL}/admin/face-verifications?status=${currentStatus}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!resp.ok) {
+        sessionStorage.removeItem("sooda_admin_token");
+        location.reload();
+        return;
+      }
+      const items = await resp.json();
+      if (items.length === 0) {
+        emptyMsg.style.display = "block";
+        return;
+      }
+      grid.innerHTML = items
+        .map(
+          (item) => `
+        <div class="card" data-id="${item.id}">
+          <img src="${item.view_url}" alt="" />
+          <div class="body">
+            <div class="name">${item.display_name || "(no name)"}</div>
+            <div class="date">${new Date(item.submitted_at).toLocaleString()}</div>
+            ${
+              item.status === "pending"
+                ? `<div class="actions">
+                     <button class="approve-btn" data-action="approve">Approve</button>
+                     <button class="reject-btn" data-action="reject">Reject</button>
+                   </div>`
+                : `<span class="status-pill status-${item.status}">${item.status}</span>`
+            }
+          </div>
+        </div>`
+        )
+        .join("");
+
+      grid.querySelectorAll("button[data-action]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.closest(".card").getAttribute("data-id");
+          const action = btn.getAttribute("data-action");
+          btn.disabled = true;
+          await fetch(`${API_BASE_URL}/admin/face-verifications/${id}/${action}`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          loadList();
+        });
+      });
+    }
+  </script>
+</body>
+</html>

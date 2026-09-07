@@ -33,3 +33,4 @@ class CandidateOut(BaseModel):
     interests: list[str] = []
     languages: list[str] = []
     verified_badge: str | None = None
+    face_verified: bool = False

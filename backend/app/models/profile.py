@@ -106,6 +106,11 @@ class Profile(Base):
     has_kids: Mapped[str | None] = mapped_column("HasKids", Unicode(30), nullable=True)
     interests: Mapped[str | None] = mapped_column("Interests", Unicode(500), nullable=True)
     languages: Mapped[str | None] = mapped_column("Languages", Unicode(255), nullable=True)
+    # Set True only by an admin approving a FaceVerification row below —
+    # never writable through the regular profile-update endpoint.
+    face_verified: Mapped[bool] = mapped_column(
+        "FaceVerified", Boolean, nullable=False, default=False, server_default="0"
+    )
 
     updated_at: Mapped[datetime] = mapped_column(
         "UpdatedAt", DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -129,3 +134,25 @@ class Photo(Base):
         "MediaType", Unicode(10), nullable=False, server_default="photo", default="photo"
     )
     created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+
+
+class FaceVerification(Base):
+    """One selfie submission for the face-verification badge, reviewed by
+    hand at soodamate.com/verify (an admin-only static page) rather than an
+    automated liveness/face-match vendor — see docs/ARCHITECTURE.md. The
+    photo lives at an unguessable random path in the same R2 bucket profile
+    photos use (technically reachable if someone guessed the exact path —
+    a known limitation flagged for a follow-up private bucket; see PR/commit
+    notes) rather than served through the public photo URL convention."""
+
+    __tablename__ = "FaceVerifications"
+
+    id: Mapped[uuid.UUID] = mapped_column("Id", Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        "UserId", ForeignKey("Users.Id", ondelete="CASCADE"), nullable=False
+    )
+    gcs_object_path: Mapped[str] = mapped_column("GcsObjectPath", Unicode(512), nullable=False)
+    # "pending" | "approved" | "rejected"
+    status: Mapped[str] = mapped_column("Status", Unicode(20), nullable=False, default="pending")
+    submitted_at: Mapped[datetime] = mapped_column("SubmittedAt", DateTime(timezone=True), server_default=func.now())
+    reviewed_at: Mapped[datetime | None] = mapped_column("ReviewedAt", DateTime(timezone=True), nullable=True)

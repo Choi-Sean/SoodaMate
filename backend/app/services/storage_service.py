@@ -32,6 +32,16 @@ def build_object_path(user_id: uuid.UUID, content_type: str) -> str:
     return f"users/{user_id}/photos/{uuid.uuid4()}.{ext}"
 
 
+def build_face_verification_object_path(user_id: uuid.UUID, content_type: str) -> str:
+    # A random, unguessable path under the same public bucket (no separate
+    # private bucket exists yet — see FaceVerification's model docstring for
+    # the follow-up to move this to one). Admin viewing still goes through
+    # build_admin_view_url's presigned GET below rather than the public URL
+    # convention, so nothing links to this path except that presigned URL.
+    ext = _EXTENSIONS[content_type]
+    return f"verifications/{user_id}/{uuid.uuid4()}.{ext}"
+
+
 def media_type_from_object_path(object_path: str) -> str:
     """Derived server-side from the extension build_object_path gave the
     upload, never trusted from client input — routers/profiles.py::
@@ -54,3 +64,14 @@ def build_public_url(object_path: str) -> str:
     """Bucket is public-read (R2.dev subdomain or a mapped custom domain)
     with non-guessable UUID paths — no signed GET needed, same as before."""
     return f"{settings.r2_public_url}/{object_path}"
+
+
+def build_admin_view_url(object_path: str) -> str:
+    """Short-lived signed GET for the face-verification admin review page —
+    generated fresh per admin request rather than handing out the public
+    bucket URL for something as sensitive as a person's face photo."""
+    return _get_client().generate_presigned_url(
+        "get_object",
+        Params={"Bucket": settings.r2_bucket_name, "Key": object_path},
+        ExpiresIn=10 * 60,
+    )

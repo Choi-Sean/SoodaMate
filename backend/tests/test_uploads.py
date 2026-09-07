@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 
 from app.routers import uploads as uploads_router
@@ -70,3 +72,60 @@ async def test_confirm_photo_derives_media_type_from_extension(client):
     media_types = {p["gcs_object_path"]: p["media_type"] for p in me.json()["photos"]}
     assert media_types["users/x/photos/a.jpg"] == "photo"
     assert media_types["users/x/photos/b.mp4"] == "video"
+
+
+@pytest.mark.asyncio
+async def test_display_name_locked_after_initial_creation(client):
+    _, headers = await create_user_with_profile(client, "namelock@example.com", display_name="Original")
+
+    resp = await client.put(
+        "/profiles/me",
+        headers=headers,
+        json={
+            "display_name": "Changed",
+            "legal_first_name": "Changed",
+            "birth_date": "2000-01-01",
+            "gender": "male",
+            "interested_in": "female",
+        },
+    )
+    assert resp.status_code == 200
+    # The attempted change is silently ignored, not merged — the backend is
+    # the enforcement point regardless of what the client sends.
+    assert resp.json()["display_name"] == "Original"
+    assert resp.json()["legal_first_name"] == "Original"
+
+
+@pytest.mark.asyncio
+async def test_reorder_photos(client):
+    _, headers = await create_user_with_profile(client, "reorder@example.com")
+
+    ids = []
+    for pos in range(3):
+        resp = await client.post(
+            "/profiles/me/photos/confirm",
+            headers=headers,
+            json={"gcs_object_path": f"users/x/photos/{pos}.jpg", "position": pos},
+        )
+        ids.append(resp.json()["id"])
+
+    # ids[0] is already position 0 from create_user_with_profile's own photo
+    # at position 0 -- fetch the real current ordering first.
+    me = await client.get("/profiles/me", headers=headers)
+    current = sorted(me.json()["photos"], key=lambda p: p["position"])
+    current_ids = [p["id"] for p in current]
+
+    reversed_ids = list(reversed(current_ids))
+    resp = await client.put("/profiles/me/photos/reorder", headers=headers, json={"photo_ids": reversed_ids})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert [p["id"] for p in sorted(body, key=lambda p: p["position"])] == reversed_ids
+
+
+@pytest.mark.asyncio
+async def test_reorder_photos_rejects_incomplete_list(client):
+    _, headers = await create_user_with_profile(client, "reorder2@example.com")
+    resp = await client.put(
+        "/profiles/me/photos/reorder", headers=headers, json={"photo_ids": [str(uuid.uuid4())]}
+    )
+    assert resp.status_code == 400

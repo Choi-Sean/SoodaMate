@@ -65,11 +65,13 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
     [t]
   );
 
-  const { sendMessage, markRead } = useChatSocket(matchId, handleIncoming, handleSocketError);
+  const { connected, sendMessage, markRead } = useChatSocket(matchId, handleIncoming, handleSocketError);
 
   useEffect(() => {
-    markRead();
-  }, [markRead]);
+    // Re-fires once `connected` flips true — mount alone isn't enough since
+    // opening the WebSocket is async and markRead is a no-op until then.
+    if (connected) markRead();
+  }, [connected, markRead]);
 
   async function submitReport(reason: string) {
     try {

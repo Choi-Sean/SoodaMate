@@ -14,6 +14,7 @@ from app.schemas.profile import (
     IncognitoUpdate,
     PhotoConfirmRequest,
     PhotoOut,
+    PhotoReorderRequest,
     PremiumFilterUpdate,
     ProfileOut,
     ProfileUpdate,
@@ -64,6 +65,15 @@ async def update_my_profile(
         profile = Profile(user_id=user.id, **profile_data, is_profile_complete=is_complete)
         db.add(profile)
     else:
+        # display_name/legal_first_name are locked after initial profile
+        # creation (a display name that keeps changing makes a user harder
+        # to recognize/report; legal_first_name feeds identity checks
+        # elsewhere). Mobile makes both fields read-only for this reason —
+        # this is the backend enforcing the same rule for direct API calls.
+        # A real change request goes through support (ID verification,
+        # ~7 business days), not this endpoint.
+        profile_data["display_name"] = profile.display_name
+        profile_data["legal_first_name"] = profile.legal_first_name
         for field, value in profile_data.items():
             setattr(profile, field, value)
         profile.is_profile_complete = is_complete
@@ -104,6 +114,37 @@ async def confirm_photo(
     await db.commit()
     await db.refresh(photo)
     return PhotoOut.model_validate(photo)
+
+
+@router.put("/me/photos/reorder", response_model=list[PhotoOut])
+async def reorder_photos(
+    body: PhotoReorderRequest,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> list[PhotoOut]:
+    photos = (
+        await db.execute(select(Photo).where(Photo.user_id == user.id))
+    ).scalars().all()
+    by_id = {p.id: p for p in photos}
+    if set(body.photo_ids) != set(by_id.keys()):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "photo_ids must list every photo exactly once")
+
+    # UNIQUE(UserId, Position) means writing final positions directly can
+    # collide mid-transaction (e.g. swapping 0<->1 tries to put photo B at
+    # position 0 while photo A -- not yet moved off it -- is still there).
+    # Push everything to negative placeholders first, then assign the real,
+    # already-conflict-free positions.
+    for i, photo in enumerate(by_id.values()):
+        photo.position = -(i + 1)
+    await db.flush()
+    for index, photo_id in enumerate(body.photo_ids):
+        by_id[photo_id].position = index
+    await db.commit()
+
+    reordered = (
+        await db.execute(select(Photo).where(Photo.user_id == user.id).order_by(Photo.position))
+    ).scalars().all()
+    return [PhotoOut.model_validate(p) for p in reordered]
 
 
 @router.delete("/me/photos/{photo_id}", status_code=204)

@@ -84,6 +84,7 @@ class ProfileOut(BaseModel):
     max_distance_km: int
     is_profile_complete: bool
     verified_badge: str | None = None
+    face_verified: bool = False
     superlike_credits: int = 0
     boost_credits: int = 0
     boost_active_until: datetime | None = None
@@ -152,7 +153,8 @@ class PresignRequest(BaseModel):
     # One video slot per profile (position convention enforced by the
     # mobile UI, not here) alongside up to 9 photo slots.
     content_type: str = Field(pattern="^(image/(jpeg|png|webp)|video/mp4)$")
-    position: int = Field(ge=0, le=8)
+    # 10 slots (0-9): up to 9 photos plus the one video slot.
+    position: int = Field(ge=0, le=9)
 
 
 class PresignResponse(BaseModel):
@@ -162,7 +164,12 @@ class PresignResponse(BaseModel):
 
 class PhotoConfirmRequest(BaseModel):
     gcs_object_path: str
-    position: int = Field(ge=0, le=8)
+    # 10 slots (0-9): up to 9 photos plus the one video slot.
+    position: int = Field(ge=0, le=9)
+
+
+class PhotoReorderRequest(BaseModel):
+    photo_ids: list[uuid.UUID] = Field(min_length=1)
 
 
 class IncognitoUpdate(BaseModel):
