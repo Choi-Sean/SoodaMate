@@ -73,6 +73,12 @@ export default function MediaCarousel({
       )}
 
       <View style={styles.infoOverlay}>
+        {(verifiedBadge || faceVerified) && (
+          <View style={styles.verifiedPill}>
+            <VerifiedBadge size={14} />
+            <Text style={styles.verifiedPillText}>{t("profileDetail.photoVerified")}</Text>
+          </View>
+        )}
         <View style={styles.nameRow}>
           {gender && GENDER_ICON[gender] && (
             <Ionicons name={GENDER_ICON[gender]} size={20} color="#fff" style={styles.genderIcon} />
@@ -81,7 +87,6 @@ export default function MediaCarousel({
             {displayName}
           </Text>
           <Text style={styles.age}>{age}</Text>
-          {(verifiedBadge || faceVerified) && <VerifiedBadge size={22} style={styles.verifiedBadge} />}
         </View>
         {distanceKm != null && (
           <View style={styles.distanceRow}>
@@ -129,9 +134,20 @@ const styles = StyleSheet.create({
   },
   superlikeBadgeText: { color: "#fff", fontWeight: "700", fontSize: 12 },
   infoOverlay: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 20 },
+  verifiedPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 5,
+    backgroundColor: "rgba(255,255,255,0.22)",
+    borderRadius: 999,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    marginBottom: 8,
+  },
+  verifiedPillText: { color: "#fff", fontSize: 11.5, fontWeight: "700" },
   nameRow: { flexDirection: "row", alignItems: "flex-end", gap: 8 },
   genderIcon: { marginBottom: 3 },
-  verifiedBadge: { marginBottom: 3 },
   name: { color: "#fff", fontSize: 26, fontWeight: "800", flexShrink: 1 },
   age: { color: "#fff", fontSize: 22, fontWeight: "400" },
   distanceRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
