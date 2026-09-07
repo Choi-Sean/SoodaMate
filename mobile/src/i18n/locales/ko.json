@@ -381,12 +381,13 @@
     "loadError": "좋아요 목록을 불러오지 못했어요. 당겨서 새로고침하세요."
   },
   "profileDetail": {
-    "bio": "소개",
-    "about": "정보",
-    "lookingFor": "찾고 있는 것",
-    "interests": "관심사",
+    "bio": "내 소개",
+    "about": "나에 대해",
+    "lookingFor": "찾고 있는 관계",
+    "interests": "내 관심사",
     "languages": "구사 언어",
-    "heightValue": "{{cm}}cm"
+    "heightValue": "{{cm}}cm",
+    "photoVerified": "사진 인증 완료"
   },
   "filters": {
     "title": "필터",

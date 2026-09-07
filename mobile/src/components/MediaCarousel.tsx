@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { Pressable, Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
@@ -26,10 +25,11 @@ interface Props {
   faceVerified?: boolean;
 }
 
-/** Tinder-style tap-to-advance carousel (left third = previous, right two
- * thirds = next) with Bumble-style dot indicators and a bottom name/age/
- * gender overlay. Resets to the first item whenever the candidate changes
- * (parent passes a `key={candidate.user_id}` so this remounts). */
+/** The full-bleed opening photo/video (Hinge-style — a single hero shot up
+ * top, not a Tinder/Bumble tap-through carousel) with the name/age/gender
+ * overlay. Every other photo/video lives further down the scroll, in
+ * ProfileInfoSections — there's no tap-to-advance here anymore, so there's
+ * exactly one place to see each piece of media, not two. */
 export default function MediaCarousel({
   media,
   displayName,
@@ -41,15 +41,7 @@ export default function MediaCarousel({
   faceVerified,
 }: Props) {
   const { t } = useTranslation();
-  const [index, setIndex] = useState(0);
-  const current = media[index];
-
-  // Guards against an out-of-range index if a candidate somehow has fewer
-  // media items than the previous one had (shouldn't happen with the
-  // remount-on-candidate-change key, but cheap to be safe).
-  useEffect(() => {
-    if (index >= media.length && media.length > 0) setIndex(0);
-  }, [media.length, index]);
+  const current = media[0];
 
   return (
     <View style={styles.container}>
@@ -59,26 +51,6 @@ export default function MediaCarousel({
         <View style={[styles.media, styles.placeholder]}>
           <Ionicons name="person" size={72} color={colors.border} />
         </View>
-      )}
-
-      {media.length > 1 && (
-        <>
-          <Pressable
-            style={styles.tapLeft}
-            onPress={() => setIndex((i) => Math.max(0, i - 1))}
-            hitSlop={0}
-          />
-          <Pressable
-            style={styles.tapRight}
-            onPress={() => setIndex((i) => Math.min(media.length - 1, i + 1))}
-            hitSlop={0}
-          />
-          <View style={styles.dotsRow}>
-            {media.map((_, i) => (
-              <View key={i} style={[styles.dot, i === index && styles.dotActive]} />
-            ))}
-          </View>
-        </>
       )}
 
       {current?.media_type === "video" && (
@@ -129,21 +101,9 @@ const styles = StyleSheet.create({
   container: { width: "100%", maxWidth: 480, alignSelf: "center", aspectRatio: 0.72, backgroundColor: colors.creamDeep },
   media: { width: "100%", height: "100%" },
   placeholder: { alignItems: "center", justifyContent: "center" },
-  tapLeft: { position: "absolute", top: 0, bottom: 0, left: 0, width: "34%" },
-  tapRight: { position: "absolute", top: 0, bottom: 0, right: 0, width: "66%" },
-  dotsRow: {
-    position: "absolute",
-    top: 12,
-    left: 12,
-    right: 12,
-    flexDirection: "row",
-    gap: 4,
-  },
-  dot: { flex: 1, height: 3, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.4)" },
-  dotActive: { backgroundColor: "#fff" },
   videoBadge: {
     position: "absolute",
-    top: 26,
+    top: 16,
     left: 12,
     backgroundColor: "rgba(0,0,0,0.45)",
     borderRadius: 14,
@@ -152,7 +112,7 @@ const styles = StyleSheet.create({
   gradient: { position: "absolute", left: 0, right: 0, bottom: 0, height: "40%" },
   superlikeBadge: {
     position: "absolute",
-    top: 26,
+    top: 16,
     alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",

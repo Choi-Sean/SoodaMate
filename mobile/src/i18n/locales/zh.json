@@ -381,12 +381,13 @@
     "loadError": "无法加载喜欢列表，请下拉重试。"
   },
   "profileDetail": {
-    "bio": "关于我",
-    "about": "基本信息",
-    "lookingFor": "正在寻找",
-    "interests": "兴趣爱好",
+    "bio": "我的简介",
+    "about": "关于我",
+    "lookingFor": "我在寻找",
+    "interests": "我的兴趣",
     "languages": "语言",
-    "heightValue": "{{cm}} 厘米"
+    "heightValue": "{{cm}} 厘米",
+    "photoVerified": "照片已认证"
   },
   "filters": {
     "title": "筛选",

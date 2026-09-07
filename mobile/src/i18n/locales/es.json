@@ -381,12 +381,13 @@
     "loadError": "No se pudieron cargar los likes. Desliza para reintentar."
   },
   "profileDetail": {
-    "bio": "Sobre mí",
-    "about": "Información",
-    "lookingFor": "Busco",
-    "interests": "Intereses",
+    "bio": "Mi biografía",
+    "about": "Sobre mí",
+    "lookingFor": "Estoy buscando",
+    "interests": "Mis intereses",
     "languages": "Idiomas",
-    "heightValue": "{{cm}} cm"
+    "heightValue": "{{cm}} cm",
+    "photoVerified": "Foto verificada"
   },
   "filters": {
     "title": "Filtros",

@@ -381,12 +381,13 @@
     "loadError": "Couldn't load likes. Pull to retry."
   },
   "profileDetail": {
-    "bio": "About me",
-    "about": "About",
-    "lookingFor": "Looking for",
-    "interests": "Interests",
+    "bio": "My Bio",
+    "about": "About Me",
+    "lookingFor": "I'm Looking For",
+    "interests": "My Interests",
     "languages": "Languages",
-    "heightValue": "{{cm}} cm"
+    "heightValue": "{{cm}} cm",
+    "photoVerified": "Photo Verified"
   },
   "filters": {
     "title": "Filters",

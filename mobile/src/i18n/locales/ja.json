@@ -381,12 +381,13 @@
     "loadError": "いいね一覧を読み込めませんでした。引っ張って再試行してください。"
   },
   "profileDetail": {
-    "bio": "自己紹介",
-    "about": "プロフィール",
-    "lookingFor": "探しているもの",
-    "interests": "興味・関心",
+    "bio": "私について",
+    "about": "自己紹介",
+    "lookingFor": "探している関係",
+    "interests": "私の興味・関心",
     "languages": "話せる言語",
-    "heightValue": "{{cm}}cm"
+    "heightValue": "{{cm}}cm",
+    "photoVerified": "写真認証済み"
   },
   "filters": {
     "title": "フィルター",

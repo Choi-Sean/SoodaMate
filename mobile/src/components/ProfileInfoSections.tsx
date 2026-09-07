@@ -3,6 +3,8 @@ import { Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
+import ProfileMedia from "./ProfileMedia";
+import VerifiedBadge from "./VerifiedBadge";
 import type { Candidate } from "../types";
 import { colors } from "../theme";
 
@@ -28,10 +30,15 @@ function TextPill({ label }: { label: string }) {
   );
 }
 
-function InfoRow({ icon, text }: { icon: IconName; text: string }) {
+// leftIcon is either a plain Ionicon (most rows) or a custom element (the
+// verified-badge row, which uses the same brand-orange scallop image as
+// everywhere else a verified badge shows, not a generic checkmark glyph).
+function InfoRow({ icon, leftIcon, text }: { icon?: IconName; leftIcon?: ReactNode; text: string }) {
   return (
     <View style={styles.factRow}>
-      <Ionicons name={icon} size={17} color={colors.muted} style={styles.factIcon} />
+      <View style={styles.factIcon}>
+        {leftIcon ?? (icon && <Ionicons name={icon} size={17} color={colors.muted} />)}
+      </View>
       <Text style={styles.factText}>{text}</Text>
     </View>
   );
@@ -46,14 +53,21 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-/** Bumble-style "About me"/"Looking for" pill cards + Hinge-style plain
- * fact rows, below the photo/video carousel — the scroll-down half of a
- * profile card. Renders nothing for a section whose fields are all empty,
- * so a bare-bones profile doesn't show a wall of empty cards. */
+/** The scroll-down half of a profile card, Hinge-style: a plain fact-row
+ * list (photo-verified badge, height, occupation, education, hometown),
+ * then My Bio / About Me / I'm Looking For / My Interests / Languages pill
+ * cards, then every remaining photo and the video (if any) as full-width
+ * cards, in order - the single hero shot up in MediaCarousel is the only
+ * media NOT repeated down here. Renders nothing for a section whose fields
+ * are all empty, so a bare-bones profile doesn't show a wall of empty
+ * cards. */
 export default function ProfileInfoSections({ candidate }: { candidate: Candidate }) {
   const { t } = useTranslation();
 
-  const facts: { icon: IconName; text: string }[] = [];
+  const isVerified = !!candidate.verified_badge || candidate.face_verified;
+
+  const facts: { icon?: IconName; leftIcon?: ReactNode; text: string }[] = [];
+  if (isVerified) facts.push({ leftIcon: <VerifiedBadge size={18} />, text: t("profileDetail.photoVerified") });
   if (candidate.height_cm) facts.push({ icon: "resize-outline", text: t("profileDetail.heightValue", { cm: candidate.height_cm }) });
   if (candidate.occupation) facts.push({ icon: "briefcase-outline", text: candidate.occupation });
   // education is a fixed-key dropdown now (Edit Profile) - older free-text
@@ -90,12 +104,16 @@ export default function ProfileInfoSections({ candidate }: { candidate: Candidat
   if (candidate.has_kids)
     lookingFor.push({ icon: "people-outline", label: t(`profileSetup.hasKidsOption.${candidate.has_kids}`, { defaultValue: candidate.has_kids }) });
 
+  // Everything past the hero shot MediaCarousel already showed - photos
+  // 2..N and the one video slot, in whatever order they're stored.
+  const restOfMedia = candidate.photos.slice(1);
+
   return (
     <View style={styles.container}>
       {facts.length > 0 && (
         <View style={styles.factsCard}>
           {facts.map((f, i) => (
-            <InfoRow key={i} icon={f.icon} text={f.text} />
+            <InfoRow key={i} icon={f.icon} leftIcon={f.leftIcon} text={f.text} />
           ))}
         </View>
       )}
@@ -149,6 +167,12 @@ export default function ProfileInfoSections({ candidate }: { candidate: Candidat
           </View>
         </Section>
       )}
+
+      {restOfMedia.map((media) => (
+        <View key={media.id} style={styles.extraMediaCard}>
+          <ProfileMedia media={media} style={styles.extraMedia} />
+        </View>
+      ))}
     </View>
   );
 }
@@ -170,7 +194,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  factIcon: { width: 24 },
+  factIcon: { width: 24, alignItems: "flex-start" },
   factText: { color: colors.ink, fontSize: 15, flexShrink: 1 },
   card: {
     backgroundColor: colors.white,
@@ -192,4 +216,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   pillText: { color: colors.ink, fontSize: 13, fontWeight: "600" },
+  extraMediaCard: {
+    width: "100%",
+    aspectRatio: 0.8,
+    borderRadius: 18,
+    overflow: "hidden",
+    backgroundColor: colors.creamDeep,
+  },
+  extraMedia: { width: "100%", height: "100%" },
 });
