@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.models.device import PushToken
+from app.models.user import User
+from app.services import push_i18n
 
 _app: firebase_admin.App | None = None
 _init_attempted = False
@@ -29,6 +31,10 @@ def _get_app() -> firebase_admin.App | None:
     except Exception:
         _app = None
     return _app
+
+
+async def _get_language(db: AsyncSession, user_id: uuid.UUID) -> str | None:
+    return await db.scalar(select(User.preferred_language).where(User.id == user_id))
 
 
 async def send_to_user(
@@ -57,11 +63,12 @@ async def send_to_user(
 
 
 async def send_match_notification(db: AsyncSession, user_id: uuid.UUID, match_id: uuid.UUID) -> None:
+    lang = await _get_language(db, user_id)
     await send_to_user(
         db,
         user_id,
-        "It's a match!",
-        "You have a new match on SooDa Mate",
+        push_i18n.t(lang, "match_title"),
+        push_i18n.t(lang, "match_body"),
         {"type": "match", "match_id": str(match_id)},
     )
 
@@ -70,11 +77,13 @@ async def send_like_notification(db: AsyncSession, user_id: uuid.UUID, superlike
     # Deliberately doesn't name who liked them — that's the Likes tab's own
     # (free-tier-visible) reveal, this is just an awareness ping, same as
     # Tinder/Bumble's "someone liked you" push.
+    lang = await _get_language(db, user_id)
+    key_prefix = "superlike" if superlike else "like"
     await send_to_user(
         db,
         user_id,
-        "Super Like! ⭐" if superlike else "New like! 💛",
-        "Someone super liked you on SooDa Mate" if superlike else "Someone liked you on SooDa Mate",
+        push_i18n.t(lang, f"{key_prefix}_title"),
+        push_i18n.t(lang, f"{key_prefix}_body"),
         {"type": "like"},
     )
 
@@ -82,10 +91,23 @@ async def send_like_notification(db: AsyncSession, user_id: uuid.UUID, superlike
 async def send_message_notification(
     db: AsyncSession, user_id: uuid.UUID, match_id: uuid.UUID, sender_id: uuid.UUID, sender_name: str
 ) -> None:
+    lang = await _get_language(db, user_id)
     await send_to_user(
         db,
         user_id,
         sender_name,
-        "sent you a message",
+        push_i18n.t(lang, "message_body"),
         {"type": "message", "match_id": str(match_id), "sender_id": str(sender_id)},
+    )
+
+
+async def send_verification_result_notification(db: AsyncSession, user_id: uuid.UUID, approved: bool) -> None:
+    lang = await _get_language(db, user_id)
+    key_prefix = "verification_approved" if approved else "verification_rejected"
+    await send_to_user(
+        db,
+        user_id,
+        push_i18n.t(lang, f"{key_prefix}_title"),
+        push_i18n.t(lang, f"{key_prefix}_body"),
+        {"type": "verification", "status": "approved" if approved else "rejected"},
     )

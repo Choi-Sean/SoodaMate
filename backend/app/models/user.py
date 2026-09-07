@@ -26,6 +26,16 @@ class User(Base):
     # signup path sets this — it's flipped directly in the DB for the
     # app owner's own account (see docs/ARCHITECTURE.md admin notes).
     is_admin: Mapped[bool] = mapped_column("IsAdmin", Boolean, default=False, nullable=False, server_default="0")
+    # One of mobile/src/i18n's SUPPORTED_LANGUAGES (ko/en/es/zh/ja) - kept in
+    # sync from the client (PUT /account/language) whenever the user changes
+    # it in Settings, purely so push_service can send FCM notification text
+    # in the language the user actually reads the app in (push notifications
+    # aren't rendered through the client's own i18n — the text has to be
+    # baked in server-side at send time). Defaults to "en" to match the
+    # mobile app's own un-set default.
+    preferred_language: Mapped[str] = mapped_column(
+        "PreferredLanguage", Unicode(10), nullable=False, default="en", server_default="en"
+    )
     last_active_at: Mapped[datetime] = mapped_column(
         "LastActiveAt", DateTime(timezone=True), server_default=func.now()
     )

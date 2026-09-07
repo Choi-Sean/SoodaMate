@@ -7,6 +7,7 @@ from app.deps import require_admin
 from app.models.profile import FaceVerification, Profile
 from app.models.user import User
 from app.schemas.verification import FaceVerificationAdminOut, FaceVerificationRejectRequest
+from app.services import push_service
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -57,6 +58,7 @@ async def approve_face_verification(
     if profile is not None:
         profile.face_verified = True
     await db.commit()
+    await push_service.send_verification_result_notification(db, verification.user_id, approved=True)
 
 
 @router.post("/face-verifications/{verification_id}/reject", status_code=204)
@@ -77,3 +79,4 @@ async def reject_face_verification(
     if profile is not None:
         profile.face_verified = False
     await db.commit()
+    await push_service.send_verification_result_notification(db, verification.user_id, approved=False)

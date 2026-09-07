@@ -49,6 +49,16 @@ export async function initI18n(): Promise<void> {
 export async function setLanguage(lang: SupportedLanguage): Promise<void> {
   await i18n.changeLanguage(lang);
   await secureStorage.setItem(LANG_STORAGE_KEY, lang);
+  // Best-effort background sync so push notifications (sent server-side,
+  // never through this i18n instance) come through in the same language —
+  // swallow failures (logged out, offline) since this isn't a
+  // user-initiated action the UI needs to react to.
+  try {
+    const { updateLanguagePreference } = await import("../api/account");
+    await updateLanguagePreference(lang);
+  } catch {
+    // ignore
+  }
 }
 
 export default i18n;

@@ -195,6 +195,60 @@ async def test_face_verification_reject_clears_badge(client, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_verification_result_push_uses_recipient_language(client, monkeypatch):
+    import app.routers.verification as verification_router
+    import app.routers.admin as admin_router
+
+    monkeypatch.setattr(
+        verification_router.storage_service,
+        "generate_upload_url",
+        lambda object_path, content_type: f"https://fake.r2.cloudflarestorage.com/{object_path}",
+    )
+
+    user_id, headers = await create_user_with_profile(client, "faceverifylang@example.com")
+    lang_resp = await client.put("/account/language", headers=headers, json={"language": "ko"})
+    assert lang_resp.status_code == 204
+
+    selfie_presign = await client.post("/verification/face/presign", headers=headers, json={"content_type": "image/jpeg"})
+    selfie_path = selfie_presign.json()["gcs_object_path"]
+    id_presign = await client.post(
+        "/verification/face/presign", headers=headers, json={"content_type": "image/jpeg", "kind": "id_photo"}
+    )
+    id_path = id_presign.json()["gcs_object_path"]
+    await client.post(
+        "/verification/face/submit",
+        headers=headers,
+        json={"selfie_object_path": selfie_path, "id_photo_object_path": id_path},
+    )
+
+    from app.database import async_session_factory
+    from app.models.user import User
+    import uuid as uuid_mod
+
+    async with async_session_factory() as session:
+        user = await session.get(User, uuid_mod.UUID(user_id))
+        user.is_admin = True
+        await session.commit()
+
+    pending = await client.get("/admin/face-verifications?status=pending", headers=headers)
+    mine = next(item for item in pending.json() if item["user_id"] == user_id)
+
+    sent = []
+
+    async def fake_send_to_user(db, user_id, title, body, data=None):
+        sent.append({"user_id": user_id, "title": title, "body": body})
+
+    monkeypatch.setattr(admin_router.push_service, "send_to_user", fake_send_to_user)
+
+    approve = await client.post(f"/admin/face-verifications/{mine['id']}/approve", headers=headers)
+    assert approve.status_code == 204
+
+    assert len(sent) == 1
+    assert sent[0]["user_id"] == uuid_mod.UUID(user_id)
+    assert sent[0]["title"] == "인증 완료! ✅"  # Korean, matching the preferred_language set above
+
+
+@pytest.mark.asyncio
 async def test_lockout_after_too_many_wrong_attempts(client, monkeypatch):
     import app.routers.verification as verification_router
 

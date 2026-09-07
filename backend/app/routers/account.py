@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel, Field
 from sqlalchemy import delete, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,6 +9,24 @@ from app.models.interaction import Block, Match, Report, Swipe
 from app.models.user import User
 
 router = APIRouter(prefix="/account", tags=["account"])
+
+
+class LanguageUpdateRequest(BaseModel):
+    # Mirrors mobile/src/i18n's SUPPORTED_LANGUAGES.
+    language: str = Field(pattern="^(ko|en|es|zh|ja)$")
+
+
+@router.put("/language", status_code=204)
+async def update_language(
+    body: LanguageUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> None:
+    # Kept in sync purely so push_service can send FCM notification text in
+    # the language the user actually reads the app in — this has no effect
+    # on in-app text, which the client's own i18next already handles.
+    user.preferred_language = body.language
+    await db.commit()
 
 
 @router.delete("/me", status_code=204)

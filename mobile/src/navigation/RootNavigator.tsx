@@ -2,8 +2,10 @@ import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+import i18n from "../i18n";
 import { useAuthStore } from "../store/authStore";
 import { getMyProfile } from "../api/profiles";
+import { updateLanguagePreference } from "../api/account";
 import { registerForPushNotifications } from "../services/pushNotifications";
 import { colors } from "../theme";
 import AuthStack from "./AuthStack";
@@ -53,6 +55,11 @@ export default function RootNavigator() {
 function MainApp() {
   useEffect(() => {
     registerForPushNotifications();
+    // Covers a language change made while logged out, or on a device that
+    // never got a chance to sync (e.g. this feature shipped after the user
+    // had already picked a language) — setLanguage() itself also syncs on
+    // every change going forward, this is just the catch-up path.
+    updateLanguagePreference(i18n.language).catch(() => {});
   }, []);
 
   return <MainTabs />;
