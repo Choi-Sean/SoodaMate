@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
 
 import ProfileMedia from "./ProfileMedia";
+import VerifiedBadge from "./VerifiedBadge";
 import type { Photo } from "../types";
 import { colors } from "../theme";
 
@@ -108,7 +109,7 @@ export default function MediaCarousel({
             {displayName}
           </Text>
           <Text style={styles.age}>{age}</Text>
-          {(verifiedBadge || faceVerified) && <Ionicons name="checkmark-circle" size={20} color="#4FC3F7" />}
+          {(verifiedBadge || faceVerified) && <VerifiedBadge size={22} style={styles.verifiedBadge} />}
         </View>
         {distanceKm != null && (
           <View style={styles.distanceRow}>
@@ -170,6 +171,7 @@ const styles = StyleSheet.create({
   infoOverlay: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 20 },
   nameRow: { flexDirection: "row", alignItems: "flex-end", gap: 8 },
   genderIcon: { marginBottom: 3 },
+  verifiedBadge: { marginBottom: 3 },
   name: { color: "#fff", fontSize: 26, fontWeight: "800", flexShrink: 1 },
   age: { color: "#fff", fontSize: 22, fontWeight: "400" },
   distanceRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },

@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 
 import { getMyProfile } from "../../api/profiles";
+import VerifiedBadge from "../../components/VerifiedBadge";
 import { useAuthStore } from "../../store/authStore";
 import { env } from "../../config/env";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
@@ -36,7 +37,7 @@ export default function MyProfileScreen({ navigation }: Props) {
       <View style={styles.nameRow}>
         <Text style={styles.name}>{profile?.display_name ?? "..."}</Text>
         {profile?.verified_badge && <Text style={styles.badge}>🏅</Text>}
-        {profile?.face_verified && <Text style={styles.badge}>✅</Text>}
+        {profile?.face_verified && <VerifiedBadge size={20} />}
       </View>
       {profile?.bio && <Text style={styles.bio}>{profile.bio}</Text>}
 

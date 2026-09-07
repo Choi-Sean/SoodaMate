@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { getMyProfile } from "../../api/profiles";
 import { getFaceVerificationStatus, presignFacePhoto, submitFaceVerification } from "../../api/verification";
 import { uploadToPresignedUrl } from "../../api/uploads";
+import VerifiedBadge from "../../components/VerifiedBadge";
 import { colors } from "../../theme";
 
 export default function FaceVerificationScreen() {
@@ -90,7 +91,8 @@ export default function FaceVerificationScreen() {
 
       {isVerified && (
         <View style={styles.badgeBanner}>
-          <Text style={styles.badgeBannerText}>✅ {t("faceVerification.verifiedBanner")}</Text>
+          <VerifiedBadge size={20} />
+          <Text style={styles.badgeBannerText}>{t("faceVerification.verifiedBanner")}</Text>
         </View>
       )}
 
@@ -151,7 +153,15 @@ const styles = StyleSheet.create({
   container: { padding: 24, flexGrow: 1, backgroundColor: colors.white },
   title: { fontSize: 24, fontWeight: "700", marginTop: 8, marginBottom: 4, color: colors.navy },
   subtitle: { color: colors.muted, marginBottom: 20, lineHeight: 20 },
-  badgeBanner: { backgroundColor: "#E6F4EA", borderRadius: 12, padding: 14, marginBottom: 16 },
+  badgeBanner: {
+    backgroundColor: "#E6F4EA",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   badgeBannerText: { color: "#1E7A34", fontWeight: "700" },
   pendingBanner: { backgroundColor: colors.creamDeep, borderRadius: 12, padding: 14, marginBottom: 16 },
   pendingBannerText: { color: colors.navy, fontWeight: "600" },

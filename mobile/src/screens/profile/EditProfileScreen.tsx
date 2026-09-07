@@ -12,6 +12,7 @@ import LocationPicker from "../../components/LocationPicker";
 import RangeSlider from "../../components/RangeSlider";
 import SelectDropdown, { DropdownOption } from "../../components/SelectDropdown";
 import ProfilePhotosGrid from "../../components/ProfilePhotosGrid";
+import VerifiedBadge from "../../components/VerifiedBadge";
 import ProfileCompletenessBar from "../../components/ProfileCompletenessBar";
 import HeightInput from "../../components/HeightInput";
 import CityAutocomplete from "../../components/CityAutocomplete";
@@ -219,7 +220,11 @@ export default function EditProfileScreen({ navigation }: Props) {
         style={[styles.verifyCard, profile.face_verified && styles.verifyCardDone]}
         onPress={() => !profile.face_verified && navigation.navigate("FaceVerification")}
       >
-        <Text style={styles.verifyCardEmoji}>{profile.face_verified ? "✅" : "🪪"}</Text>
+        {profile.face_verified ? (
+          <VerifiedBadge size={30} />
+        ) : (
+          <Text style={styles.verifyCardEmoji}>🪪</Text>
+        )}
         <View style={styles.verifyCardTextWrap}>
           <Text style={styles.verifyCardTitle}>
             {profile.face_verified ? t("faceVerification.verifiedBanner") : t("faceVerification.cardTitle")}
