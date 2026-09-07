@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActivityIndicator, Alert, Linking, Pressable, Switch, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Linking, Pressable, Switch, Text, View, StyleSheet } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
@@ -11,6 +11,7 @@ import { env } from "../../config/env";
 import { SUPPORTED_LANGUAGES, setLanguage, type SupportedLanguage } from "../../i18n";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
 import { colors } from "../../theme";
+import { showAlert } from "../../utils/alert";
 
 type Props = NativeStackScreenProps<ProfileStackParamList, "Settings">;
 
@@ -36,14 +37,14 @@ export default function SettingsScreen({ navigation }: Props) {
       await setIncognito(value);
       await queryClient.invalidateQueries({ queryKey: ["myProfile"] });
     } catch (e: any) {
-      Alert.alert(t("common.somethingWentWrong"));
+      showAlert(t("common.somethingWentWrong"));
     } finally {
       setTogglingIncognito(false);
     }
   }
 
   function confirmDeleteAccount() {
-    Alert.alert(t("settings.deleteConfirmTitle"), t("settings.deleteConfirmBody"), [
+    showAlert(t("settings.deleteConfirmTitle"), t("settings.deleteConfirmBody"), [
       { text: t("common.cancel"), style: "cancel" },
       { text: t("common.delete"), style: "destructive", onPress: handleDeleteAccount },
     ]);
@@ -55,7 +56,7 @@ export default function SettingsScreen({ navigation }: Props) {
       await deleteAccount();
       await logout();
     } catch (e: any) {
-      Alert.alert(t("settings.deleteFailed"), e?.response?.data?.detail ?? e?.message ?? t("settings.tryAgainLater"));
+      showAlert(t("settings.deleteFailed"), e?.response?.data?.detail ?? e?.message ?? t("settings.tryAgainLater"));
     } finally {
       setDeleting(false);
     }

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import {
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -17,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import ChatBubble from "../../components/ChatBubble";
 import { getMessageHistory } from "../../api/messages";
 import { blockUser, reportUser } from "../../api/safety";
+import { showAlert } from "../../utils/alert";
 import { useChatSocket, type ChatSocketError } from "../../hooks/useChatSocket";
 import { useMatches } from "../../hooks/useMatches";
 import { useAuthStore } from "../../store/authStore";
@@ -59,7 +59,7 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
       if (err.code === "first_message_restricted") {
         // Roll back the optimistic local echo of whatever we just tried to send.
         setMessages((prev) => prev.filter((m) => !m.id.startsWith("local-")));
-        Alert.alert(t("common.somethingWentWrong"), t("chat.firstMessageRestricted"));
+        showAlert(t("common.somethingWentWrong"), t("chat.firstMessageRestricted"));
       }
     },
     [t]
@@ -76,14 +76,14 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
   async function submitReport(reason: string) {
     try {
       await reportUser(otherUserId, reason);
-      Alert.alert(t("chat.reported"), t("chat.reportedBody"));
+      showAlert(t("chat.reported"), t("chat.reportedBody"));
     } catch {
-      Alert.alert(t("common.somethingWentWrong"), t("chat.errorGeneric"));
+      showAlert(t("common.somethingWentWrong"), t("chat.errorGeneric"));
     }
   }
 
   function openReportReasons() {
-    Alert.alert(t("chat.reportReasonTitle"), undefined, [
+    showAlert(t("chat.reportReasonTitle"), undefined, [
       { text: t("chat.reasonHarassment"), onPress: () => submitReport("harassment") },
       { text: t("chat.reasonInappropriate"), onPress: () => submitReport("inappropriate_content") },
       { text: t("chat.reasonFakeProfile"), onPress: () => submitReport("fake_profile") },
@@ -96,19 +96,19 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
       await blockUser(otherUserId);
       navigation.goBack();
     } catch {
-      Alert.alert(t("common.somethingWentWrong"), t("chat.errorGeneric"));
+      showAlert(t("common.somethingWentWrong"), t("chat.errorGeneric"));
     }
   }
 
   function confirmBlock() {
-    Alert.alert(t("chat.blockConfirmTitle"), t("chat.blockConfirmBody"), [
+    showAlert(t("chat.blockConfirmTitle"), t("chat.blockConfirmBody"), [
       { text: t("chat.cancel"), style: "cancel" },
       { text: t("chat.blockConfirm"), style: "destructive", onPress: doBlock },
     ]);
   }
 
   function openMenu() {
-    Alert.alert(otherDisplayName, undefined, [
+    showAlert(otherDisplayName, undefined, [
       { text: t("chat.report"), onPress: openReportReasons },
       { text: t("chat.block"), style: "destructive", onPress: confirmBlock },
       { text: t("chat.cancel"), style: "cancel" },

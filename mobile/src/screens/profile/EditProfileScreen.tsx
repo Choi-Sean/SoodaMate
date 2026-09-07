@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Linking, Pressable, ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
+import { showAlert } from "../../utils/alert";
 import { getMyProfile, setPremiumFilters, updateMyProfile } from "../../api/profiles";
 import ChipSelect from "../../components/ChipSelect";
 import MultiChipSelect from "../../components/MultiChipSelect";
@@ -181,7 +182,7 @@ export default function EditProfileScreen({ navigation }: Props) {
       });
       await refreshProfile();
     } catch (e: any) {
-      Alert.alert(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));
+      showAlert(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));
     } finally {
       setSavingFilters(false);
     }

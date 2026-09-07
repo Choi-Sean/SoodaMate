@@ -4,7 +4,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
 import ProfileMedia from "./ProfileMedia";
-import VerifiedBadge from "./VerifiedBadge";
 import type { Candidate } from "../types";
 import { colors } from "../theme";
 
@@ -30,14 +29,11 @@ function TextPill({ label }: { label: string }) {
   );
 }
 
-// leftIcon is either a plain Ionicon (most rows) or a custom element (the
-// verified-badge row, which uses the same brand-orange scallop image as
-// everywhere else a verified badge shows, not a generic checkmark glyph).
-function InfoRow({ icon, leftIcon, text }: { icon?: IconName; leftIcon?: ReactNode; text: string }) {
+function InfoRow({ icon, text }: { icon: IconName; text: string }) {
   return (
     <View style={styles.factRow}>
-      <View style={styles.factIcon}>
-        {leftIcon ?? (icon && <Ionicons name={icon} size={17} color={colors.muted} />)}
+      <View style={styles.factIconBubble}>
+        <Ionicons name={icon} size={16} color={colors.accentDark} />
       </View>
       <Text style={styles.factText}>{text}</Text>
     </View>
@@ -64,10 +60,9 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 export default function ProfileInfoSections({ candidate }: { candidate: Candidate }) {
   const { t } = useTranslation();
 
-  const isVerified = !!candidate.verified_badge || candidate.face_verified;
-
-  const facts: { icon?: IconName; leftIcon?: ReactNode; text: string }[] = [];
-  if (isVerified) facts.push({ leftIcon: <VerifiedBadge size={18} />, text: t("profileDetail.photoVerified") });
+  // The verified badge already shows as its own pill on the photo above
+  // (MediaCarousel) - repeating it as a fact row here too was redundant.
+  const facts: { icon: IconName; text: string }[] = [];
   if (candidate.height_cm) facts.push({ icon: "resize-outline", text: t("profileDetail.heightValue", { cm: candidate.height_cm }) });
   if (candidate.occupation) facts.push({ icon: "briefcase-outline", text: candidate.occupation });
   // education is a fixed-key dropdown now (Edit Profile) - older free-text
@@ -113,7 +108,7 @@ export default function ProfileInfoSections({ candidate }: { candidate: Candidat
       {facts.length > 0 && (
         <View style={styles.factsCard}>
           {facts.map((f, i) => (
-            <InfoRow key={i} icon={f.icon} leftIcon={f.leftIcon} text={f.text} />
+            <InfoRow key={i} icon={f.icon} text={f.text} />
           ))}
         </View>
       )}
@@ -181,27 +176,40 @@ const styles = StyleSheet.create({
   container: { padding: 16, gap: 14 },
   factsCard: {
     backgroundColor: colors.white,
-    borderRadius: 18,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: 22,
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+    shadowColor: colors.navyDeep,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
   },
   factRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    gap: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
   },
-  factIcon: { width: 24, alignItems: "flex-start" },
-  factText: { color: colors.ink, fontSize: 15, flexShrink: 1 },
+  factIconBubble: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.creamDeep,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  factText: { color: colors.ink, fontSize: 15, fontWeight: "500", flexShrink: 1 },
   card: {
     backgroundColor: colors.white,
-    borderRadius: 18,
+    borderRadius: 22,
     padding: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
+    shadowColor: colors.navyDeep,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
   },
   cardTitle: { fontSize: 15, fontWeight: "800", color: colors.navy, marginBottom: 12 },
   bioText: { color: colors.ink, fontSize: 15, lineHeight: 22 },

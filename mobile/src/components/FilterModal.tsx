@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Linking, Modal, Pressable, ScrollView, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { getMyProfile, setAgeFilter, setPremiumFilters } from "../api/profiles";
 import { useAuthStore } from "../store/authStore";
 import { env } from "../config/env";
+import { showAlert } from "../utils/alert";
 import MultiChipSelect from "./MultiChipSelect";
 import NumberStepper from "./NumberStepper";
 import {
@@ -102,7 +103,7 @@ export default function FilterModal({ visible, onClose }: Props) {
       await queryClient.invalidateQueries({ queryKey: ["recommended"] });
       onClose();
     } catch (e: any) {
-      Alert.alert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? "");
+      showAlert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? "");
     } finally {
       setSaving(false);
     }

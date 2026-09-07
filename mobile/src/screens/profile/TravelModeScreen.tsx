@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { getMyProfile, setTravelMode, clearTravelMode } from "../../api/profiles";
 import { PRESET_CITIES, type PresetCity } from "../../constants/presetCities";
 import { colors } from "../../theme";
+import { showAlert } from "../../utils/alert";
 
 export default function TravelModeScreen() {
   const { t } = useTranslation();
@@ -55,7 +56,7 @@ export default function TravelModeScreen() {
       await clearTravelMode();
       await queryClient.invalidateQueries({ queryKey: ["myProfile"] });
     } catch (e: any) {
-      Alert.alert(t("common.somethingWentWrong"));
+      showAlert(t("common.somethingWentWrong"));
     } finally {
       setSaving(false);
     }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, TextInput, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Pressable, Text, TextInput, View, StyleSheet } from "react-native";
 import * as Location from "expo-location";
 import { Country, State, City } from "country-state-city";
 import { useTranslation } from "react-i18next";
@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import SelectDropdown, { DropdownOption } from "./SelectDropdown";
 import { SUPPORTED_COUNTRY_CODES } from "../constants/supportedCountries";
 import { colors } from "../theme";
+import { showAlert } from "../utils/alert";
 
 interface Props {
   lat: number | null;
@@ -109,7 +110,7 @@ export default function LocationPicker({ lat, lng, onChange }: Props) {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert(t("location.permissionDeniedTitle"), t("location.permissionDeniedBody"));
+        showAlert(t("location.permissionDeniedTitle"), t("location.permissionDeniedBody"));
         setManualOpen(true);
         return;
       }
@@ -117,7 +118,7 @@ export default function LocationPicker({ lat, lng, onChange }: Props) {
       onChange(position.coords.latitude, position.coords.longitude);
       setManualOpen(false);
     } catch {
-      Alert.alert(t("common.somethingWentWrong"));
+      showAlert(t("common.somethingWentWrong"));
       setManualOpen(true);
     } finally {
       setDetecting(false);

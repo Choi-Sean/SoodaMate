@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import RootNavigator from "./src/navigation/RootNavigator";
 import { navigationRef } from "./src/navigation/navigationRef";
 import AnimatedSplash from "./src/components/AnimatedSplash";
+import AlertHost from "./src/components/AlertHost";
 import { initAds } from "./src/services/ads";
 import { initDeepLinking } from "./src/services/deepLinking";
 import { initI18n } from "./src/i18n";
@@ -46,6 +47,7 @@ export default function App() {
           <RootNavigator />
           <StatusBar style="auto" />
         </NavigationContainer>
+        <AlertHost />
       </SafeAreaProvider>
     </QueryClientProvider>
   );
