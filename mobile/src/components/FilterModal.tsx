@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, Switch, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
-import { getMyProfile, setAgeFilter, setPremiumFilters } from "../api/profiles";
+import { getMyProfile, setAgeFilter, setBasicFilters, setPremiumFilters } from "../api/profiles";
 import { useAuthStore } from "../store/authStore";
 import { env } from "../config/env";
 import { showAlert } from "../utils/alert";
 import MultiChipSelect from "./MultiChipSelect";
-import NumberStepper from "./NumberStepper";
+import MultiSelectDropdown from "./MultiSelectDropdown";
+import RangeSlider from "./RangeSlider";
+import SingleSlider from "./SingleSlider";
 import {
   CANNABIS_KEYS,
   EXERCISE_FREQUENCY_KEYS,
@@ -22,17 +24,19 @@ import {
   SMOKING_KEYS,
   WANTS_KIDS_KEYS,
 } from "../constants/demographicOptions";
+import { INTEREST_KEYS, LANGUAGE_KEYS } from "../constants/interestsAndLanguages";
 import { colors } from "../theme";
-import { formatHeightCm } from "../utils/units";
+import { formatHeightCm, formatDistanceKm } from "../utils/units";
 
 interface Props {
   visible: boolean;
   onClose: () => void;
 }
 
-/** Free: age range only. Premium: age range plus every other filterable
- * dimension (everything with a fixed option set — free-text fields like
- * occupation/education/hometown aren't filterable). */
+/** Free (Basic tab): age, height, and distance range/cap, ethnicity,
+ * languages, interests, photo-verified-only, and the two "if I run out"
+ * fallback toggles. Premium (Advanced tab): religion, political view,
+ * exercise, smoking, cannabis, relationship goal, wants/has kids. */
 export default function FilterModal({ visible, onClose }: Props) {
   const { t, i18n } = useTranslation();
   const useImperial = i18n.language === "en";
@@ -47,7 +51,13 @@ export default function FilterModal({ visible, onClose }: Props) {
   const [maxAge, setMaxAge] = useState(99);
   const [heightMin, setHeightMin] = useState(140);
   const [heightMax, setHeightMax] = useState(210);
+  const [maxDistanceKm, setMaxDistanceKm] = useState(50);
   const [raceFilter, setRaceFilter] = useState<string[]>([]);
+  const [languagesFilter, setLanguagesFilter] = useState<string[]>([]);
+  const [interestsFilter, setInterestsFilter] = useState<string[]>([]);
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [expandDistanceIfLow, setExpandDistanceIfLow] = useState(true);
+  const [expandOthersIfLow, setExpandOthersIfLow] = useState(true);
   const [religionFilter, setReligionFilter] = useState<string[]>([]);
   const [politicalViewFilter, setPoliticalViewFilter] = useState<string[]>([]);
   const [exerciseFrequencyFilter, setExerciseFrequencyFilter] = useState<string[]>([]);
@@ -59,15 +69,20 @@ export default function FilterModal({ visible, onClose }: Props) {
   const [saving, setSaving] = useState(false);
 
   // Re-sync local state from the server every time the modal opens, so a
-  // change saved elsewhere (e.g. EditProfileScreen's race/religion chips)
-  // isn't stale here.
+  // change saved elsewhere isn't stale here.
   useEffect(() => {
     if (!visible || !profile) return;
     setMinAge(profile.min_age_pref);
     setMaxAge(profile.max_age_pref);
-    setHeightMin(profile.premium_filters.height_min ?? 140);
-    setHeightMax(profile.premium_filters.height_max ?? 210);
+    setHeightMin(profile.height_filter_min ?? 140);
+    setHeightMax(profile.height_filter_max ?? 210);
+    setMaxDistanceKm(profile.max_distance_km);
     setRaceFilter(profile.race_filter);
+    setLanguagesFilter(profile.languages_filter);
+    setInterestsFilter(profile.interests_filter);
+    setVerifiedOnly(profile.verified_only);
+    setExpandDistanceIfLow(profile.expand_distance_if_low);
+    setExpandOthersIfLow(profile.expand_others_if_low);
     setReligionFilter(profile.religion_filter);
     setPoliticalViewFilter(profile.premium_filters.political_view_filter);
     setExerciseFrequencyFilter(profile.premium_filters.exercise_frequency_filter);
@@ -83,13 +98,27 @@ export default function FilterModal({ visible, onClose }: Props) {
     Linking.openURL(shopUrl);
   }
 
+  const raceOptions = RACE_ETHNICITY_KEYS.map((key) => ({ key, label: t(`profileSetup.race.${key}`) }));
+  const languageOptions = LANGUAGE_KEYS.map((key) => ({ key, label: t(`languages.${key}`) }));
+  const interestOptions = INTEREST_KEYS.map((key) => ({ key, label: t(`interests.${key}`) }));
+
   async function handleSave() {
     setSaving(true);
     try {
       await setAgeFilter(minAge, maxAge);
+      await setBasicFilters({
+        max_distance_km: maxDistanceKm,
+        race_filter: raceFilter,
+        height_min: heightMin,
+        height_max: heightMax,
+        languages_filter: languagesFilter,
+        interests_filter: interestsFilter,
+        verified_only: verifiedOnly,
+        expand_distance_if_low: expandDistanceIfLow,
+        expand_others_if_low: expandOthersIfLow,
+      });
       if (isPremium) {
         await setPremiumFilters({
-          race_filter: raceFilter,
           religion_filter: religionFilter,
           political_view_filter: politicalViewFilter,
           exercise_frequency_filter: exerciseFrequencyFilter,
@@ -98,8 +127,6 @@ export default function FilterModal({ visible, onClose }: Props) {
           relationship_goal_filter: relationshipGoalFilter,
           wants_kids_filter: wantsKidsFilter,
           has_kids_filter: hasKidsFilter,
-          height_min: heightMin,
-          height_max: heightMax,
         });
       }
       await queryClient.invalidateQueries({ queryKey: ["myProfile"] });
@@ -136,45 +163,94 @@ export default function FilterModal({ visible, onClose }: Props) {
 
         <ScrollView contentContainerStyle={styles.content}>
           {tab === "basic" ? (
-            <View style={styles.card}>
-              <NumberStepper label={t("filters.minAge")} value={minAge} min={18} max={maxAge} onChange={setMinAge} />
-              <NumberStepper label={t("filters.maxAge")} value={maxAge} min={minAge} max={99} onChange={setMaxAge} />
-            </View>
-          ) : isPremium ? (
             <>
               <View style={styles.card}>
-                <NumberStepper
-                  label={t("filters.minHeight")}
-                  value={heightMin}
+                <RangeSlider
+                  label={t("filters.heightLabel")}
                   min={50}
-                  max={heightMax}
-                  step={useImperial ? 3 : 1} // ~1 inch, so +/- moves the displayed ft/in by a whole step
-                  formatValue={(v) => (useImperial ? formatHeightCm(v) : t("profileDetail.heightValue", { cm: v }))}
-                  onChange={setHeightMin}
-                />
-                <NumberStepper
-                  label={t("filters.maxHeight")}
-                  value={heightMax}
-                  min={heightMin}
                   max={272}
+                  valueMin={heightMin}
+                  valueMax={heightMax}
                   step={useImperial ? 3 : 1}
                   formatValue={(v) => (useImperial ? formatHeightCm(v) : t("profileDetail.heightValue", { cm: v }))}
-                  onChange={setHeightMax}
+                  onChange={(lo, hi) => {
+                    setHeightMin(lo);
+                    setHeightMax(hi);
+                  }}
                 />
+                <RangeSlider
+                  label={t("filters.ageLabel")}
+                  min={18}
+                  max={99}
+                  valueMin={minAge}
+                  valueMax={maxAge}
+                  onChange={(lo, hi) => {
+                    setMinAge(lo);
+                    setMaxAge(hi);
+                  }}
+                />
+                <SingleSlider
+                  label={t("filters.distanceLabel")}
+                  min={1}
+                  max={500}
+                  value={maxDistanceKm}
+                  formatValue={(v) =>
+                    useImperial ? t("filters.distanceUpToMi", { mi: formatDistanceKm(v) }) : t("filters.distanceUpToKm", { km: v })
+                  }
+                  onChange={setMaxDistanceKm}
+                />
+
+                <View style={styles.switchRow}>
+                  <Text style={styles.switchLabel}>{t("filters.expandDistanceTitle")}</Text>
+                  <Switch value={expandDistanceIfLow} onValueChange={setExpandDistanceIfLow} trackColor={{ true: colors.navy }} />
+                </View>
+                <View style={styles.switchRow}>
+                  <Text style={styles.switchLabel}>{t("filters.expandOthersTitle")}</Text>
+                  <Switch value={expandOthersIfLow} onValueChange={setExpandOthersIfLow} trackColor={{ true: colors.navy }} />
+                </View>
+                <Text style={styles.switchHint}>{t("filters.expandBody")}</Text>
               </View>
 
               <View style={styles.card}>
-                <MultiChipSelect label={t("profileSetup.raceEthnicity")} options={RACE_ETHNICITY_KEYS} translatePrefix="profileSetup.race" values={raceFilter} onChange={setRaceFilter} />
-                <MultiChipSelect label={t("profileSetup.religion")} options={RELIGION_KEYS} translatePrefix="profileSetup.religionOption" values={religionFilter} onChange={setReligionFilter} />
-                <MultiChipSelect label={t("profileSetup.politicalView")} options={POLITICAL_VIEW_KEYS} translatePrefix="profileSetup.politicalViewOption" values={politicalViewFilter} onChange={setPoliticalViewFilter} />
-                <MultiChipSelect label={t("profileSetup.exerciseFrequency")} options={EXERCISE_FREQUENCY_KEYS} translatePrefix="profileSetup.exerciseFrequencyOption" values={exerciseFrequencyFilter} onChange={setExerciseFrequencyFilter} />
-                <MultiChipSelect label={t("profileSetup.smoking")} options={SMOKING_KEYS} translatePrefix="profileSetup.smokingOption" values={smokingFilter} onChange={setSmokingFilter} />
-                <MultiChipSelect label={t("profileSetup.cannabis")} options={CANNABIS_KEYS} translatePrefix="profileSetup.cannabisOption" values={cannabisFilter} onChange={setCannabisFilter} />
-                <MultiChipSelect label={t("profileSetup.relationshipGoal")} options={RELATIONSHIP_GOAL_KEYS} translatePrefix="profileSetup.relationshipGoalOption" values={relationshipGoalFilter} onChange={setRelationshipGoalFilter} />
-                <MultiChipSelect label={t("profileSetup.wantsKids")} options={WANTS_KIDS_KEYS} translatePrefix="profileSetup.wantsKidsOption" values={wantsKidsFilter} onChange={setWantsKidsFilter} />
-                <MultiChipSelect label={t("profileSetup.hasKids")} options={HAS_KIDS_KEYS} translatePrefix="profileSetup.hasKidsOption" values={hasKidsFilter} onChange={setHasKidsFilter} />
+                <MultiSelectDropdown
+                  label={t("filters.ethnicityLabel")}
+                  placeholder={t("filters.ethnicityPlaceholder")}
+                  options={raceOptions}
+                  values={raceFilter}
+                  onChange={setRaceFilter}
+                />
+                <MultiSelectDropdown
+                  label={t("filters.languagesLabel")}
+                  placeholder={t("filters.languagesPlaceholder")}
+                  options={languageOptions}
+                  values={languagesFilter}
+                  onChange={setLanguagesFilter}
+                />
+                <MultiSelectDropdown
+                  label={t("filters.interestsLabel")}
+                  placeholder={t("filters.interestsPlaceholder")}
+                  options={interestOptions}
+                  values={interestsFilter}
+                  onChange={setInterestsFilter}
+                />
+                <View style={styles.switchRow}>
+                  <Text style={styles.switchLabel}>{t("filters.verifiedOnlyLabel")}</Text>
+                  <Switch value={verifiedOnly} onValueChange={setVerifiedOnly} trackColor={{ true: colors.navy }} />
+                </View>
+                <Text style={styles.switchHint}>{t("filters.verifiedOnlyBody")}</Text>
               </View>
             </>
+          ) : isPremium ? (
+            <View style={styles.card}>
+              <MultiChipSelect label={t("profileSetup.religion")} options={RELIGION_KEYS} translatePrefix="profileSetup.religionOption" values={religionFilter} onChange={setReligionFilter} />
+              <MultiChipSelect label={t("profileSetup.politicalView")} options={POLITICAL_VIEW_KEYS} translatePrefix="profileSetup.politicalViewOption" values={politicalViewFilter} onChange={setPoliticalViewFilter} />
+              <MultiChipSelect label={t("profileSetup.exerciseFrequency")} options={EXERCISE_FREQUENCY_KEYS} translatePrefix="profileSetup.exerciseFrequencyOption" values={exerciseFrequencyFilter} onChange={setExerciseFrequencyFilter} />
+              <MultiChipSelect label={t("profileSetup.smoking")} options={SMOKING_KEYS} translatePrefix="profileSetup.smokingOption" values={smokingFilter} onChange={setSmokingFilter} />
+              <MultiChipSelect label={t("profileSetup.cannabis")} options={CANNABIS_KEYS} translatePrefix="profileSetup.cannabisOption" values={cannabisFilter} onChange={setCannabisFilter} />
+              <MultiChipSelect label={t("profileSetup.relationshipGoal")} options={RELATIONSHIP_GOAL_KEYS} translatePrefix="profileSetup.relationshipGoalOption" values={relationshipGoalFilter} onChange={setRelationshipGoalFilter} />
+              <MultiChipSelect label={t("profileSetup.wantsKids")} options={WANTS_KIDS_KEYS} translatePrefix="profileSetup.wantsKidsOption" values={wantsKidsFilter} onChange={setWantsKidsFilter} />
+              <MultiChipSelect label={t("profileSetup.hasKids")} options={HAS_KIDS_KEYS} translatePrefix="profileSetup.hasKidsOption" values={hasKidsFilter} onChange={setHasKidsFilter} />
+            </View>
           ) : (
             <View style={styles.lockedCard}>
               <Ionicons name="lock-closed" size={28} color={colors.accentDark} />
@@ -226,6 +302,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
   },
+  switchRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 14 },
+  switchLabel: { fontSize: 14, fontWeight: "600", color: colors.ink, flex: 1, marginRight: 12 },
+  switchHint: { fontSize: 12, color: colors.muted, marginTop: 6, lineHeight: 17 },
   lockedCard: {
     backgroundColor: colors.creamDeep,
     borderRadius: 16,

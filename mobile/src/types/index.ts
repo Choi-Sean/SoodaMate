@@ -17,8 +17,6 @@ export interface PremiumFilters {
   relationship_goal_filter: string[];
   wants_kids_filter: string[];
   has_kids_filter: string[];
-  height_min: number | null;
-  height_max: number | null;
 }
 
 export interface Profile {
@@ -54,6 +52,13 @@ export interface Profile {
   cancel_at_period_end: boolean;
   race_filter: string[];
   religion_filter: string[];
+  height_filter_min: number | null;
+  height_filter_max: number | null;
+  languages_filter: string[];
+  interests_filter: string[];
+  verified_only: boolean;
+  expand_distance_if_low: boolean;
+  expand_others_if_low: boolean;
   premium_filters: PremiumFilters;
   height_cm: number | null;
   occupation: string | null;

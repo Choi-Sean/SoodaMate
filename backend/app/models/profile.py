@@ -85,12 +85,30 @@ class Profile(Base):
     subscription_price_cents: Mapped[int | None] = mapped_column("SubscriptionPriceCents", Integer, nullable=True)
     stripe_subscription_id: Mapped[str | None] = mapped_column("StripeSubscriptionId", Unicode(255), nullable=True)
     cancel_at_period_end: Mapped[bool] = mapped_column("CancelAtPeriodEnd", Boolean, default=False, nullable=False)
-    # Comma-separated allow-lists of race_ethnicity/religion values to
-    # restrict Discover to — only ever applied by discovery_service if
-    # is_premium_member(profile) is true; the free tier only gets the
-    # existing age/distance filters above.
-    race_filter: Mapped[str | None] = mapped_column("RaceFilter", Unicode(255), nullable=True)
+    # Comma-separated allow-list of religion values — still premium-only,
+    # applied by discovery_service only if is_premium_member(profile).
     religion_filter: Mapped[str | None] = mapped_column("ReligionFilter", Unicode(255), nullable=True)
+
+    # --- Basic (free) filters, set via PUT /profiles/me/basic-filters ---
+    # race_filter used to live in the premium bucket alongside
+    # religion_filter above; it's a free/Basic-tab filter now (moved to
+    # match Bumble's own free-vs-premium split), so it's grouped with the
+    # rest of the free filters here instead, even though its column name
+    # is unchanged for migration simplicity.
+    race_filter: Mapped[str | None] = mapped_column("RaceFilter", Unicode(255), nullable=True)
+    height_filter_min: Mapped[int | None] = mapped_column("HeightFilterMin", Integer, nullable=True)
+    height_filter_max: Mapped[int | None] = mapped_column("HeightFilterMax", Integer, nullable=True)
+    languages_filter: Mapped[str | None] = mapped_column("LanguagesFilter", Unicode(255), nullable=True)
+    interests_filter: Mapped[str | None] = mapped_column("InterestsFilter", Unicode(500), nullable=True)
+    verified_only: Mapped[bool] = mapped_column("VerifiedOnly", Boolean, default=False, nullable=False)
+    # Bumble's own two independent "if I run out" toggles: relax the
+    # distance cap first, and only if that's still not enough, drop every
+    # optional Basic filter above (age/height/distance/race/languages/
+    # interests/verified) and backfill with anyone else — see
+    # discovery_service.get_candidates' two-stage fallback. Both default
+    # True to match Bumble's own default-on state.
+    expand_distance_if_low: Mapped[bool] = mapped_column("ExpandDistanceIfLow", Boolean, default=True, nullable=False)
+    expand_others_if_low: Mapped[bool] = mapped_column("ExpandOthersIfLow", Boolean, default=True, nullable=False)
     # Every other premium filter dimension (political_view/exercise_frequency/
     # smoking/cannabis/relationship_goal/wants_kids/has_kids as lists, plus
     # height_min/height_max) as one JSON blob rather than 9 more dedicated

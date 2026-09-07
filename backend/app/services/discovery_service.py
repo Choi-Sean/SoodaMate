@@ -30,9 +30,11 @@ _LIST_FILTER_COLUMNS = {
 
 def _extra_premium_filters(viewer_profile: Profile) -> list:
     """The premium_filters_json-backed dimensions (everything beyond
-    race_filter/religion_filter, which have their own columns and are
-    handled inline in get_candidates) — see schemas/profile.py's
-    PremiumFilters for the typed shape this mirrors."""
+    religion_filter, which has its own column and is handled inline in
+    get_candidates) — see schemas/profile.py's PremiumFilters for the typed
+    shape this mirrors. height used to live in this JSON blob too; it's a
+    free Basic-tab filter now with its own columns (see
+    _basic_filters below), not part of the premium set at all."""
     if not viewer_profile.premium_filters_json:
         return []
     try:
@@ -45,12 +47,38 @@ def _extra_premium_filters(viewer_profile: Profile) -> list:
         values = stored.get(key)
         if values:
             filters.append(column.in_(values))
-    height_min = stored.get("height_min")
-    height_max = stored.get("height_max")
-    if height_min is not None:
-        filters.append(Profile.height_cm >= height_min)
-    if height_max is not None:
-        filters.append(Profile.height_cm <= height_max)
+    return filters
+
+
+def _csv_contains_any(column, values: list[str]):
+    """Portable "does this comma-separated column contain any of these
+    exact values" match (languages/interests are stored the same
+    comma-joined way as race_filter, but as a multi-value column instead of
+    a single value, so a plain .in_() doesn't apply). Wraps the column in
+    leading/trailing commas so a LIKE '%,val,%' match can never hit a
+    partial word (e.g. "art" inside "cart") regardless of val's position."""
+    wrapped = func.concat(",", column, ",")
+    return or_(*[wrapped.like(f"%,{v},%") for v in values])
+
+
+def _basic_filters(viewer_profile: Profile) -> list:
+    """Every free (Basic-tab) filter dimension beyond age/gender/distance,
+    which get_candidates already applies inline — race/ethnicity, height,
+    languages, interests, and verified-only. None of this requires
+    is_premium_member; see routers/profiles.py::set_basic_filters."""
+    filters = []
+    if viewer_profile.race_filter:
+        filters.append(Profile.race_ethnicity.in_(viewer_profile.race_filter.split(",")))
+    if viewer_profile.height_filter_min is not None:
+        filters.append(Profile.height_cm >= viewer_profile.height_filter_min)
+    if viewer_profile.height_filter_max is not None:
+        filters.append(Profile.height_cm <= viewer_profile.height_filter_max)
+    if viewer_profile.languages_filter:
+        filters.append(_csv_contains_any(Profile.languages, viewer_profile.languages_filter.split(",")))
+    if viewer_profile.interests_filter:
+        filters.append(_csv_contains_any(Profile.interests, viewer_profile.interests_filter.split(",")))
+    if viewer_profile.verified_only:
+        filters.append(Profile.face_verified)
     return filters
 
 
@@ -91,15 +119,13 @@ def _effective_location(profile: Profile) -> tuple[float | None, float | None]:
     return profile.location_lat, profile.location_lng
 
 
-async def get_candidates(
-    db: AsyncSession, viewer: User, viewer_profile: Profile, limit: int = 20
-) -> list[tuple[Profile, float | None, bool]]:
-    """Returns (candidate_profile, distance_km_or_None, superliked_me) tuples,
-    ranked superliked-me first, then boosted, then randomized."""
-    min_birth, max_birth = _age_to_birth_date_bounds(
-        viewer_profile.min_age_pref, viewer_profile.max_age_pref
-    )
-
+def _core_exclusions(viewer: User, viewer_profile: Profile) -> list:
+    """The non-negotiable conditions that apply no matter what — even the
+    broadest "show anyone" fallback in get_candidates still respects
+    these: never yourself, never an incomplete/banned/inactive/incognito
+    profile, never someone already swiped on or blocked either direction,
+    and never a gender mismatch (that one's not really "negotiable" for a
+    dating app's fallback either)."""
     already_swiped = exists().where(
         and_(Swipe.from_user_id == viewer.id, Swipe.to_user_id == Profile.user_id)
     )
@@ -109,6 +135,30 @@ async def get_candidates(
             and_(Block.blocker_id == Profile.user_id, Block.blocked_id == viewer.id),
         )
     )
+    gender_filters = [Profile.gender == viewer_profile.interested_in] if viewer_profile.interested_in != "all" else []
+    mutual_interest = or_(Profile.interested_in == "all", Profile.interested_in == viewer_profile.gender)
+
+    return [
+        Profile.user_id != viewer.id,
+        # Plain column truthiness (not .is_(True)/.is_(False)) — MSSQL has
+        # no IS TRUE/IS FALSE syntax (only IS NULL), so this compiles
+        # portably to `= 1` / `= 0` there instead of erroring.
+        Profile.is_profile_complete,
+        ~Profile.is_incognito,  # Phase 18 — hidden from fresh Discover browsing
+        ~User.is_banned,
+        User.is_active,
+        mutual_interest,
+        *gender_filters,
+        ~already_swiped,
+        ~blocked_either_direction,
+    ]
+
+
+async def _query_pool(db: AsyncSession, viewer: User, where: list, pool_size: int) -> list[tuple[Profile, bool]]:
+    """One SELECT against the given WHERE clauses, ranked the same way
+    every candidate pool in this app is (superliked-me first, then
+    boosted, then recently-active, then random) — returns
+    (profile, is_superliker) pairs, most-preferred first."""
     superliked_me_exists = exists().where(
         and_(
             Swipe.from_user_id == Profile.user_id,
@@ -117,73 +167,125 @@ async def get_candidates(
         )
     )
     boosted_expr = and_(Profile.boost_active_until.isnot(None), Profile.boost_active_until > func.now())
-    # MSSQL can't use EXISTS(...)/a boolean AND expression directly as a
-    # SELECT or ORDER BY column (T-SQL only allows boolean predicates inside
-    # WHERE/HAVING/ON/CASE) — CASE WHEN...THEN 1 ELSE 0 END is the portable
-    # way to turn either into a 0/1 scalar both dialects can select/sort by.
     superliked_me = case((superliked_me_exists, 1), else_=0)
     boosted = case((boosted_expr, 1), else_=0)
 
-    gender_filters = [Profile.gender == viewer_profile.interested_in] if viewer_profile.interested_in != "all" else []
-    mutual_interest = or_(Profile.interested_in == "all", Profile.interested_in == viewer_profile.gender)
-
-    # Free tier only ever gets the age/distance filters above — race/religion
-    # filtering is gated here (read time), not just when the filter is set
-    # (routers/profiles.py::set_premium_filters), so a lapsed membership
-    # can't keep benefiting from filters configured while it was active.
-    premium_filters = []
-    if is_premium_member(viewer_profile):
-        if viewer_profile.race_filter:
-            premium_filters.append(Profile.race_ethnicity.in_(viewer_profile.race_filter.split(",")))
-        if viewer_profile.religion_filter:
-            premium_filters.append(Profile.religion.in_(viewer_profile.religion_filter.split(",")))
-        premium_filters.extend(_extra_premium_filters(viewer_profile))
-
-    # Profile has no ORM relationship to Photo, so photos are fetched with a
-    # separate query in the router layer (see routers/discovery.py).
     stmt = (
         select(Profile, superliked_me.label("superliked_me"))
         .join(User, User.id == Profile.user_id)
-        .where(
-            Profile.user_id != viewer.id,
-            # Plain column truthiness (not .is_(True)/.is_(False)) — MSSQL
-            # has no IS TRUE/IS FALSE syntax (only IS NULL), so this compiles
-            # portably to `= 1` / `= 0` there instead of erroring.
-            Profile.is_profile_complete,
-            ~Profile.is_incognito,  # Phase 18 — hidden from fresh Discover browsing
-            ~User.is_banned,
-            User.is_active,
-            Profile.birth_date >= min_birth,
-            Profile.birth_date <= max_birth,
-            mutual_interest,
-            *gender_filters,
-            *premium_filters,
-            ~already_swiped,
-            ~blocked_either_direction,
-        )
+        .where(*where)
         .order_by(
             superliked_me.label("superliked_me").desc(),
             boosted.label("boosted").desc(),
             User.last_active_at.desc(),
             _ORDER_RANDOM,
         )
-        .limit(limit)
+        .limit(pool_size)
     )
-
     rows = (await db.execute(stmt)).all()
+    return [(profile, bool(is_superliker)) for profile, is_superliker in rows]
 
+
+async def _with_distance(
+    db: AsyncSession, viewer_profile: Profile, pool: list[tuple[Profile, bool]]
+) -> list[tuple[Profile, float | None, bool]]:
     viewer_lat, viewer_lng = _effective_location(viewer_profile)
-
-    results: list[tuple[Profile, float | None, bool]] = []
-    for profile, is_superliker in rows:
+    out: list[tuple[Profile, float | None, bool]] = []
+    for profile, is_superliker in pool:
         distance_km = None
         candidate_lat, candidate_lng = _effective_location(profile)
         if viewer_lat is not None and viewer_lng is not None and candidate_lat is not None and candidate_lng is not None:
             d = await db.scalar(select(_haversine_km(viewer_lat, viewer_lng, candidate_lat, candidate_lng)))
             distance_km = float(d) if d is not None else None
-            if distance_km is not None and distance_km > viewer_profile.max_distance_km:
-                continue
-        results.append((profile, distance_km, bool(is_superliker)))
+        out.append((profile, distance_km, is_superliker))
+    return out
+
+
+# Multiplier over `limit` for stage-1's pool fetch — distance filtering
+# happens in Python after the fact (see _with_distance), so the SQL fetch
+# needs headroom beyond `limit` or a run of too-far candidates could starve
+# the final result below `limit` even though closer ones exist further
+# down the ranking.
+_POOL_MULTIPLIER = 4
+
+
+async def get_candidates(
+    db: AsyncSession, viewer: User, viewer_profile: Profile, limit: int = 20
+) -> list[tuple[Profile, float | None, bool]]:
+    """Returns (candidate_profile, distance_km_or_None, superliked_me)
+    tuples, ranked superliked-me first, then boosted, then randomized.
+
+    Three stages, each only run if the previous one came up short:
+      1. Strict: age + every Basic filter (race/height/languages/
+         interests/verified-only) + Advanced filters (premium only) +
+         distance within max_distance_km.
+      2. If still short and expand_distance_if_low: same filters, but
+         candidates beyond max_distance_km are allowed too (closest first).
+      3. If still short and expand_others_if_low: every optional filter
+         above is dropped entirely (age/Basic/Advanced/distance) - anyone
+         who isn't excluded by the non-negotiable core conditions
+         (yourself, incomplete/banned/blocked/already-swiped/gender
+         mismatch) backfills the remaining slots.
+    Stage 2/3 results are appended after stage 1's, so the UI can still
+    reflect "these matched your filters, these didn't" via distance/
+    profile fields even though the API itself doesn't label the stage.
+    """
+    core_where = _core_exclusions(viewer, viewer_profile)
+
+    min_birth, max_birth = _age_to_birth_date_bounds(viewer_profile.min_age_pref, viewer_profile.max_age_pref)
+    age_where = [Profile.birth_date >= min_birth, Profile.birth_date <= max_birth]
+
+    basic_where = _basic_filters(viewer_profile)
+
+    # Advanced (premium_filters_json + religion_filter) still requires an
+    # active membership to apply at all — a lapsed membership can't keep
+    # benefiting from filters configured while it was active, checked here
+    # at read time rather than only when the filter was set.
+    advanced_where = []
+    if is_premium_member(viewer_profile):
+        if viewer_profile.religion_filter:
+            advanced_where.append(Profile.religion.in_(viewer_profile.religion_filter.split(",")))
+        advanced_where.extend(_extra_premium_filters(viewer_profile))
+
+    pool_size = limit * _POOL_MULTIPLIER
+
+    # --- Stage 1: strict ---
+    strict_pool = await _query_pool(db, viewer, [*core_where, *age_where, *basic_where, *advanced_where], pool_size)
+    strict_with_dist = await _with_distance(db, viewer_profile, strict_pool)
+
+    within_cap = [r for r in strict_with_dist if r[1] is None or r[1] <= viewer_profile.max_distance_km]
+    beyond_cap = sorted(
+        (r for r in strict_with_dist if r[1] is not None and r[1] > viewer_profile.max_distance_km),
+        key=lambda r: r[1],
+    )
+
+    results: list[tuple[Profile, float | None, bool]] = within_cap[:limit]
+    seen_ids = {p.user_id for p, _, _ in results}
+
+    # --- Stage 2: relax the distance cap ---
+    if len(results) < limit and viewer_profile.expand_distance_if_low:
+        for r in beyond_cap:
+            if len(results) >= limit:
+                break
+            if r[0].user_id not in seen_ids:
+                results.append(r)
+                seen_ids.add(r[0].user_id)
+
+    # --- Stage 3: drop age + every Basic filter, backfill with anyone else
+    # who still passes Advanced (premium_filters_json + religion_filter) ---
+    # this only ever relaxes the free tier's own filters; a paying member's
+    # Advanced selections stay enforced even in the broadest fallback, or
+    # paying for them would buy nothing.
+    if len(results) < limit and viewer_profile.expand_others_if_low:
+        fallback_pool = await _query_pool(db, viewer, [*core_where, *advanced_where], pool_size)
+        fallback_pool = [(p, s) for p, s in fallback_pool if p.user_id not in seen_ids]
+        fallback_with_dist = await _with_distance(db, viewer_profile, fallback_pool)
+        for r in fallback_with_dist:
+            if len(results) >= limit:
+                break
+            if r[0].user_id not in seen_ids:
+                results.append(r)
+                seen_ids.add(r[0].user_id)
 
     return results
 

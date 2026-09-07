@@ -77,7 +77,6 @@ export async function clearTravelMode(): Promise<Profile> {
 }
 
 export interface PremiumFilterInput {
-  race_filter?: string[];
   religion_filter?: string[];
   political_view_filter?: string[];
   exercise_frequency_filter?: string[];
@@ -86,15 +85,14 @@ export interface PremiumFilterInput {
   relationship_goal_filter?: string[];
   wants_kids_filter?: string[];
   has_kids_filter?: string[];
-  height_min?: number | null;
-  height_max?: number | null;
 }
 
 /** Full replace, not a merge — 402s if the caller isn't an active premium
  * member (see routers/profiles.py::set_premium_filters). Any field left
  * out of `input` is sent as empty/null and clears that dimension, so
  * callers that only mean to change one thing must spread the rest of the
- * profile's current premium_filters in too (see EditProfileScreen). */
+ * profile's current premium_filters in too. race_filter/height moved to
+ * BasicFilterInput/setBasicFilters below — they're free now. */
 export async function setPremiumFilters(input: PremiumFilterInput): Promise<Profile> {
   const resp = await apiClient.put<Profile>("/profiles/me/premium-filters", input);
   return resp.data;
@@ -106,5 +104,26 @@ export async function setAgeFilter(minAgePref: number, maxAgePref: number): Prom
     min_age_pref: minAgePref,
     max_age_pref: maxAgePref,
   });
+  return resp.data;
+}
+
+export interface BasicFilterInput {
+  max_distance_km: number;
+  race_filter?: string[];
+  height_min?: number | null;
+  height_max?: number | null;
+  languages_filter?: string[];
+  interests_filter?: string[];
+  verified_only?: boolean;
+  expand_distance_if_low?: boolean;
+  expand_others_if_low?: boolean;
+}
+
+/** Free for everyone — every Basic-tab filter dimension (distance,
+ * ethnicity, height, languages, interests, verified-only, and the two "if
+ * I run out" expansion toggles) in one full-replace call, same semantics
+ * as setPremiumFilters above (omitted fields clear that dimension). */
+export async function setBasicFilters(input: BasicFilterInput): Promise<Profile> {
+  const resp = await apiClient.put<Profile>("/profiles/me/basic-filters", input);
   return resp.data;
 }

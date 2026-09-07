@@ -11,6 +11,7 @@ from app.models.profile import Photo, Profile
 from app.models.user import User
 from app.schemas.profile import (
     AgeFilterUpdate,
+    BasicFilterUpdate,
     IncognitoUpdate,
     PhotoConfirmRequest,
     PhotoOut,
@@ -192,15 +193,14 @@ async def set_premium_filters(
             status.HTTP_402_PAYMENT_REQUIRED,
             "an active premium membership is required to filter by these fields",
         )
-    profile.race_filter = ",".join(body.race_filter) if body.race_filter else None
     profile.religion_filter = ",".join(body.religion_filter) if body.religion_filter else None
 
     # Everything else lives in one JSON blob (Profile.premium_filters_json —
     # see that column's comment). Full-replace semantics, same as
-    # race_filter/religion_filter above: the client always sends its whole
-    # current filter selection, and an empty list/null bound here clears
-    # that one dimension (omitted from the stored JSON) rather than leaving
-    # a stale value behind.
+    # religion_filter above: the client always sends its whole current
+    # filter selection, and an empty list here clears that one dimension
+    # (omitted from the stored JSON) rather than leaving a stale value
+    # behind.
     extra = {
         "political_view_filter": body.political_view_filter,
         "exercise_frequency_filter": body.exercise_frequency_filter,
@@ -211,11 +211,36 @@ async def set_premium_filters(
         "has_kids_filter": body.has_kids_filter,
     }
     extra = {k: v for k, v in extra.items() if v}
-    if body.height_min is not None:
-        extra["height_min"] = body.height_min
-    if body.height_max is not None:
-        extra["height_max"] = body.height_max
     profile.premium_filters_json = json.dumps(extra) if extra else None
+
+    await db.commit()
+    await db.refresh(profile)
+    return await _load_profile_out(db, user.id)
+
+
+@router.put("/me/basic-filters", response_model=ProfileOut)
+async def set_basic_filters(
+    body: BasicFilterUpdate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> ProfileOut:
+    """Free for everyone, unlike set_premium_filters above — every field
+    here (distance, race/ethnicity, height, languages, interests, verified-
+    only, and the two "if I run out" expansion toggles) is part of the
+    Basic filters tab, not Advanced."""
+    profile = await db.get(Profile, user.id)
+    if profile is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "complete your profile first")
+
+    profile.max_distance_km = body.max_distance_km
+    profile.race_filter = ",".join(body.race_filter) if body.race_filter else None
+    profile.height_filter_min = body.height_min
+    profile.height_filter_max = body.height_max
+    profile.languages_filter = ",".join(body.languages_filter) if body.languages_filter else None
+    profile.interests_filter = ",".join(body.interests_filter) if body.interests_filter else None
+    profile.verified_only = body.verified_only
+    profile.expand_distance_if_low = body.expand_distance_if_low
+    profile.expand_others_if_low = body.expand_others_if_low
 
     await db.commit()
     await db.refresh(profile)

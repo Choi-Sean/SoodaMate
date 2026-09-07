@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Linking, Pressable, ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
 import { showAlert } from "../../utils/alert";
-import { getMyProfile, setPremiumFilters, updateMyProfile } from "../../api/profiles";
+import { getMyProfile, updateMyProfile } from "../../api/profiles";
 import ChipSelect from "../../components/ChipSelect";
 import MultiChipSelect from "../../components/MultiChipSelect";
 import LocationPicker from "../../components/LocationPicker";
@@ -32,8 +32,6 @@ import {
 import { EDUCATION_KEYS } from "../../constants/educationLevels";
 import { INTEREST_KEYS, LANGUAGE_KEYS } from "../../constants/interestsAndLanguages";
 import { DISTANCE_OPTIONS_KM } from "../../constants/distanceOptions";
-import { useAuthStore } from "../../store/authStore";
-import { env } from "../../config/env";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
 import type { Gender, InterestedIn } from "../../types";
 import { colors } from "../../theme";
@@ -48,7 +46,6 @@ export default function EditProfileScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: profile, isLoading } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
-  const accessToken = useAuthStore((s) => s.accessToken);
 
   const [bio, setBio] = useState("");
   const [gender, setGender] = useState<Gender>("male");
@@ -75,9 +72,6 @@ export default function EditProfileScreen({ navigation }: Props) {
   const [interests, setInterests] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
 
-  const [raceFilter, setRaceFilter] = useState<string[]>([]);
-  const [religionFilter, setReligionFilter] = useState<string[]>([]);
-  const [savingFilters, setSavingFilters] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -106,8 +100,6 @@ export default function EditProfileScreen({ navigation }: Props) {
     setHasKids(profile.has_kids);
     setInterests(profile.interests);
     setLanguages(profile.languages);
-    setRaceFilter(profile.race_filter);
-    setReligionFilter(profile.religion_filter);
   }, [profile]);
 
   async function refreshProfile() {
@@ -156,35 +148,6 @@ export default function EditProfileScreen({ navigation }: Props) {
       setError(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));
     } finally {
       setSaving(false);
-    }
-  }
-
-  function toggleFilterValue(list: string[], key: string): string[] {
-    return list.includes(key) ? list.filter((k) => k !== key) : [...list, key];
-  }
-
-  function openShop() {
-    const shopUrl = env.marketingSiteUrl + "/shop.html?token=" + encodeURIComponent(accessToken ?? "");
-    Linking.openURL(shopUrl);
-  }
-
-  async function handleSaveFilters() {
-    setSavingFilters(true);
-    try {
-      // Round-trips the other premium filter dimensions unchanged (set via
-      // the Swipe tab's filter modal) — set_premium_filters is a full
-      // replace, so sending only race/religion here would silently clear
-      // whatever was set there.
-      await setPremiumFilters({
-        race_filter: raceFilter,
-        religion_filter: religionFilter,
-        ...(profile?.premium_filters ?? {}),
-      });
-      await refreshProfile();
-    } catch (e: any) {
-      showAlert(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));
-    } finally {
-      setSavingFilters(false);
     }
   }
 
@@ -454,57 +417,6 @@ export default function EditProfileScreen({ navigation }: Props) {
         {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>{t("editProfile.save")}</Text>}
       </Pressable>
 
-      <View style={styles.premiumSection}>
-        <Text style={styles.premiumTitle}>{t("premiumFilters.title")}</Text>
-        {profile.is_premium_member ? (
-          <>
-            <Text style={styles.label}>{t("premiumFilters.raceLabel")}</Text>
-            <View style={styles.row}>
-              {RACE_ETHNICITY_KEYS.map((key) => (
-                <Pressable
-                  key={key}
-                  style={[styles.chip, raceFilter.includes(key) && styles.chipSelected]}
-                  onPress={() => setRaceFilter(toggleFilterValue(raceFilter, key))}
-                >
-                  <Text style={raceFilter.includes(key) ? styles.chipTextSelected : styles.chipText}>
-                    {t(`profileSetup.race.${key}`)}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            <Text style={styles.label}>{t("premiumFilters.religionLabel")}</Text>
-            <View style={styles.row}>
-              {RELIGION_KEYS.map((key) => (
-                <Pressable
-                  key={key}
-                  style={[styles.chip, religionFilter.includes(key) && styles.chipSelected]}
-                  onPress={() => setReligionFilter(toggleFilterValue(religionFilter, key))}
-                >
-                  <Text style={religionFilter.includes(key) ? styles.chipTextSelected : styles.chipText}>
-                    {t(`profileSetup.religionOption.${key}`)}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            <Pressable style={styles.premiumSaveButton} onPress={handleSaveFilters} disabled={savingFilters}>
-              {savingFilters ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.primaryButtonText}>{t("premiumFilters.save")}</Text>
-              )}
-            </Pressable>
-          </>
-        ) : (
-          <>
-            <Text style={styles.premiumLockedBody}>{t("premiumFilters.lockedBody")}</Text>
-            <Pressable style={styles.premiumSaveButton} onPress={openShop}>
-              <Text style={styles.primaryButtonText}>{t("premiumFilters.upgrade")}</Text>
-            </Pressable>
-          </>
-        )}
-      </View>
     </ScrollView>
   );
 }
@@ -555,8 +467,4 @@ const styles = StyleSheet.create({
   chipTextSelected: { color: "#fff" },
   primaryButton: { backgroundColor: colors.accent, borderRadius: 10, padding: 14, alignItems: "center", marginTop: 28, marginBottom: 24 },
   primaryButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  premiumSection: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 20, marginBottom: 24 },
-  premiumTitle: { fontSize: 18, fontWeight: "800", color: colors.navy, marginBottom: 8 },
-  premiumLockedBody: { color: colors.muted, fontSize: 14, marginBottom: 16 },
-  premiumSaveButton: { backgroundColor: colors.navy, borderRadius: 10, padding: 14, alignItems: "center", marginTop: 16 },
 });

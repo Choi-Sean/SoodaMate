@@ -23,10 +23,11 @@ class PhotoOut(BaseModel):
 
 
 class PremiumFilters(BaseModel):
-    """The premium_filters_json-backed dimensions only — race_filter/
-    religion_filter stay top-level ProfileOut fields as before (pre-existing,
-    unchanged) rather than being folded in here, to avoid disturbing
-    anything already reading them there."""
+    """The premium_filters_json-backed dimensions only (religion_filter
+    stays a top-level ProfileOut field, pre-existing/unchanged). height_min/
+    height_max used to live here too; height is a free Basic-tab filter now
+    (see Profile.height_filter_min/max + BasicFilters below) with its own
+    dedicated columns, not this JSON blob."""
 
     political_view_filter: list[str] = []
     exercise_frequency_filter: list[str] = []
@@ -35,8 +36,6 @@ class PremiumFilters(BaseModel):
     relationship_goal_filter: list[str] = []
     wants_kids_filter: list[str] = []
     has_kids_filter: list[str] = []
-    height_min: int | None = None
-    height_max: int | None = None
 
 
 class ProfileUpdate(BaseModel):
@@ -100,8 +99,18 @@ class ProfileOut(BaseModel):
     billing_cycle: str | None = None
     subscription_price_cents: int | None = None
     cancel_at_period_end: bool = False
+    # race_filter is a free Basic-tab filter (not premium-gated) despite
+    # sharing history/column-naming with religion_filter below, which is
+    # still premium — see Profile.race_filter's comment.
     race_filter: list[str] = []
     religion_filter: list[str] = []
+    height_filter_min: int | None = None
+    height_filter_max: int | None = None
+    languages_filter: list[str] = []
+    interests_filter: list[str] = []
+    verified_only: bool = False
+    expand_distance_if_low: bool = True
+    expand_others_if_low: bool = True
     # Raw storage column, never serialized directly — see the premium_filters
     # computed_field below, which parses this into the typed shape the
     # client actually consumes.
@@ -121,7 +130,9 @@ class ProfileOut(BaseModel):
     updated_at: datetime
     photos: list[PhotoOut] = []
 
-    @field_validator("race_filter", "religion_filter", "interests", "languages", mode="before")
+    @field_validator(
+        "race_filter", "religion_filter", "interests", "languages", "languages_filter", "interests_filter", mode="before"
+    )
     @classmethod
     def _split_comma_list(cls, value: object) -> list[str]:
         # Stored as a single comma-separated column (see models/profile.py);
@@ -177,12 +188,12 @@ class IncognitoUpdate(BaseModel):
 
 class PremiumFilterUpdate(BaseModel):
     # Premium-gated (402 if the caller isn't an active premium member — see
-    # routers/profiles.py::set_premium_filters). Empty/omitted list (or null
-    # height bound) clears that filter, showing everyone again regardless.
-    # race_filter/religion_filter are their own DB columns (pre-existing);
-    # everything else here is stored as one JSON blob (Profile.
-    # premium_filters_json) — see that column's comment for why.
-    race_filter: list[str] = Field(default_factory=list)
+    # routers/profiles.py::set_premium_filters). Empty list clears that
+    # filter, showing everyone again regardless. religion_filter is its own
+    # DB column (pre-existing); everything else here is stored as one JSON
+    # blob (Profile.premium_filters_json) — see that column's comment for
+    # why. race_filter/height moved to BasicFilterUpdate below — they're
+    # free now.
     religion_filter: list[str] = Field(default_factory=list)
     political_view_filter: list[str] = Field(default_factory=list)
     exercise_frequency_filter: list[str] = Field(default_factory=list)
@@ -191,8 +202,6 @@ class PremiumFilterUpdate(BaseModel):
     relationship_goal_filter: list[str] = Field(default_factory=list)
     wants_kids_filter: list[str] = Field(default_factory=list)
     has_kids_filter: list[str] = Field(default_factory=list)
-    height_min: int | None = Field(default=None, ge=50, le=272)
-    height_max: int | None = Field(default=None, ge=50, le=272)
 
 
 class AgeFilterUpdate(BaseModel):
@@ -201,6 +210,22 @@ class AgeFilterUpdate(BaseModel):
 
     min_age_pref: int = Field(default=18, ge=18, le=99)
     max_age_pref: int = Field(default=99, ge=18, le=99)
+
+
+class BasicFilterUpdate(BaseModel):
+    """Every Basic-tab filter dimension, all free (no premium check — see
+    routers/profiles.py::set_basic_filters). Age has its own pre-existing
+    endpoint (AgeFilterUpdate/set_age_filter) and isn't repeated here."""
+
+    max_distance_km: int = Field(default=50, ge=1, le=500)
+    race_filter: list[str] = Field(default_factory=list)
+    height_min: int | None = Field(default=None, ge=50, le=272)
+    height_max: int | None = Field(default=None, ge=50, le=272)
+    languages_filter: list[str] = Field(default_factory=list)
+    interests_filter: list[str] = Field(default_factory=list)
+    verified_only: bool = False
+    expand_distance_if_low: bool = True
+    expand_others_if_low: bool = True
 
 
 class TravelModeRequest(BaseModel):

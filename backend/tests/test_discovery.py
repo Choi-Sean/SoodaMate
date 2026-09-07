@@ -3,6 +3,23 @@ import pytest
 from tests.helpers import create_user_with_profile
 
 
+async def _disable_expand(client, headers, max_distance_km: int = 500):
+    """expand_distance_if_low/expand_others_if_low default True on the real
+    API (matching Bumble's own default-on toggles - see
+    discovery_service.get_candidates) - tests that assert a strict
+    exclusion need both off, or a too-small candidate pool gets backfilled
+    with exactly the candidate the test is trying to prove got excluded.
+    max_distance_km is a required field on this same PUT (full-replace, not
+    a patch) - pass the caller's intended value or it silently resets to
+    the schema default."""
+    resp = await client.put(
+        "/profiles/me/basic-filters",
+        headers=headers,
+        json={"max_distance_km": max_distance_km, "expand_distance_if_low": False, "expand_others_if_low": False},
+    )
+    assert resp.status_code == 200
+
+
 @pytest.mark.asyncio
 async def test_matching_gender_candidate_appears(client):
     _, viewer_headers = await create_user_with_profile(
@@ -43,6 +60,7 @@ async def test_age_out_of_range_excluded(client):
         min_age_pref=18,
         max_age_pref=25,
     )
+    await _disable_expand(client, viewer_headers)
     too_old_id, _ = await create_user_with_profile(
         client, "old3@example.com", gender="female", interested_in="male", age=40
     )
@@ -102,6 +120,7 @@ async def test_distance_filter_excludes_far_away_candidate(client):
             "location_lng": 126.9780,
         },
     )
+    await _disable_expand(client, viewer_headers, max_distance_km=10)
     # Busan, ~325km away.
     far_id, _ = await create_user_with_profile(
         client,
