@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import ChatListScreen from "../screens/chat/ChatListScreen";
 import ChatRoomScreen from "../screens/chat/ChatRoomScreen";
+import { colors } from "../theme";
 
 export type ChatStackParamList = {
   ChatList: undefined;
@@ -12,7 +13,14 @@ const Stack = createNativeStackNavigator<ChatStackParamList>();
 
 export default function ChatStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.white },
+        headerShadowVisible: false,
+        headerTintColor: colors.accentDark,
+        headerTitleStyle: { color: colors.navy, fontWeight: "800" },
+      }}
+    >
       <Stack.Screen name="ChatList" component={ChatListScreen} options={{ title: "Chats", headerShown: false }} />
       <Stack.Screen
         name="ChatRoom"

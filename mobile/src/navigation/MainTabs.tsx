@@ -1,4 +1,4 @@
-import { Text } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useTranslation } from "react-i18next";
 
@@ -39,9 +39,17 @@ export default function MainTabs() {
         headerShown: false,
         tabBarActiveTintColor: colors.accentDark,
         tabBarInactiveTintColor: colors.muted,
-        tabBarStyle: { backgroundColor: colors.white, borderTopColor: colors.border },
-        tabBarIcon: ({ color }: { color: string }) => (
-          <Text style={{ fontSize: 20, color }}>{TAB_ICONS[route.name as keyof MainTabsParamList]}</Text>
+        tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabLabel,
+        // A soft cream bubble behind the active icon (instead of relying on
+        // a subtle text-color shift alone) is the same "cute" affordance as
+        // the icon bubbles on the profile facts card — and reads clearly at
+        // a glance, where active-vs-inactive text color alone was too close
+        // in tone (both warm brown/orange) to tell apart.
+        tabBarIcon: ({ focused, color }: { focused: boolean; color: string }) => (
+          <View style={[styles.iconBubble, focused && styles.iconBubbleActive]}>
+            <Text style={{ fontSize: 18, color }}>{TAB_ICONS[route.name as keyof MainTabsParamList]}</Text>
+          </View>
         ),
       })}
     >
@@ -53,3 +61,26 @@ export default function MainTabs() {
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: colors.white,
+    borderTopWidth: 0,
+    height: 62,
+    paddingTop: 6,
+    shadowColor: colors.navyDeep,
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: -2 },
+    elevation: 8,
+  },
+  tabLabel: { fontSize: 11, fontWeight: "700" },
+  iconBubble: {
+    width: 34,
+    height: 26,
+    borderRadius: 13,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconBubbleActive: { backgroundColor: colors.creamDeep },
+});

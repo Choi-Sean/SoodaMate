@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { NavigationContainer } from "@react-navigation/native";
+import { DefaultTheme, NavigationContainer, type Theme } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -11,8 +11,29 @@ import AlertHost from "./src/components/AlertHost";
 import { initAds } from "./src/services/ads";
 import { initDeepLinking } from "./src/services/deepLinking";
 import { initI18n } from "./src/i18n";
+import { colors } from "./src/theme";
 
 const queryClient = new QueryClient();
+
+// React Navigation's own DefaultTheme colors (a cool gray #f2f2f2 background,
+// iOS-blue primary/tint) have nothing to do with the brand palette — any
+// screen that forgot to set its own backgroundColor was quietly falling back
+// to that gray instead of the app's warm cream, and every screen using a
+// native-stack default header (Edit Profile, Settings, Chat room, ...) got a
+// mismatched blue back-button/tint. Setting it here once means every screen
+// and every header is on-brand by default, with no per-screen override needed.
+const navTheme: Theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: colors.accentDark,
+    background: colors.cream,
+    card: colors.white,
+    text: colors.ink,
+    border: colors.border,
+    notification: colors.heart,
+  },
+};
 
 export default function App() {
   const [i18nReady, setI18nReady] = useState(false);
@@ -43,7 +64,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
-        <NavigationContainer ref={navigationRef}>
+        <NavigationContainer ref={navigationRef} theme={navTheme}>
           <RootNavigator />
           <StatusBar style="auto" />
         </NavigationContainer>

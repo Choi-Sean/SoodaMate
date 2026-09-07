@@ -88,6 +88,7 @@ export default function SwipeScreen() {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.header}>{t("tabs.swipe")}</Text>
       <View style={styles.topBar}>
         <Pressable style={styles.filterPill} onPress={() => setShowFilters(true)}>
           <Ionicons name="options-outline" size={16} color={colors.navy} />
@@ -151,28 +152,33 @@ export default function SwipeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+  container: { flex: 1, backgroundColor: colors.cream },
+  header: { fontSize: 24, fontWeight: "800", paddingHorizontal: 16, paddingTop: 48, color: colors.navy },
   topBar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 10,
     paddingBottom: 4,
   },
   filterPill: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.white,
     borderRadius: 999,
     paddingVertical: 7,
     paddingHorizontal: 14,
+    shadowColor: colors.navyDeep,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   filterPillText: { fontSize: 13, fontWeight: "700", color: colors.navy },
   limitText: { fontSize: 13, fontWeight: "600", color: colors.muted },
-  cardArea: { flex: 1, padding: 16 },
+  cardArea: { flex: 1, padding: 0 },
   centered: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
   emptyText: { color: colors.muted, textAlign: "center" },
   continueButton: {

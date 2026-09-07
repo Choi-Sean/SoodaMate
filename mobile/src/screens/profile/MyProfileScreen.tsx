@@ -67,7 +67,7 @@ export default function MyProfileScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: "center", padding: 24, paddingTop: 48, gap: 12 },
+  container: { alignItems: "center", padding: 24, paddingTop: 48, gap: 12, backgroundColor: colors.cream, flexGrow: 1 },
   avatar: { width: 120, height: 120, borderRadius: 60, backgroundColor: colors.creamDeep },
   avatarPlaceholder: {},
   nameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 12 },

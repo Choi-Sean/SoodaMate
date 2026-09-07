@@ -164,7 +164,7 @@ export default function LikesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+  container: { flex: 1, backgroundColor: colors.cream },
   header: { fontSize: 24, fontWeight: "800", padding: 16, paddingTop: 48, color: colors.navy },
   centered: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
   emptyText: { color: colors.muted, textAlign: "center" },
