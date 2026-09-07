@@ -233,6 +233,15 @@
     "verifiedBanner": "얼굴 인증 완료",
     "pendingBanner": "제출한 셀카를 검토 중이에요 — 보통 오래 걸리지 않아요.",
     "rejectedBanner": "지난 제출이 승인되지 않았어요. 밝고 선명한 셀카로 다시 시도해주세요.",
+    "rejectedReason": "사유: {{reason}}",
+    "rejectReasons": {
+      "selfie_id_mismatch": "셀카가 신분증 사진과 명확히 일치하지 않았어요.",
+      "id_blurry": "신분증 사진이 흐리거나 읽을 수 없었어요.",
+      "selfie_blurry": "셀카가 흐리거나 너무 어둡거나, 다른 사람이 함께 찍혔어요.",
+      "name_mismatch": "신분증의 이름이 프로필 이름과 일치하지 않았어요.",
+      "id_invalid": "신분증이 편집되었거나 만료됐거나 유효하지 않아 보였어요.",
+      "incomplete": "제출이 불완전했어요 (셀카 또는 신분증 누락)."
+    },
     "selfieLabel": "셀카",
     "takeSelfie": "셀카 찍기",
     "idPhotoLabel": "신분증 사진",

@@ -114,15 +114,19 @@ async def test_face_verification_submit_and_admin_approve_flow(client, monkeypat
         verification_schemas, "build_admin_view_url", lambda object_path: f"https://signed.example/{object_path}"
     )
 
+    # Filters by user_id membership rather than exact list length/order —
+    # this hits the real shared production DB (see conftest.py), so other
+    # real pending/approved submissions can legitimately coexist alongside
+    # whatever this test creates.
     pending = await client.get("/admin/face-verifications?status=pending", headers=headers)
     assert pending.status_code == 200
     items = pending.json()
-    assert len(items) == 1
-    assert items[0]["user_id"] == user_id
-    assert items[0]["selfie_view_url"].startswith("https://signed.example/")
-    assert items[0]["id_photo_view_url"].startswith("https://signed.example/")
+    mine = next((item for item in items if item["user_id"] == user_id), None)
+    assert mine is not None
+    assert mine["selfie_view_url"].startswith("https://signed.example/")
+    assert mine["id_photo_view_url"].startswith("https://signed.example/")
 
-    verification_id = items[0]["id"]
+    verification_id = mine["id"]
     approve = await client.post(f"/admin/face-verifications/{verification_id}/approve", headers=headers)
     assert approve.status_code == 204
 
@@ -130,9 +134,9 @@ async def test_face_verification_submit_and_admin_approve_flow(client, monkeypat
     assert profile.json()["face_verified"] is True
 
     approved_list = await client.get("/admin/face-verifications?status=approved", headers=headers)
-    assert len(approved_list.json()) == 1
+    assert any(item["user_id"] == user_id for item in approved_list.json())
     still_pending = await client.get("/admin/face-verifications?status=pending", headers=headers)
-    assert len(still_pending.json()) == 0
+    assert not any(item["user_id"] == user_id for item in still_pending.json())
 
 
 @pytest.mark.asyncio
@@ -173,13 +177,21 @@ async def test_face_verification_reject_clears_badge(client, monkeypatch):
         await session.commit()
 
     pending = await client.get("/admin/face-verifications?status=pending", headers=headers)
-    verification_id = pending.json()[0]["id"]
+    mine = next(item for item in pending.json() if item["user_id"] == user_id)
+    verification_id = mine["id"]
 
-    reject = await client.post(f"/admin/face-verifications/{verification_id}/reject", headers=headers)
+    reject = await client.post(
+        f"/admin/face-verifications/{verification_id}/reject",
+        headers=headers,
+        json={"reason_key": "id_blurry", "reason": "ID photo is blurry or unreadable"},
+    )
     assert reject.status_code == 204
 
     profile = await client.get("/profiles/me", headers=headers)
     assert profile.json()["face_verified"] is False
+
+    status_resp = await client.get("/verification/face/status", headers=headers)
+    assert status_resp.json()["rejection_reason_key"] == "id_blurry"
 
 
 @pytest.mark.asyncio

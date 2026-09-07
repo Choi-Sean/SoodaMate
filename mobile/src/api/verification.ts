@@ -27,6 +27,8 @@ export async function presignFacePhoto(
 export interface FaceVerificationStatus {
   status: "unsubmitted" | "pending" | "approved" | "rejected";
   submitted_at?: string | null;
+  rejection_reason?: string | null;
+  rejection_reason_key?: string | null;
 }
 
 export async function submitFaceVerification(

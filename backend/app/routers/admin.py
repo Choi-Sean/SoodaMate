@@ -6,7 +6,7 @@ from app.database import get_db
 from app.deps import require_admin
 from app.models.profile import FaceVerification, Profile
 from app.models.user import User
-from app.schemas.verification import FaceVerificationAdminOut
+from app.schemas.verification import FaceVerificationAdminOut, FaceVerificationRejectRequest
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -51,6 +51,8 @@ async def approve_face_verification(
     verification = await _get_verification_or_404(db, verification_id)
     verification.status = "approved"
     verification.reviewed_at = datetime.now(timezone.utc)
+    verification.rejection_reason = None
+    verification.rejection_reason_key = None
     profile = await db.get(Profile, verification.user_id)
     if profile is not None:
         profile.face_verified = True
@@ -60,6 +62,7 @@ async def approve_face_verification(
 @router.post("/face-verifications/{verification_id}/reject", status_code=204)
 async def reject_face_verification(
     verification_id,
+    body: FaceVerificationRejectRequest,
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
 ) -> None:
@@ -68,6 +71,8 @@ async def reject_face_verification(
     verification = await _get_verification_or_404(db, verification_id)
     verification.status = "rejected"
     verification.reviewed_at = datetime.now(timezone.utc)
+    verification.rejection_reason = body.reason
+    verification.rejection_reason_key = body.reason_key
     profile = await db.get(Profile, verification.user_id)
     if profile is not None:
         profile.face_verified = False

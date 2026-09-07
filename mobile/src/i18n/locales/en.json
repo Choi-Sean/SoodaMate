@@ -233,6 +233,15 @@
     "verifiedBanner": "Face verified",
     "pendingBanner": "Your selfie is being reviewed — this usually doesn't take long.",
     "rejectedBanner": "Your last submission wasn't approved. Try again with a clear, well-lit selfie.",
+    "rejectedReason": "Reason: {{reason}}",
+    "rejectReasons": {
+      "selfie_id_mismatch": "Your selfie didn't clearly match your ID photo.",
+      "id_blurry": "Your ID photo was blurry or unreadable.",
+      "selfie_blurry": "Your selfie was blurry, too dark, or someone else was in it.",
+      "name_mismatch": "The name on your ID didn't match your profile name.",
+      "id_invalid": "Your ID appeared edited, expired, or invalid.",
+      "incomplete": "Your submission was incomplete (missing selfie or ID)."
+    },
     "selfieLabel": "Selfie",
     "takeSelfie": "Take a selfie",
     "idPhotoLabel": "Photo ID",

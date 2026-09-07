@@ -67,6 +67,8 @@ async def submit_face_verification(
         existing.id_photo_object_path = body.id_photo_object_path
         existing.status = "pending"
         existing.reviewed_at = None
+        existing.rejection_reason = None
+        existing.rejection_reason_key = None
         row = existing
     else:
         row = FaceVerification(

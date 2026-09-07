@@ -161,3 +161,14 @@ class FaceVerification(Base):
     status: Mapped[str] = mapped_column("Status", Unicode(20), nullable=False, default="pending")
     submitted_at: Mapped[datetime] = mapped_column("SubmittedAt", DateTime(timezone=True), server_default=func.now())
     reviewed_at: Mapped[datetime | None] = mapped_column("ReviewedAt", DateTime(timezone=True), nullable=True)
+    # Set on reject, shown back to the user so they know what to fix before
+    # resubmitting. rejection_reason_key is one of a fixed set the admin
+    # picks from soodamate.com/verify's dropdown (or "other") - the mobile
+    # app looks it up in its own i18n so the user sees it in *their*
+    # selected app language, not whatever language the admin happened to
+    # pick it in. rejection_reason is the admin-facing English text (also
+    # the literal text shown to the user when the key is "other", since a
+    # freeform note can't be translated). Both cleared on a fresh submission
+    # or approve.
+    rejection_reason_key: Mapped[str | None] = mapped_column("RejectionReasonKey", Unicode(50), nullable=True)
+    rejection_reason: Mapped[str | None] = mapped_column("RejectionReason", Unicode(500), nullable=True)

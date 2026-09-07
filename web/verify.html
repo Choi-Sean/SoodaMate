@@ -50,6 +50,15 @@
     }
     .approve-btn { background: var(--sage, #7FA37A); color: #fff; }
     .reject-btn { background: #D92D20; color: #fff; }
+    .cancel-btn { background: var(--cream-deep); color: var(--muted); }
+    .reject-reason { font-size: 12px; color: var(--muted); margin-top: 6px; font-style: italic; }
+    .reject-form { display: flex; flex-direction: column; gap: 6px; }
+    .reject-form select, .reject-form textarea {
+      width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 13px;
+      border: 1px solid var(--border); border-radius: 8px; font-family: inherit;
+    }
+    .reject-form textarea { resize: vertical; min-height: 50px; }
+    .reject-form .row { display: flex; gap: 8px; }
     .status-pill {
       display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px;
       padding: 3px 10px; margin-bottom: 10px;
@@ -88,6 +97,20 @@
 
     let token = sessionStorage.getItem("sooda_admin_token");
     let currentStatus = "pending";
+
+    // Keys must match backend REJECTION_REASON_KEYS (app/schemas/verification.py)
+    // and the mobile app's faceVerification.rejectReasons.* translations -
+    // the user sees the *translated* label in their own app language, not
+    // this English one, except for "other" which is shown verbatim.
+    const REJECT_REASONS = [
+      { key: "selfie_id_mismatch", label: "Selfie doesn't clearly match the ID photo" },
+      { key: "id_blurry", label: "ID photo is blurry or unreadable" },
+      { key: "selfie_blurry", label: "Selfie is blurry, too dark, or someone else is in it" },
+      { key: "name_mismatch", label: "Name on ID doesn't match the profile name" },
+      { key: "id_invalid", label: "ID appears edited, expired, or invalid" },
+      { key: "incomplete", label: "Submission is incomplete (missing selfie or ID)" },
+      { key: "other", label: "Other (write a custom reason)" },
+    ];
 
     const loginBox = document.getElementById("loginBox");
     const mainView = document.getElementById("mainView");
@@ -163,33 +186,91 @@
             <figure><img src="${item.id_photo_view_url || ''}" alt="" /><figcaption>ID</figcaption></figure>
           </div>
           <div class="body">
-            <div class="name">${item.display_name || "(no name)"}</div>
+            <div class="name">${escapeHtml(item.display_name || "(no name)")}</div>
             <div class="date">${new Date(item.submitted_at).toLocaleString()}</div>
             ${
               item.status === "pending"
-                ? `<div class="actions">
-                     <button class="approve-btn" data-action="approve">Approve</button>
-                     <button class="reject-btn" data-action="reject">Reject</button>
+                ? `<div class="actions-wrap">
+                     <div class="actions">
+                       <button class="approve-btn" data-action="approve">Approve</button>
+                       <button class="reject-btn" data-action="reject-open">Reject</button>
+                     </div>
                    </div>`
-                : `<span class="status-pill status-${item.status}">${item.status}</span>`
+                : `<span class="status-pill status-${item.status}">${item.status}</span>
+                   ${
+                     item.status === "rejected" && item.rejection_reason
+                       ? `<div class="reject-reason">"${escapeHtml(item.rejection_reason)}"</div>`
+                       : ""
+                   }`
             }
           </div>
         </div>`
         )
         .join("");
 
-      grid.querySelectorAll("button[data-action]").forEach((btn) => {
+      grid.querySelectorAll("button[data-action='approve']").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const id = btn.closest(".card").getAttribute("data-id");
-          const action = btn.getAttribute("data-action");
           btn.disabled = true;
-          await fetch(`${API_BASE_URL}/admin/face-verifications/${id}/${action}`, {
+          await fetch(`${API_BASE_URL}/admin/face-verifications/${id}/approve`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
           });
           loadList();
         });
       });
+
+      grid.querySelectorAll("button[data-action='reject-open']").forEach((btn) => {
+        btn.addEventListener("click", () => openRejectForm(btn.closest(".actions-wrap")));
+      });
+    }
+
+    function openRejectForm(wrap) {
+      const options = REJECT_REASONS.map((r) => `<option value="${r.key}">${escapeHtml(r.label)}</option>`).join("");
+      wrap.innerHTML = `
+        <div class="reject-form">
+          <select class="reason-select">${options}</select>
+          <textarea class="reason-text" placeholder="Custom reason the user will see..." style="display:none"></textarea>
+          <div class="row">
+            <button class="reject-btn" data-action="reject-confirm">Confirm reject</button>
+            <button class="cancel-btn" data-action="reject-cancel">Cancel</button>
+          </div>
+        </div>`;
+
+      const select = wrap.querySelector(".reason-select");
+      const textarea = wrap.querySelector(".reason-text");
+      select.addEventListener("change", () => {
+        textarea.style.display = select.value === "other" ? "block" : "none";
+      });
+
+      wrap.querySelector("[data-action='reject-cancel']").addEventListener("click", () => loadList());
+
+      wrap.querySelector("[data-action='reject-confirm']").addEventListener("click", async (e) => {
+        const reasonKey = select.value;
+        const reasonInfo = REJECT_REASONS.find((r) => r.key === reasonKey);
+        const customText = textarea.value.trim();
+        if (reasonKey === "other" && !customText) {
+          textarea.style.display = "block";
+          textarea.focus();
+          return;
+        }
+        const reason = reasonKey === "other" ? customText : reasonInfo.label;
+
+        const id = wrap.closest(".card").getAttribute("data-id");
+        e.target.disabled = true;
+        await fetch(`${API_BASE_URL}/admin/face-verifications/${id}/reject`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ reason_key: reasonKey, reason }),
+        });
+        loadList();
+      });
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
     }
   </script>
 </body>

@@ -74,6 +74,15 @@ export default function FaceVerificationScreen() {
   const isVerified = profile?.face_verified;
   const statusKey = status?.status ?? "unsubmitted";
 
+  // Fixed reason keys get looked up in this app's own i18n, so the user
+  // reads the reason in whatever language they have the app set to —
+  // never the language the admin happened to pick it in. "other" (or a
+  // missing/unrecognized key, e.g. a legacy row from before this existed)
+  // falls back to showing the raw text as-is.
+  const reasonKey = status?.rejection_reason_key;
+  const rejectionReasonText =
+    reasonKey && reasonKey !== "other" ? t(`faceVerification.rejectReasons.${reasonKey}`) : status?.rejection_reason;
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{t("faceVerification.title")}</Text>
@@ -94,6 +103,9 @@ export default function FaceVerificationScreen() {
       {!isVerified && statusKey === "rejected" && (
         <View style={styles.rejectedBanner}>
           <Text style={styles.rejectedBannerText}>{t("faceVerification.rejectedBanner")}</Text>
+          {rejectionReasonText && (
+            <Text style={styles.rejectedReasonText}>{t("faceVerification.rejectedReason", { reason: rejectionReasonText })}</Text>
+          )}
         </View>
       )}
 
@@ -145,6 +157,7 @@ const styles = StyleSheet.create({
   pendingBannerText: { color: colors.navy, fontWeight: "600" },
   rejectedBanner: { backgroundColor: "#FBEAE9", borderRadius: 12, padding: 14, marginBottom: 16 },
   rejectedBannerText: { color: "#B3261E", fontWeight: "600" },
+  rejectedReasonText: { color: "#B3261E", marginTop: 6, fontSize: 13 },
   error: { color: colors.danger, marginBottom: 12 },
   fieldLabel: { fontSize: 14, fontWeight: "700", color: colors.navy, marginBottom: 6 },
   idPhotoHint: { fontSize: 12.5, color: colors.muted, marginBottom: 10 },
