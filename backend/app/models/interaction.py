@@ -45,6 +45,16 @@ class Match(Base):
     )
     first_message_sent: Mapped[bool] = mapped_column("FirstMessageSent", Boolean, default=False, nullable=False)
 
+    # Generalizes the same 24h-no-reply expiry beyond just "the first
+    # message never got sent": once a conversation is underway, it goes
+    # stale (is_active flips False) if 24h pass with nobody replying to
+    # the most recent message, whoever sent it. NULL until the first
+    # message; chat_service falls back to matched_at for rows written
+    # before this column existed.
+    last_activity_at: Mapped[datetime | None] = mapped_column(
+        "LastActivityAt", DateTime(timezone=True), nullable=True
+    )
+
 
 class Block(Base):
     __tablename__ = "Blocks"

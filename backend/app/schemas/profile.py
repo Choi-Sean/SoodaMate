@@ -5,6 +5,7 @@ from datetime import date, datetime, timezone
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
 from app.services.storage_service import build_public_url
+from app.utils.premium import is_premium
 
 
 class PhotoOut(BaseModel):
@@ -96,6 +97,9 @@ class ProfileOut(BaseModel):
     religion: str | None = None
     political_view: str | None = None
     premium_until: datetime | None = None
+    billing_cycle: str | None = None
+    subscription_price_cents: int | None = None
+    cancel_at_period_end: bool = False
     race_filter: list[str] = []
     religion_filter: list[str] = []
     # Raw storage column, never serialized directly — see the premium_filters
@@ -129,12 +133,7 @@ class ProfileOut(BaseModel):
     @computed_field
     @property
     def is_premium_member(self) -> bool:
-        if self.premium_until is None:
-            return False
-        premium_until = self.premium_until
-        if premium_until.tzinfo is None:
-            premium_until = premium_until.replace(tzinfo=timezone.utc)
-        return premium_until > datetime.now(timezone.utc)
+        return is_premium(self.premium_until)
 
     @computed_field
     @property

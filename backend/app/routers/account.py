@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy import delete, or_
@@ -7,8 +9,13 @@ from app.database import get_db
 from app.deps import get_current_user
 from app.models.interaction import Block, Match, Report, Swipe
 from app.models.user import User
+from app.services import payment_service
 
 router = APIRouter(prefix="/account", tags=["account"])
+
+
+class CancelSubscriptionOut(BaseModel):
+    premium_until: datetime
 
 
 class LanguageUpdateRequest(BaseModel):
@@ -27,6 +34,14 @@ async def update_language(
     # on in-app text, which the client's own i18next already handles.
     user.preferred_language = body.language
     await db.commit()
+
+
+@router.post("/subscription/cancel", response_model=CancelSubscriptionOut)
+async def cancel_subscription(
+    db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
+) -> CancelSubscriptionOut:
+    premium_until = await payment_service.cancel_subscription(db, user.id)
+    return CancelSubscriptionOut(premium_until=premium_until)
 
 
 @router.delete("/me", status_code=204)

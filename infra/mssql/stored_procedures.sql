@@ -12,10 +12,14 @@
 -- sp_RecordSwipe: the core matching transaction. Upserts the swipe, checks
 -- for a reciprocal like/superlike, and on mutual match creates the Match row
 -- with the Phase 14 Bumble first-message restriction computed inline (mixed
--- male/female pair -> restricted to the female user, 24h deadline; any other
--- gender combination -> unrestricted, open messaging immediately). Ends with
--- a single-row SELECT (not OUTPUT params) so it's trivially callable from
--- any DB-API driver without provider-specific output-parameter binding.
+-- male/female pair -> restricted to the female user; any other gender
+-- combination -> unrestricted, either side may go first). Every new match
+-- gets a 24h first-message deadline regardless of that restriction — a
+-- match nobody ever speaks into goes stale and expires either way, the
+-- restriction only ever controlled *who* is allowed to be the one to break
+-- the ice, not *whether* someone has to. Ends with a single-row SELECT (not
+-- OUTPUT params) so it's trivially callable from any DB-API driver without
+-- provider-specific output-parameter binding.
 CREATE OR ALTER PROCEDURE sp_RecordSwipe
     @FromUserId UNIQUEIDENTIFIER,
     @ToUserId   UNIQUEIDENTIFIER,
@@ -87,18 +91,14 @@ BEGIN
         SELECT @GenderB = Gender FROM Profiles WHERE UserId = @UserB;
 
         DECLARE @RestrictedTo UNIQUEIDENTIFIER = NULL;
-        DECLARE @Deadline DATETIMEOFFSET = NULL;
+        -- Every match gets this deadline, restricted or not — see the
+        -- procedure comment above.
+        DECLARE @Deadline DATETIMEOFFSET = DATEADD(HOUR, 24, SYSDATETIMEOFFSET());
 
         IF (@GenderA = 'male' AND @GenderB = 'female')
-        BEGIN
             SET @RestrictedTo = @UserB;
-            SET @Deadline = DATEADD(HOUR, 24, SYSDATETIMEOFFSET());
-        END
         ELSE IF (@GenderA = 'female' AND @GenderB = 'male')
-        BEGIN
             SET @RestrictedTo = @UserA;
-            SET @Deadline = DATEADD(HOUR, 24, SYSDATETIMEOFFSET());
-        END
 
         SET @MatchId = NEWID();
         INSERT INTO Matches

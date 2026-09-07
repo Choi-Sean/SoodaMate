@@ -24,9 +24,11 @@ class MatchOut(BaseModel):
     is_message_restricted: bool = False
     can_send_first_message: bool = True
     first_message_deadline: datetime | None = None
+    is_active: bool = True
 
 
 class SwipeLimitOut(BaseModel):
     remaining: int
     limit: int
     resets_at: datetime | None = None
+    unlimited: bool = False

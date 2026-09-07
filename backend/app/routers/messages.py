@@ -21,7 +21,9 @@ async def get_messages(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> list[MessageOut]:
-    match = await chat_service.get_active_match_for_user(db, match_id, user.id)
+    # get_match_for_user, not get_active_match_for_user — an expired
+    # match's past messages stay readable, only sending into it is blocked.
+    match = await chat_service.get_match_for_user(db, match_id, user.id)
     if match is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "match not found")
     return await chat_service.get_history(db, match_id, before, limit)

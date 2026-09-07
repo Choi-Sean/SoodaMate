@@ -51,7 +51,7 @@ def test_female_sends_first_then_either_can_message():
                 assert received2["content"] == "hi back"
 
 
-def test_expired_match_excluded_from_list_and_rejects_messages():
+def test_expired_match_shown_inactive_history_readable_but_send_rejected():
     with TestClient(app) as tc:
         a_id, a_token = _signup_and_complete_profile(tc, "bm3@example.com", "male", "female")
         b_id, b_token = _signup_and_complete_profile(tc, "bf3@example.com", "female", "male")
@@ -80,11 +80,19 @@ def test_expired_match_excluded_from_list_and_rejects_messages():
         # dual-loop conflict entirely.
         tc.portal.call(backdate_deadline)
 
+        # Expired matches still show up in the list (as inactive/expired,
+        # not silently dropped) — the mobile chat list renders these as a
+        # distinct grayed-out row rather than losing them entirely.
         matches = tc.get("/matches", headers=a_headers).json()
-        assert all(m["id"] != match_id for m in matches)
+        this_match = next(m for m in matches if m["id"] == match_id)
+        assert this_match["is_active"] is False
 
+        # History stays readable after expiry (there's nothing to read here
+        # since no message was ever sent, but the request itself must not
+        # 404 — only *sending* into an expired match is blocked).
         history = tc.get(f"/matches/{match_id}/messages", headers=a_headers)
-        assert history.status_code == 404
+        assert history.status_code == 200
+        assert history.json() == []
 
         with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
             ws_b.send_json({"type": "message", "match_id": match_id, "content": "too late"})

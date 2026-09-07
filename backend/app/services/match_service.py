@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
-from sqlalchemy import and_, or_, select, text, update
+from sqlalchemy import and_, func, or_, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.interaction import Match, Swipe
@@ -10,6 +10,7 @@ from app.models.profile import Photo, Profile
 from app.schemas.match import MatchOut, SwipeLimitOut, SwipeResponse
 from app.services import push_service
 from app.services.storage_service import build_public_url
+from app.utils.premium import is_premium
 
 VALID_ACTIONS = {"like", "pass", "superlike"}
 
@@ -23,7 +24,13 @@ SWIPE_LIMIT_WINDOW = timedelta(hours=6)
 async def get_swipe_limit_status(db: AsyncSession, user_id: uuid.UUID) -> SwipeLimitOut:
     """Rolling window, not a fixed clock-aligned one: your 21st swipe is
     blocked until your oldest swipe in the last 6h ages out, not until a
-    fixed boundary — so resets_at is that oldest swipe's timestamp + 6h."""
+    fixed boundary — so resets_at is that oldest swipe's timestamp + 6h.
+    Premium members skip the limit entirely (one of the real, functional
+    perks premium actually grants, not just marketing copy)."""
+    profile = await db.get(Profile, user_id)
+    if profile is not None and is_premium(profile.premium_until):
+        return SwipeLimitOut(remaining=SWIPE_LIMIT, limit=SWIPE_LIMIT, resets_at=None, unlimited=True)
+
     window_start = datetime.now(timezone.utc) - SWIPE_LIMIT_WINDOW
     timestamps = (
         await db.execute(
@@ -109,21 +116,33 @@ def _is_restricted_and_waiting(match: Match) -> bool:
 
 
 async def expire_stale_matches(db: AsyncSession, user_id: uuid.UUID) -> None:
-    """Phase 14 lazy expiry: flips is_active=False for any of this user's
-    matches whose first-message deadline passed with nothing sent. No
-    scheduler exists (or is planned) — every real touchpoint (list, WS
-    connect-time send/read) calls this or the single-match equivalent in
-    chat_service.get_active_match_for_user instead."""
+    """Lazy expiry, mirroring chat_service._is_expired's rule: flips
+    is_active=False for any of this user's matches where either (a)
+    nobody ever sent the first message and the Phase 14 deadline passed,
+    or (b) a conversation is underway but nobody has replied to the most
+    recent message within 24h. No scheduler exists (or is planned) —
+    every real touchpoint (list, WS connect-time send/read) calls this or
+    the single-match equivalent in chat_service.get_active_match_for_user
+    instead."""
     now = datetime.now(timezone.utc)
+    reply_cutoff = now - timedelta(hours=24)
     await db.execute(
         update(Match)
         .where(
             # Column truthiness, not .is_(True)/.is_(False) — MSSQL has no
             # IS TRUE/IS FALSE syntax (only IS NULL).
             Match.is_active,
-            ~Match.first_message_sent,
-            Match.first_message_deadline.isnot(None),
-            Match.first_message_deadline <= now,
+            or_(
+                and_(
+                    ~Match.first_message_sent,
+                    Match.first_message_deadline.isnot(None),
+                    Match.first_message_deadline <= now,
+                ),
+                and_(
+                    Match.first_message_sent,
+                    func.coalesce(Match.last_activity_at, Match.matched_at) <= reply_cutoff,
+                ),
+            ),
             or_(Match.user_a_id == user_id, Match.user_b_id == user_id),
         )
         .values(is_active=False)
@@ -134,12 +153,16 @@ async def expire_stale_matches(db: AsyncSession, user_id: uuid.UUID) -> None:
 async def list_matches(db: AsyncSession, user_id: uuid.UUID) -> list[MatchOut]:
     await expire_stale_matches(db, user_id)
 
+    # Unlike the old behavior (WHERE is_active only), expired matches are
+    # still returned here rather than silently vanishing — the mobile chat
+    # list renders them as a distinct grayed-out "Expired" row instead of
+    # dropping them, so a match that timed out is still visible history,
+    # just no longer chattable (chat_service blocks sending into it).
     rows = (
         await db.execute(
             select(Match).where(
-                Match.is_active,
                 or_(Match.user_a_id == user_id, Match.user_b_id == user_id),
-            ).order_by(Match.matched_at.desc())
+            ).order_by(Match.is_active.desc(), Match.matched_at.desc())
         )
     ).scalars().all()
 
@@ -181,6 +204,7 @@ async def list_matches(db: AsyncSession, user_id: uuid.UUID) -> list[MatchOut]:
                 is_message_restricted=restricted,
                 can_send_first_message=(not restricted) or (m.restricted_to_user_id == user_id),
                 first_message_deadline=m.first_message_deadline,
+                is_active=m.is_active,
             )
         )
     return out

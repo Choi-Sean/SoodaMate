@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,17 +7,31 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.interaction import Match
 from app.models.message import Message
 
+REPLY_WINDOW = timedelta(hours=24)
+
+
+def _aware(dt: datetime) -> datetime:
+    return dt if dt.tzinfo is not None else dt.replace(tzinfo=timezone.utc)
+
 
 def _is_expired(match: Match) -> bool:
-    if match.first_message_sent or match.first_message_deadline is None:
-        return False
-    deadline = match.first_message_deadline
-    if deadline.tzinfo is None:
-        deadline = deadline.replace(tzinfo=timezone.utc)
-    return datetime.now(timezone.utc) >= deadline
+    now = datetime.now(timezone.utc)
+    if not match.first_message_sent:
+        # Nobody has said anything yet — Phase 14's gender-restricted
+        # first-message deadline (unrestricted pairs have no deadline and
+        # never expire pre-first-message).
+        if match.first_message_deadline is None:
+            return False
+        return now >= _aware(match.first_message_deadline)
+    # Someone has spoken — the conversation goes stale if nobody has
+    # replied to the most recent message within 24h. last_activity_at is
+    # None only for rows written before this column existed; matched_at is
+    # the correct fallback since first_message_sent is already True there.
+    last_activity = match.last_activity_at or match.matched_at
+    return now >= _aware(last_activity) + REPLY_WINDOW
 
 
-async def get_active_match_for_user(
+async def _get_match_for_participant(
     db: AsyncSession, match_id: uuid.UUID, user_id: uuid.UUID
 ) -> Match | None:
     match = await db.get(Match, match_id)
@@ -25,14 +39,30 @@ async def get_active_match_for_user(
         return None
     if user_id not in (match.user_a_id, match.user_b_id):
         return None
-    # Phase 14 lazy expiry: the single choke point both the WS handler and
-    # the REST history route go through, so a match with an unmet 24h
-    # first-message deadline flips inactive here rather than needing a
-    # scheduler this app doesn't have.
+    # Lazy expiry: the single choke point every real touchpoint (WS
+    # handler, REST history route, list_matches) goes through, so a match
+    # past its deadline/reply window flips inactive here rather than
+    # needing a scheduler this app doesn't have.
     if match.is_active and _is_expired(match):
         match.is_active = False
         await db.commit()
-    return match if match.is_active else None
+    return match
+
+
+async def get_active_match_for_user(
+    db: AsyncSession, match_id: uuid.UUID, user_id: uuid.UUID
+) -> Match | None:
+    """Requires the match still be active — gates *sending* a message
+    (and the WS read-receipt/call-signaling paths)."""
+    match = await _get_match_for_participant(db, match_id, user_id)
+    return match if match and match.is_active else None
+
+
+async def get_match_for_user(db: AsyncSession, match_id: uuid.UUID, user_id: uuid.UUID) -> Match | None:
+    """Participant check only, active or not — a conversation's past
+    messages stay readable after it goes stale; only sending into it is
+    blocked (see get_active_match_for_user)."""
+    return await _get_match_for_participant(db, match_id, user_id)
 
 
 def is_message_allowed(match: Match, sender_id: uuid.UUID) -> bool:
@@ -52,6 +82,7 @@ async def persist_message(db: AsyncSession, match: Match, sender_id: uuid.UUID, 
     db.add(message)
     if not match.first_message_sent:
         match.first_message_sent = True
+    match.last_activity_at = datetime.now(timezone.utc)
     await db.commit()
     await db.refresh(message)
     return message

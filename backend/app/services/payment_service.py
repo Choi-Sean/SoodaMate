@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.models.iap import PaymentTransaction
 from app.models.profile import Profile
+from app.utils.premium import is_premium
 from app.utils.upsert import try_insert
 
 # Product catalog lives in code, not Stripe Dashboard "Prices" — inline
@@ -32,17 +33,33 @@ PRODUCTS: dict[str, dict] = {
         "credits": 1,
         "price_usd_cents": 399,
     },
-    "membership_30d": {
-        "name": "프리미엄 멤버십 (30일)",
+    # Real recurring Stripe Subscriptions (mode="subscription" below), not
+    # one-time top-ups — create_checkout_session/handle_webhook_event branch
+    # on credit_kind == "membership" to use the subscription path.
+    "membership_monthly": {
+        "name": "프리미엄 멤버십 (월간)",
         "credit_kind": "membership",
-        # Days, not a credit count — reusing the "credits" key rather than
-        # adding a membership-only field to this ad-hoc catalog dict.
-        "credits": 30,
-        "price_usd_cents": 1999,
+        "billing_cycle": "monthly",
+        "interval": "month",
+        "price_usd_cents": 999,
+    },
+    "membership_yearly": {
+        "name": "프리미엄 멤버십 (연간)",
+        "credit_kind": "membership",
+        "billing_cycle": "yearly",
+        "interval": "year",
+        # ~2 months free vs. paying monthly — the usual yearly-plan discount.
+        "price_usd_cents": 9999,
     },
 }
 
 BOOST_DURATION_MINUTES = 30
+# checkout.session.completed only fires once, at subscription creation — a
+# real renewal charge is a separate invoice.payment_succeeded event this app
+# doesn't handle (no live Stripe test account to exercise it against this
+# session), so premium_until is approximated as now + one billing period
+# rather than read from Stripe's own current_period_end.
+CYCLE_DAYS = {"monthly": 30, "yearly": 365}
 
 
 def _get_stripe():
@@ -61,21 +78,21 @@ async def create_checkout_session(user_id: uuid.UUID, product_id: str) -> str:
     if product is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "unknown product_id")
 
+    is_subscription = product["credit_kind"] == "membership"
+    price_data: dict = {
+        "currency": "usd",
+        "unit_amount": product["price_usd_cents"],
+        "product_data": {"name": product["name"]},
+    }
+    if is_subscription:
+        price_data["recurring"] = {"interval": product["interval"]}
+
     stripe_client = _get_stripe()
     session = stripe_client.checkout.Session.create(
-        mode="payment",
+        mode="subscription" if is_subscription else "payment",
         client_reference_id=str(user_id),
         metadata={"user_id": str(user_id), "product_id": product_id},
-        line_items=[
-            {
-                "price_data": {
-                    "currency": "usd",
-                    "unit_amount": product["price_usd_cents"],
-                    "product_data": {"name": product["name"]},
-                },
-                "quantity": 1,
-            }
-        ],
+        line_items=[{"price_data": price_data, "quantity": 1}],
         success_url=f"{settings.web_base_url}/shop-success.html?session_id={{CHECKOUT_SESSION_ID}}",
         cancel_url=f"{settings.web_base_url}/shop.html",
     )
@@ -122,25 +139,45 @@ async def handle_webhook_event(db: AsyncSession, payload: bytes, sig_header: str
     elif product["credit_kind"] == "boost":
         profile.boost_credits += product["credits"]
     elif product["credit_kind"] == "membership":
-        now = datetime.now(timezone.utc)
-        current = profile.premium_until
-        if current is not None and current.tzinfo is None:
-            current = current.replace(tzinfo=timezone.utc)
-        # Stacks on top of remaining time rather than resetting it, so
-        # buying another pack before the current one expires doesn't waste
-        # the days still left.
-        base = current if current is not None and current > now else now
-        profile.premium_until = base + timedelta(days=product["credits"])
+        # A fresh subscription, not a top-up — no stacking on remaining
+        # time (that made sense for the old one-time-purchase model, not a
+        # recurring one), and the new billing_cycle/price/subscription-id
+        # fully replace whatever was there before (e.g. a prior canceled
+        # plan).
+        profile.premium_until = datetime.now(timezone.utc) + timedelta(days=CYCLE_DAYS[product["billing_cycle"]])
+        profile.billing_cycle = product["billing_cycle"]
+        profile.subscription_price_cents = product["price_usd_cents"]
+        profile.stripe_subscription_id = session_obj.get("subscription")
+        profile.cancel_at_period_end = False
     await db.commit()
 
 
 def is_premium_member(profile: Profile) -> bool:
-    if profile.premium_until is None:
-        return False
-    premium_until = profile.premium_until
-    if premium_until.tzinfo is None:
-        premium_until = premium_until.replace(tzinfo=timezone.utc)
-    return premium_until > datetime.now(timezone.utc)
+    return is_premium(profile.premium_until)
+
+
+async def cancel_subscription(db: AsyncSession, user_id: uuid.UUID) -> datetime:
+    """Cancels at period end, not immediately — the user keeps premium
+    through whatever they already paid for (see the no-refund policy shown
+    alongside both checkout and this action); Stripe just won't charge them
+    again after that."""
+    profile = await db.get(Profile, user_id)
+    if profile is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "complete your profile first")
+    if not profile.stripe_subscription_id:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "no active subscription to cancel")
+    if profile.cancel_at_period_end:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "subscription is already set to cancel")
+
+    stripe_client = _get_stripe()
+    try:
+        stripe_client.Subscription.modify(profile.stripe_subscription_id, cancel_at_period_end=True)
+    except stripe.error.StripeError as exc:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "couldn't reach the payment provider") from exc
+
+    profile.cancel_at_period_end = True
+    await db.commit()
+    return profile.premium_until
 
 
 async def activate_boost(db: AsyncSession, user_id: uuid.UUID) -> datetime:

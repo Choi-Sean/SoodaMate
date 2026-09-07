@@ -71,10 +71,20 @@ class Profile(Base):
     religion: Mapped[str | None] = mapped_column("Religion", Unicode(50), nullable=True)
     political_view: Mapped[str | None] = mapped_column("PoliticalView", Unicode(50), nullable=True)
 
-    # Premium membership: gates race_filter/religion_filter below. A
-    # one-time Stripe purchase (like superlike/boost) extends this instead
-    # of a true recurring Stripe Subscription — see payment_service.py.
+    # Premium membership: gates race_filter/religion_filter below.
+    # Originally a one-time Stripe purchase extending this date (like
+    # superlike/boost credits); membership_monthly/membership_yearly are now
+    # real recurring Stripe Subscriptions instead — see payment_service.py.
+    # The four fields below are only ever set for that real-subscription
+    # path; a premium_until granted any other way (a one-time top-up, or a
+    # manually-granted comp) leaves them all NULL, which the profile schema
+    # and mobile UI both read as "no subscription to show billing info for
+    # or cancel" rather than fabricating a billing date that doesn't exist.
     premium_until: Mapped[datetime | None] = mapped_column("PremiumUntil", DateTime(timezone=True), nullable=True)
+    billing_cycle: Mapped[str | None] = mapped_column("BillingCycle", Unicode(10), nullable=True)  # 'monthly' | 'yearly'
+    subscription_price_cents: Mapped[int | None] = mapped_column("SubscriptionPriceCents", Integer, nullable=True)
+    stripe_subscription_id: Mapped[str | None] = mapped_column("StripeSubscriptionId", Unicode(255), nullable=True)
+    cancel_at_period_end: Mapped[bool] = mapped_column("CancelAtPeriodEnd", Boolean, default=False, nullable=False)
     # Comma-separated allow-lists of race_ethnicity/religion values to
     # restrict Discover to — only ever applied by discovery_service if
     # is_premium_member(profile) is true; the free tier only gets the
