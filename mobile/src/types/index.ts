@@ -49,6 +49,9 @@ export interface Profile {
   political_view: string | null;
   premium_until: string | null;
   is_premium_member: boolean;
+  billing_cycle: "monthly" | "yearly" | null;
+  subscription_price_cents: number | null;
+  cancel_at_period_end: boolean;
   race_filter: string[];
   religion_filter: string[];
   premium_filters: PremiumFilters;
@@ -105,6 +108,7 @@ export interface Match {
   is_message_restricted: boolean;
   can_send_first_message: boolean;
   first_message_deadline: string | null;
+  is_active: boolean;
 }
 
 export interface ChatMessage {

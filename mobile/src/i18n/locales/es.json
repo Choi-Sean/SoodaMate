@@ -167,6 +167,8 @@
   },
   "chat": {
     "title": "Chats",
+    "expired": "Expirado",
+    "expiredBanner": "Este match expiró tras 24 horas sin respuesta.",
     "empty": "Aún no tienes matches — ¡sigue explorando!",
     "messagePlaceholder": "Mensaje",
     "send": "Enviar",
@@ -200,7 +202,24 @@
     "premiumBannerBody": "Desbloquea filtros avanzados, mira quién te dio like y más.",
     "premiumBannerCta": "Explorar Premium",
     "premiumActiveTitle": "Eres Premium",
-    "premiumActiveBody": "Disfruta de filtros avanzados y todas las ventajas premium."
+    "premiumActiveBody": "Disfruta de filtros avanzados y todas las ventajas premium.",
+    "perksTitle": "Lo que obtienes con Premium",
+    "perkUnlimitedSwipes": "Deslizamientos ilimitados",
+    "perkSeeWhoLikedYou": "Ver quién te dio like",
+    "perkAdvancedFilters": "Filtros avanzados (altura, religión y más)",
+    "billingCycleMonthly": "Plan mensual",
+    "billingCycleYearly": "Plan anual",
+    "nextBillingLabel": "Próximo pago",
+    "nextBillingBody": "{{amount}} el {{date}}",
+    "cancelledBanner": "No se renovará — Premium sigue activo hasta el {{date}}.",
+    "cancelMembership": "Cancelar membresía",
+    "cancelConfirmTitle": "¿Cancelar tu membresía?",
+    "cancelConfirmBody": "Mantendrás Premium hasta el {{date}} — no se otorgan reembolsos por el periodo de facturación actual. Después de eso, no se te cobrará de nuevo.",
+    "cancelConfirmButton": "Cancelar membresía",
+    "keepMembership": "Mantener membresía",
+    "cancelSuccessTitle": "Membresía cancelada",
+    "cancelSuccessBody": "Puedes seguir usando Premium hasta el {{date}}.",
+    "noRefundNotice": "No se otorgan reembolsos por el periodo de facturación actual."
   },
   "editProfile": {
     "title": "Editar perfil",
@@ -376,6 +395,7 @@
   },
   "swipe": {
     "remaining": "{{count}}/{{limit}} deslizamientos restantes",
+    "unlimited": "Deslizamientos ilimitados",
     "limitReached": "Vuelve en {{time}} para más deslizamientos",
     "limitReachedEmpty": "Te quedaste sin deslizamientos por ahora — ¡vuelve pronto!",
     "continue": "Continuar",
@@ -384,7 +404,8 @@
   "likes": {
     "title": "Me gusta",
     "empty": "Aún no hay likes — ¡completa tu perfil para destacar!",
-    "loadError": "No se pudieron cargar los likes. Desliza para reintentar."
+    "loadError": "No se pudieron cargar los likes. Desliza para reintentar.",
+    "premiumHint": "{{count}} personas te dieron like — hazte Premium para verlas"
   },
   "profileDetail": {
     "bio": "Mi biografía",
@@ -397,6 +418,8 @@
   },
   "filters": {
     "title": "Filtros",
+    "basicTab": "Filtros básicos",
+    "advancedTab": "Filtros avanzados",
     "minAge": "Edad mínima",
     "maxAge": "Edad máxima",
     "minHeight": "Altura mínima",

@@ -11,6 +11,7 @@ export interface SwipeLimit {
   remaining: number;
   limit: number;
   resets_at: string | null;
+  unlimited: boolean;
 }
 
 export async function swipe(action: SwipeAction, toUserId: string): Promise<SwipeResult> {

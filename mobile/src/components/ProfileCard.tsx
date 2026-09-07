@@ -11,6 +11,13 @@ import { colors } from "../theme";
 
 interface Props {
   candidate: Candidate;
+  // Swipe's deck fills the screen edge-to-edge (no surrounding padding),
+  // where rounded corners + a drop shadow read as a floating card that
+  // doesn't belong flush against the screen edge. Discover/Likes show this
+  // same component inside a padded modal instead, where the floating-card
+  // look is exactly right — so this defaults to that look and Swipe opts
+  // out instead of every caller needing to opt in.
+  flush?: boolean;
 }
 
 /** A whole scrollable profile, Hinge-style: a single hero photo/video up
@@ -20,7 +27,7 @@ interface Props {
  * resets on a new candidate. Report/block is available here too, not just
  * from an existing chat — real safety concerns (fake photos, harassment in
  * a bio, etc.) can show up before a match ever happens. */
-export default function ProfileCard({ candidate }: Props) {
+export default function ProfileCard({ candidate, flush }: Props) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
@@ -71,7 +78,7 @@ export default function ProfileCard({ candidate }: Props) {
   }
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, flush && styles.cardFlush]}>
       <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
         <MediaCarousel
           media={candidate.photos}
@@ -107,6 +114,14 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
     elevation: 8,
+  },
+  cardFlush: {
+    borderRadius: 0,
+    maxWidth: undefined,
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 0,
   },
   menuButton: {
     position: "absolute",

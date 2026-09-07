@@ -167,6 +167,8 @@
   },
   "chat": {
     "title": "チャット",
+    "expired": "期限切れ",
+    "expiredBanner": "24時間返信がなかったため、このマッチは無効になりました。",
     "empty": "まだマッチがありません — 見て回りましょう！",
     "messagePlaceholder": "メッセージ",
     "send": "送信",
@@ -200,7 +202,24 @@
     "premiumBannerBody": "高度なフィルターやいいねをくれた人の確認など、特典が使い放題。",
     "premiumBannerCta": "プレミアムを見る",
     "premiumActiveTitle": "プレミアム会員です",
-    "premiumActiveBody": "高度なフィルターなど全ての特典をご利用いただけます。"
+    "premiumActiveBody": "高度なフィルターなど全ての特典をご利用いただけます。",
+    "perksTitle": "プレミアムの特典",
+    "perkUnlimitedSwipes": "スワイプ無制限",
+    "perkSeeWhoLikedYou": "いいねをくれた人を確認",
+    "perkAdvancedFilters": "高度なフィルター（身長・宗教など）",
+    "billingCycleMonthly": "月額プラン",
+    "billingCycleYearly": "年額プラン",
+    "nextBillingLabel": "次回のお支払い",
+    "nextBillingBody": "{{date}}に{{amount}}",
+    "cancelledBanner": "更新されません — {{date}}までプレミアムをご利用いただけます。",
+    "cancelMembership": "メンバーシップを解約",
+    "cancelConfirmTitle": "メンバーシップを解約しますか？",
+    "cancelConfirmBody": "{{date}}まではプレミアムを引き続きご利用いただけます — 今回の請求期間分の返金はありません。それ以降は請求されません。",
+    "cancelConfirmButton": "メンバーシップを解約",
+    "keepMembership": "メンバーシップを継続",
+    "cancelSuccessTitle": "メンバーシップを解約しました",
+    "cancelSuccessBody": "{{date}}まで引き続きプレミアムをご利用いただけます。",
+    "noRefundNotice": "今回の請求期間分の返金はありません。"
   },
   "editProfile": {
     "title": "プロフィール編集",
@@ -376,6 +395,7 @@
   },
   "swipe": {
     "remaining": "スワイプ残り{{count}}/{{limit}}回",
+    "unlimited": "スワイプ無制限",
     "limitReached": "{{time}}後に再度スワイプできます",
     "limitReachedEmpty": "本日のスワイプ回数はなくなりました。またあとで確認してください！",
     "continue": "続ける",
@@ -384,7 +404,8 @@
   "likes": {
     "title": "いいね",
     "empty": "まだいいねがありません — プロフィールを充実させて注目されましょう！",
-    "loadError": "いいね一覧を読み込めませんでした。引っ張って再試行してください。"
+    "loadError": "いいね一覧を読み込めませんでした。引っ張って再試行してください。",
+    "premiumHint": "{{count}}人があなたにいいねしました — プレミアムで確認しましょう"
   },
   "profileDetail": {
     "bio": "私について",
@@ -397,6 +418,8 @@
   },
   "filters": {
     "title": "フィルター",
+    "basicTab": "基本フィルター",
+    "advancedTab": "詳細フィルター",
     "minAge": "最小年齢",
     "maxAge": "最大年齢",
     "minHeight": "最小身長",

@@ -167,6 +167,8 @@
   },
   "chat": {
     "title": "聊天",
+    "expired": "已失效",
+    "expiredBanner": "24小时内无人回复，此配对已失效。",
     "empty": "还没有配对 — 继续浏览吧！",
     "messagePlaceholder": "输入消息",
     "send": "发送",
@@ -200,7 +202,24 @@
     "premiumBannerBody": "解锁高级筛选、查看谁喜欢了你等更多特权。",
     "premiumBannerCta": "了解会员",
     "premiumActiveTitle": "你已是会员",
-    "premiumActiveBody": "尽享高级筛选等所有会员特权。"
+    "premiumActiveBody": "尽享高级筛选等所有会员特权。",
+    "perksTitle": "会员特权",
+    "perkUnlimitedSwipes": "无限次滑动",
+    "perkSeeWhoLikedYou": "查看谁喜欢了你",
+    "perkAdvancedFilters": "高级筛选（身高、宗教等）",
+    "billingCycleMonthly": "月度套餐",
+    "billingCycleYearly": "年度套餐",
+    "nextBillingLabel": "下次扣款",
+    "nextBillingBody": "{{date}} 扣款 {{amount}}",
+    "cancelledBanner": "不会自动续订 — 会员权益保留至 {{date}}。",
+    "cancelMembership": "取消会员",
+    "cancelConfirmTitle": "确定要取消会员吗？",
+    "cancelConfirmBody": "在 {{date}} 之前你仍可继续使用会员权益 — 当前计费周期不予退款。此后将不再扣款。",
+    "cancelConfirmButton": "取消会员",
+    "keepMembership": "保留会员",
+    "cancelSuccessTitle": "会员已取消",
+    "cancelSuccessBody": "你可以继续使用会员权益至 {{date}}。",
+    "noRefundNotice": "当前计费周期不予退款。"
   },
   "editProfile": {
     "title": "编辑资料",
@@ -376,6 +395,7 @@
   },
   "swipe": {
     "remaining": "剩余 {{count}}/{{limit}} 次滑动",
+    "unlimited": "无限次滑动",
     "limitReached": "{{time}} 后可继续滑动",
     "limitReachedEmpty": "滑动次数已用完，稍后再来看看吧！",
     "continue": "继续",
@@ -384,7 +404,8 @@
   "likes": {
     "title": "喜欢我的人",
     "empty": "还没有人喜欢你 — 完善资料让更多人看到你吧！",
-    "loadError": "无法加载喜欢列表，请下拉重试。"
+    "loadError": "无法加载喜欢列表，请下拉重试。",
+    "premiumHint": "{{count}}人喜欢了你 — 开通会员查看是谁"
   },
   "profileDetail": {
     "bio": "我的简介",
@@ -397,6 +418,8 @@
   },
   "filters": {
     "title": "筛选",
+    "basicTab": "基础筛选",
+    "advancedTab": "高级筛选",
     "minAge": "最小年龄",
     "maxAge": "最大年龄",
     "minHeight": "最小身高",

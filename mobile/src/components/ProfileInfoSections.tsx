@@ -63,7 +63,10 @@ export default function ProfileInfoSections({ candidate }: { candidate: Candidat
   // The verified badge already shows as its own pill on the photo above
   // (MediaCarousel) - repeating it as a fact row here too was redundant.
   const facts: { icon: IconName; text: string }[] = [];
-  if (candidate.height_cm) facts.push({ icon: "resize-outline", text: t("profileDetail.heightValue", { cm: candidate.height_cm }) });
+  // swap-vertical-outline (stacked up/down arrows) reads as "vertical
+  // measurement" - resize-outline's diagonal arrows looked like a
+  // distance/expand glyph instead of height.
+  if (candidate.height_cm) facts.push({ icon: "swap-vertical-outline", text: t("profileDetail.heightValue", { cm: candidate.height_cm }) });
   if (candidate.occupation) facts.push({ icon: "briefcase-outline", text: candidate.occupation });
   // education is a fixed-key dropdown now (Edit Profile) - older free-text
   // data from before that existed just falls back to showing itself as-is.

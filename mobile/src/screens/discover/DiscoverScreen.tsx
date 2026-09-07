@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
 
 import ProfileCard from "../../components/ProfileCard";
+import ScreenHeader from "../../components/ScreenHeader";
 import { useRecommended } from "../../hooks/useRecommended";
 import type { Candidate } from "../../types";
 import { colors } from "../../theme";
@@ -16,22 +17,6 @@ export default function DiscoverScreen() {
   const { t } = useTranslation();
   const { data: candidates, isLoading, isError } = useRecommended();
   const [selected, setSelected] = useState<Candidate | null>(null);
-
-  if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
-  }
-
-  if (isError) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.emptyText}>{t("discover.loadError")}</Text>
-      </View>
-    );
-  }
 
   const renderItem = ({ item }: { item: Candidate }) => {
     const photo = item.photos[0];
@@ -68,8 +53,16 @@ export default function DiscoverScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{t("discover.title")}</Text>
-      {!candidates || candidates.length === 0 ? (
+      <ScreenHeader title={t("discover.title")} />
+      {isLoading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={colors.accent} />
+        </View>
+      ) : isError ? (
+        <View style={styles.centered}>
+          <Text style={styles.emptyText}>{t("discover.loadError")}</Text>
+        </View>
+      ) : !candidates || candidates.length === 0 ? (
         <View style={styles.centered}>
           <Text style={styles.emptyText}>{t("discover.empty")}</Text>
         </View>
@@ -102,7 +95,6 @@ export default function DiscoverScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
-  header: { fontSize: 24, fontWeight: "800", padding: 16, paddingTop: 48, color: colors.navy },
   centered: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
   emptyText: { color: colors.muted, textAlign: "center" },
   grid: { paddingHorizontal: 12, paddingBottom: 16, gap: 12 },

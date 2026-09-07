@@ -41,7 +41,9 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
   // list cheaply since ChatListScreen already fetches it too.
   const { data: matches } = useMatches();
   const match = useMemo(() => matches?.find((m) => m.id === matchId), [matches, matchId]);
-  const mustWaitForPeer = match?.is_message_restricted && !match?.can_send_first_message;
+  const isExpired = match?.is_active === false;
+  const mustWaitForPeer = !isExpired && match?.is_message_restricted && !match?.can_send_first_message;
+  const composerLocked = isExpired || mustWaitForPeer;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -128,7 +130,7 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
 
   function handleSend() {
     const content = input.trim();
-    if (!content || mustWaitForPeer) return;
+    if (!content || composerLocked) return;
 
     sendMessage(content);
     setMessages((prev) => [
@@ -154,24 +156,32 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
         renderItem={({ item }) => <ChatBubble content={item.content} isMine={item.sender_id === userId} />}
         contentContainerStyle={styles.list}
       />
-      {mustWaitForPeer && (
-        <View style={styles.restrictedBanner}>
-          <Text style={styles.restrictedBannerText}>{t("chat.restrictedBanner")}</Text>
+      {isExpired ? (
+        <View style={styles.expiredBanner}>
+          <Text style={styles.expiredBannerText}>{t("chat.expiredBanner")}</Text>
+        </View>
+      ) : (
+        mustWaitForPeer && (
+          <View style={styles.restrictedBanner}>
+            <Text style={styles.restrictedBannerText}>{t("chat.restrictedBanner")}</Text>
+          </View>
+        )
+      )}
+      {!isExpired && (
+        <View style={styles.inputBar}>
+          <TextInput
+            style={styles.input}
+            value={input}
+            onChangeText={setInput}
+            placeholder={t("chat.messagePlaceholder")}
+            multiline
+            editable={!composerLocked}
+          />
+          <Pressable style={[styles.sendButton, composerLocked && styles.sendButtonDisabled]} onPress={handleSend} disabled={composerLocked}>
+            <Text style={styles.sendButtonText}>{t("chat.send")}</Text>
+          </Pressable>
         </View>
       )}
-      <View style={styles.inputBar}>
-        <TextInput
-          style={styles.input}
-          value={input}
-          onChangeText={setInput}
-          placeholder={t("chat.messagePlaceholder")}
-          multiline
-          editable={!mustWaitForPeer}
-        />
-        <Pressable style={[styles.sendButton, mustWaitForPeer && styles.sendButtonDisabled]} onPress={handleSend} disabled={mustWaitForPeer}>
-          <Text style={styles.sendButtonText}>{t("chat.send")}</Text>
-        </Pressable>
-      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -187,6 +197,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   restrictedBannerText: { fontSize: 12.5, color: colors.accentDark, textAlign: "center" },
+  expiredBanner: {
+    backgroundColor: colors.creamDeep,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  expiredBannerText: { fontSize: 12.5, color: colors.muted, textAlign: "center" },
   inputBar: {
     flexDirection: "row",
     alignItems: "flex-end",

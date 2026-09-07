@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
-import { ActivityIndicator, Pressable, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Image, Pressable, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import ProfileCard from "../../components/ProfileCard";
@@ -30,6 +31,7 @@ function formatCountdown(resetsAt: string): string {
 
 export default function SwipeScreen() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { data: candidates, isLoading, isError } = useCandidates();
   const { data: swipeLimit } = useSwipeLimit();
   const swipeMutation = useSwipeAction();
@@ -70,44 +72,44 @@ export default function SwipeScreen() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
-  }
-
-  if (isError) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.emptyText}>{t("discover.loadError")}</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{t("tabs.swipe")}</Text>
-      <View style={styles.topBar}>
-        <Pressable style={styles.filterPill} onPress={() => setShowFilters(true)}>
-          <Ionicons name="options-outline" size={16} color={colors.navy} />
-          <Text style={styles.filterPillText}>{t("filters.title")}</Text>
+      {/* Swipe doubles as the app's home screen, so it shows the brand
+       * wordmark here instead of a section label like every other tab's
+       * ScreenHeader — same pattern Bumble/Hinge/Tinder use on their own
+       * primary tab. */}
+      <View style={[styles.brandBar, { paddingTop: insets.top + 10 }]}>
+        <View style={styles.brandRow}>
+          <Image source={require("../../../assets/icon.png")} style={styles.logo} />
+          <Text style={styles.brandTitle}>SooDa Mate</Text>
+        </View>
+        <Pressable style={styles.filterIconButton} onPress={() => setShowFilters(true)} hitSlop={6}>
+          <Ionicons name="options-outline" size={20} color={colors.navy} />
         </Pressable>
-        {swipeLimit && (
-          <Text style={styles.limitText}>
-            {limitReached
+      </View>
+      {swipeLimit && (
+        <Text style={styles.limitText}>
+          {swipeLimit.unlimited
+            ? t("swipe.unlimited")
+            : limitReached
               ? t("swipe.limitReached", { time: formatCountdown(swipeLimit.resets_at!) })
               : t("swipe.remaining", { count: swipeLimit.remaining, limit: swipeLimit.limit })}
-          </Text>
-        )}
-      </View>
+        </Text>
+      )}
 
       <View style={styles.cardArea}>
-        {showAd ? (
+        {isLoading ? (
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color={colors.accent} />
+          </View>
+        ) : isError ? (
+          <View style={styles.centered}>
+            <Text style={styles.emptyText}>{t("discover.loadError")}</Text>
+          </View>
+        ) : showAd ? (
           <AdCard onUnavailable={() => setShowAd(false)} />
         ) : current ? (
-          <ProfileCard key={current.user_id} candidate={current} />
+          <ProfileCard key={current.user_id} candidate={current} flush />
         ) : (
           <View style={styles.centered}>
             <Text style={styles.emptyText}>
@@ -153,31 +155,30 @@ export default function SwipeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
-  header: { fontSize: 24, fontWeight: "800", paddingHorizontal: 16, paddingTop: 48, color: colors.navy },
-  topBar: {
+  brandBar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 4,
+    paddingHorizontal: 20,
+    paddingBottom: 6,
   },
-  filterPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
+  brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  logo: { width: 30, height: 30, borderRadius: 8 },
+  brandTitle: { fontSize: 22, fontWeight: "800", color: colors.navy },
+  filterIconButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: colors.white,
-    borderRadius: 999,
-    paddingVertical: 7,
-    paddingHorizontal: 14,
+    alignItems: "center",
+    justifyContent: "center",
     shadowColor: colors.navyDeep,
     shadowOpacity: 0.08,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
-  filterPillText: { fontSize: 13, fontWeight: "700", color: colors.navy },
-  limitText: { fontSize: 13, fontWeight: "600", color: colors.muted },
+  limitText: { fontSize: 12.5, fontWeight: "600", color: colors.muted, paddingHorizontal: 20, paddingBottom: 6 },
   cardArea: { flex: 1, padding: 0 },
   centered: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
   emptyText: { color: colors.muted, textAlign: "center" },

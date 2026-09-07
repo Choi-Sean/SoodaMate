@@ -167,6 +167,8 @@
   },
   "chat": {
     "title": "Chats",
+    "expired": "Expired",
+    "expiredBanner": "This match expired after 24 hours with no reply.",
     "empty": "No matches yet — keep browsing!",
     "messagePlaceholder": "Message",
     "send": "Send",
@@ -200,7 +202,24 @@
     "premiumBannerBody": "Unlock advanced filters, see who liked you, and more.",
     "premiumBannerCta": "Explore Premium",
     "premiumActiveTitle": "You're Premium",
-    "premiumActiveBody": "Enjoy advanced filters and every premium perk."
+    "premiumActiveBody": "Enjoy advanced filters and every premium perk.",
+    "perksTitle": "What you get with Premium",
+    "perkUnlimitedSwipes": "Unlimited swipes",
+    "perkSeeWhoLikedYou": "See who liked you",
+    "perkAdvancedFilters": "Advanced filters (height, religion, and more)",
+    "billingCycleMonthly": "Monthly plan",
+    "billingCycleYearly": "Yearly plan",
+    "nextBillingLabel": "Next payment",
+    "nextBillingBody": "{{amount}} on {{date}}",
+    "cancelledBanner": "Won't renew — Premium stays active until {{date}}.",
+    "cancelMembership": "Cancel membership",
+    "cancelConfirmTitle": "Cancel your membership?",
+    "cancelConfirmBody": "You'll keep Premium until {{date}} — no refund is given for the current billing period. After that, you won't be charged again.",
+    "cancelConfirmButton": "Cancel membership",
+    "keepMembership": "Keep membership",
+    "cancelSuccessTitle": "Membership canceled",
+    "cancelSuccessBody": "You can keep using Premium until {{date}}.",
+    "noRefundNotice": "No refunds are given for the current billing period."
   },
   "editProfile": {
     "title": "Edit profile",
@@ -376,6 +395,7 @@
   },
   "swipe": {
     "remaining": "{{count}}/{{limit}} swipes left",
+    "unlimited": "Unlimited swipes",
     "limitReached": "Come back in {{time}} for more swipes",
     "limitReachedEmpty": "You're out of swipes for now — check back soon!",
     "continue": "Continue",
@@ -384,7 +404,8 @@
   "likes": {
     "title": "Likes",
     "empty": "No likes yet — complete your profile to get noticed!",
-    "loadError": "Couldn't load likes. Pull to retry."
+    "loadError": "Couldn't load likes. Pull to retry.",
+    "premiumHint": "{{count}} people liked you — go Premium to see who"
   },
   "profileDetail": {
     "bio": "My Bio",
@@ -397,6 +418,8 @@
   },
   "filters": {
     "title": "Filters",
+    "basicTab": "Basic filters",
+    "advancedTab": "Advanced filters",
     "minAge": "Min age",
     "maxAge": "Max age",
     "minHeight": "Min height",

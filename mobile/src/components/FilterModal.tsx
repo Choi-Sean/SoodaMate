@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import { getMyProfile, setAgeFilter, setPremiumFilters } from "../api/profiles";
@@ -33,11 +34,13 @@ interface Props {
  * occupation/education/hometown aren't filterable). */
 export default function FilterModal({ visible, onClose }: Props) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const accessToken = useAuthStore((s) => s.accessToken);
   const { data: profile } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile, enabled: visible });
   const isPremium = profile?.is_premium_member ?? false;
 
+  const [tab, setTab] = useState<"basic" | "advanced">("basic");
   const [minAge, setMinAge] = useState(18);
   const [maxAge, setMaxAge] = useState(99);
   const [heightMin, setHeightMin] = useState(140);
@@ -112,20 +115,30 @@ export default function FilterModal({ visible, onClose }: Props) {
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{t("filters.title")}</Text>
+        <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
           <Pressable onPress={onClose} hitSlop={8}>
             <Ionicons name="close" size={26} color={colors.ink} />
+          </Pressable>
+          <Text style={styles.title}>{t("filters.title")}</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+
+        <View style={styles.tabRow}>
+          <Pressable style={[styles.tabPill, tab === "basic" && styles.tabPillActive]} onPress={() => setTab("basic")}>
+            <Text style={[styles.tabPillText, tab === "basic" && styles.tabPillTextActive]}>{t("filters.basicTab")}</Text>
+          </Pressable>
+          <Pressable style={[styles.tabPill, tab === "advanced" && styles.tabPillActive]} onPress={() => setTab("advanced")}>
+            <Text style={[styles.tabPillText, tab === "advanced" && styles.tabPillTextActive]}>{t("filters.advancedTab")}</Text>
           </Pressable>
         </View>
 
         <ScrollView contentContainerStyle={styles.content}>
-          <View style={styles.card}>
-            <NumberStepper label={t("filters.minAge")} value={minAge} min={18} max={maxAge} onChange={setMinAge} />
-            <NumberStepper label={t("filters.maxAge")} value={maxAge} min={minAge} max={99} onChange={setMaxAge} />
-          </View>
-
-          {isPremium ? (
+          {tab === "basic" ? (
+            <View style={styles.card}>
+              <NumberStepper label={t("filters.minAge")} value={minAge} min={18} max={maxAge} onChange={setMinAge} />
+              <NumberStepper label={t("filters.maxAge")} value={maxAge} min={minAge} max={99} onChange={setMaxAge} />
+            </View>
+          ) : isPremium ? (
             <>
               <View style={styles.card}>
                 <NumberStepper
@@ -163,17 +176,20 @@ export default function FilterModal({ visible, onClose }: Props) {
               <Ionicons name="lock-closed" size={28} color={colors.accentDark} />
               <Text style={styles.lockedTitle}>{t("filters.premiumLockedTitle")}</Text>
               <Text style={styles.lockedBody}>{t("filters.premiumLockedBody")}</Text>
-              <Pressable style={styles.upgradeButton} onPress={openShop}>
-                <Text style={styles.upgradeButtonText}>{t("filters.upgrade")}</Text>
-              </Pressable>
             </View>
           )}
         </ScrollView>
 
         <View style={styles.footer}>
-          <Pressable style={styles.saveButton} onPress={handleSave} disabled={saving}>
-            {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveButtonText}>{t("filters.apply")}</Text>}
-          </Pressable>
+          {tab === "advanced" && !isPremium ? (
+            <Pressable style={styles.saveButton} onPress={openShop}>
+              <Text style={styles.saveButtonText}>{t("filters.upgrade")}</Text>
+            </Pressable>
+          ) : (
+            <Pressable style={styles.saveButton} onPress={handleSave} disabled={saving}>
+              {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveButtonText}>{t("filters.apply")}</Text>}
+            </Pressable>
+          )}
         </View>
       </View>
     </Modal>
@@ -187,13 +203,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 56,
     paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
-  title: { fontSize: 20, fontWeight: "800", color: colors.navy },
-  content: { padding: 20, gap: 16 },
+  title: { fontSize: 18, fontWeight: "800", color: colors.navy },
+  // Balances the close icon on the left so the centered title actually
+  // sits in the header's true center rather than looking off-center.
+  headerSpacer: { width: 26 },
+  tabRow: { flexDirection: "row", justifyContent: "center", gap: 8, paddingBottom: 16, paddingHorizontal: 20 },
+  tabPill: { borderRadius: 999, paddingVertical: 9, paddingHorizontal: 18, backgroundColor: colors.creamDeep },
+  tabPillActive: { backgroundColor: colors.navy },
+  tabPillText: { fontSize: 13.5, fontWeight: "700", color: colors.ink },
+  tabPillTextActive: { color: "#fff" },
+  content: { padding: 20, paddingTop: 4, gap: 16, borderTopWidth: 1, borderTopColor: colors.border },
   card: {
     backgroundColor: colors.white,
     borderWidth: 1,
@@ -209,9 +230,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   lockedTitle: { fontSize: 16, fontWeight: "800", color: colors.navy, marginTop: 4 },
-  lockedBody: { fontSize: 13, color: colors.muted, textAlign: "center", marginBottom: 8 },
-  upgradeButton: { backgroundColor: colors.accent, borderRadius: 999, paddingVertical: 12, paddingHorizontal: 28 },
-  upgradeButtonText: { color: "#fff", fontWeight: "700" },
+  lockedBody: { fontSize: 13, color: colors.muted, textAlign: "center" },
   footer: { padding: 20, borderTopWidth: 1, borderTopColor: colors.border },
   saveButton: { backgroundColor: colors.accent, borderRadius: 12, paddingVertical: 15, alignItems: "center" },
   saveButtonText: { color: "#fff", fontWeight: "700", fontSize: 16 },

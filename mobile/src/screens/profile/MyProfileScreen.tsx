@@ -1,18 +1,26 @@
+import { useState } from "react";
 import { Image, Linking, Pressable, ScrollView, Text, View, StyleSheet } from "react-native";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
 import { getMyProfile } from "../../api/profiles";
+import { cancelSubscription } from "../../api/account";
 import VerifiedBadge from "../../components/VerifiedBadge";
+import ScreenHeader from "../../components/ScreenHeader";
 import { useAuthStore } from "../../store/authStore";
 import { env } from "../../config/env";
+import { showAlert } from "../../utils/alert";
 import { calculateProfileCompleteness } from "../../utils/profileCompleteness";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
 import { colors } from "../../theme";
 
 type Props = NativeStackScreenProps<ProfileStackParamList, "MyProfile">;
+
+function formatPrice(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}
 
 /** Bumble/Hinge-style profile home: a framed hero avatar (accent ring +
  * edit-pencil badge + completeness badge), name/bio, a 2-up grid of feature
@@ -21,13 +29,19 @@ type Props = NativeStackScreenProps<ProfileStackParamList, "MyProfile">;
  * comes from the real profile (credits, completeness %, premium status) —
  * nothing here is a static mock. */
 export default function MyProfileScreen({ navigation }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const queryClient = useQueryClient();
   const { data: profile } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
   const accessToken = useAuthStore((s) => s.accessToken);
+  const [canceling, setCanceling] = useState(false);
 
   const photo = profile?.photos[0];
   const completeness = profile ? calculateProfileCompleteness(profile) : null;
   const isPremium = profile?.is_premium_member ?? false;
+  // Only a real recurring Stripe Subscription has these set (see
+  // models/profile.py) - premium granted any other way (a one-time top-up,
+  // a manual comp) has nothing to show a billing date/amount for or cancel.
+  const hasSubscription = isPremium && !!profile?.billing_cycle;
 
   function openShop() {
     // The web shop has no login of its own — it reads the JWT straight out
@@ -36,15 +50,43 @@ export default function MyProfileScreen({ navigation }: Props) {
     Linking.openURL(`${env.marketingSiteUrl}/shop.html?token=${encodeURIComponent(accessToken ?? "")}`);
   }
 
+  function formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString(i18n.language, { year: "numeric", month: "long", day: "numeric" });
+  }
+
+  async function doCancel() {
+    setCanceling(true);
+    try {
+      const result = await cancelSubscription();
+      await queryClient.invalidateQueries({ queryKey: ["myProfile"] });
+      showAlert(t("profile.cancelSuccessTitle"), t("profile.cancelSuccessBody", { date: formatDate(result.premium_until) }));
+    } catch (e: any) {
+      showAlert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? "");
+    } finally {
+      setCanceling(false);
+    }
+  }
+
+  function confirmCancel() {
+    if (!profile?.premium_until) return;
+    showAlert(t("profile.cancelConfirmTitle"), t("profile.cancelConfirmBody", { date: formatDate(profile.premium_until) }), [
+      { text: t("profile.keepMembership"), style: "cancel" },
+      { text: t("profile.cancelConfirmButton"), style: "destructive", onPress: doCancel },
+    ]);
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.topBar}>
-        <Text style={styles.topTitle}>{t("tabs.profile")}</Text>
-        <Pressable style={styles.gearButton} onPress={() => navigation.navigate("Settings")} hitSlop={8}>
-          <Ionicons name="settings-outline" size={22} color={colors.navy} />
-        </Pressable>
-      </View>
+      <ScreenHeader
+        title={t("tabs.profile")}
+        right={
+          <Pressable style={styles.gearButton} onPress={() => navigation.navigate("Settings")} hitSlop={8}>
+            <Ionicons name="settings-outline" size={22} color={colors.navy} />
+          </Pressable>
+        }
+      />
 
+      <View style={styles.body}>
       <View style={styles.avatarWrap}>
         <View style={styles.avatarRing}>
           {photo ? (
@@ -108,14 +150,58 @@ export default function MyProfileScreen({ navigation }: Props) {
           </View>
         )}
       </Pressable>
+
+      {hasSubscription && profile?.premium_until && (
+        <View style={styles.billingCard}>
+          <View style={styles.billingRow}>
+            <Text style={styles.billingPlan}>
+              {profile.billing_cycle === "yearly" ? t("profile.billingCycleYearly") : t("profile.billingCycleMonthly")}
+            </Text>
+          </View>
+          {profile.cancel_at_period_end ? (
+            <Text style={styles.billingCancelledText}>{t("profile.cancelledBanner", { date: formatDate(profile.premium_until) })}</Text>
+          ) : (
+            <>
+              <Text style={styles.billingLabel}>{t("profile.nextBillingLabel")}</Text>
+              <Text style={styles.billingAmount}>
+                {t("profile.nextBillingBody", {
+                  amount: formatPrice(profile.subscription_price_cents ?? 0),
+                  date: formatDate(profile.premium_until),
+                })}
+              </Text>
+              <Pressable style={styles.cancelButton} onPress={confirmCancel} disabled={canceling}>
+                <Text style={styles.cancelButtonText}>{t("profile.cancelMembership")}</Text>
+              </Pressable>
+              <Text style={styles.noRefundText}>{t("profile.noRefundNotice")}</Text>
+            </>
+          )}
+        </View>
+      )}
+
+      <View style={styles.perksCard}>
+        <Text style={styles.perksTitle}>{t("profile.perksTitle")}</Text>
+        {[
+          { icon: "infinite" as const, label: t("profile.perkUnlimitedSwipes") },
+          { icon: "eye" as const, label: t("profile.perkSeeWhoLikedYou") },
+          { icon: "options" as const, label: t("profile.perkAdvancedFilters") },
+        ].map((perk, i) => (
+          <View key={i} style={styles.perkRow}>
+            <View style={styles.perkIconBubble}>
+              <Ionicons name={perk.icon} size={15} color={colors.accentDark} />
+            </View>
+            <Text style={styles.perkText}>{perk.label}</Text>
+            <Ionicons name="checkmark" size={16} color={colors.sage} />
+          </View>
+        ))}
+      </View>
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, paddingTop: 8, gap: 4, backgroundColor: colors.cream, flexGrow: 1 },
-  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
-  topTitle: { fontSize: 28, fontWeight: "800", color: colors.navy },
+  container: { paddingBottom: 20, backgroundColor: colors.cream, flexGrow: 1 },
+  body: { paddingHorizontal: 20, gap: 4 },
   gearButton: {
     width: 40,
     height: 40,
@@ -217,4 +303,47 @@ const styles = StyleSheet.create({
   promoBodyActive: { color: colors.ink },
   promoCta: { alignSelf: "flex-start", backgroundColor: colors.accent, borderRadius: 999, paddingVertical: 10, paddingHorizontal: 18, marginTop: 8 },
   promoCtaText: { color: "#fff", fontWeight: "700", fontSize: 13.5 },
+  billingCard: {
+    marginTop: 12,
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: 18,
+    gap: 4,
+    shadowColor: colors.navyDeep,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+  billingRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  billingPlan: { fontSize: 13, fontWeight: "800", color: colors.navy, textTransform: "uppercase", letterSpacing: 0.3 },
+  billingLabel: { fontSize: 12.5, color: colors.muted, marginTop: 6 },
+  billingAmount: { fontSize: 17, fontWeight: "800", color: colors.ink },
+  billingCancelledText: { fontSize: 13, color: colors.muted, lineHeight: 19, marginTop: 4 },
+  cancelButton: { marginTop: 12, alignSelf: "flex-start" },
+  cancelButtonText: { color: colors.danger, fontWeight: "700", fontSize: 13.5 },
+  noRefundText: { fontSize: 11, color: colors.muted, marginTop: 8 },
+  perksCard: {
+    marginTop: 12,
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: 18,
+    gap: 12,
+    shadowColor: colors.navyDeep,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+  perksTitle: { fontSize: 15, fontWeight: "800", color: colors.navy },
+  perkRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  perkIconBubble: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: colors.creamDeep,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  perkText: { flex: 1, fontSize: 13.5, color: colors.ink, fontWeight: "500" },
 });

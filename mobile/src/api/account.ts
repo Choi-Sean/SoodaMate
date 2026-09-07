@@ -12,3 +12,12 @@ export async function deleteAccount(): Promise<void> {
 export async function updateLanguagePreference(language: string): Promise<void> {
   await apiClient.put("/account/language", { language });
 }
+
+export interface CancelSubscriptionResult {
+  premium_until: string;
+}
+
+export async function cancelSubscription(): Promise<CancelSubscriptionResult> {
+  const resp = await apiClient.post<CancelSubscriptionResult>("/account/subscription/cancel");
+  return resp.data;
+}

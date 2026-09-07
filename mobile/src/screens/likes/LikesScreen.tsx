@@ -1,26 +1,38 @@
 import { useState } from "react";
-import { ActivityIndicator, FlatList, Image, Modal, Pressable, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, FlatList, Image, Linking, Modal, Pressable, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import ProfileCard from "../../components/ProfileCard";
 import ActionButtons from "../../components/ActionButtons";
+import ScreenHeader from "../../components/ScreenHeader";
 import MatchCelebrationModal from "../matches/MatchCelebrationModal";
 import { useLikedMe } from "../../hooks/useLikedMe";
 import { useSwipeAction } from "../../hooks/useSwipeAction";
+import { getMyProfile } from "../../api/profiles";
+import { useAuthStore } from "../../store/authStore";
+import { env } from "../../config/env";
 import type { SwipeAction } from "../../api/interactions";
 import type { Candidate } from "../../types";
 import { colors } from "../../theme";
 
 /** People who already liked/superliked the viewer — tap a tile to see the
- * full profile and like back (instant match) or pass. */
+ * full profile and like back (instant match) or pass. Seeing WHO liked you
+ * (not just that you have likes) is the premium hook every dating app uses
+ * this screen for, so every tile is blurred-and-locked behind
+ * is_premium_member; only the count and the superlike star still show
+ * through as the enticing bit. */
 export default function LikesScreen() {
   const { t } = useTranslation();
   const { data: candidates, isLoading, isError } = useLikedMe();
+  const { data: myProfile } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
+  const isPremium = myProfile?.is_premium_member ?? false;
   const swipeMutation = useSwipeAction();
   const navigation = useNavigation<any>();
+  const accessToken = useAuthStore((s) => s.accessToken);
   const [selected, setSelected] = useState<Candidate | null>(null);
   const [matchInfo, setMatchInfo] = useState<{
     matchId: string;
@@ -28,6 +40,10 @@ export default function LikesScreen() {
     otherDisplayName: string;
     otherPhotoUrl: string | null;
   } | null>(null);
+
+  function openShop() {
+    Linking.openURL(`${env.marketingSiteUrl}/shop.html?token=${encodeURIComponent(accessToken ?? "")}`);
+  }
 
   function handleAction(candidate: Candidate, action: SwipeAction) {
     if (swipeMutation.isPending) return;
@@ -49,24 +65,32 @@ export default function LikesScreen() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
-  }
-
-  if (isError) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.emptyText}>{t("likes.loadError")}</Text>
-      </View>
-    );
-  }
-
   const renderItem = ({ item }: { item: Candidate }) => {
     const photo = item.photos[0];
+    if (!isPremium) {
+      // Locked: still shows a photo (dimmed, under a frosted overlay) and
+      // the superlike star as the enticing hint that there's someone real
+      // behind it, but no name/age and no tap-through to the profile —
+      // that identity reveal is exactly what premium is selling here.
+      return (
+        <Pressable style={styles.tile} onPress={openShop}>
+          {photo ? (
+            <Image source={{ uri: photo.url }} style={[styles.tileImage, styles.tileImageLocked]} blurRadius={18} />
+          ) : (
+            <View style={[styles.tileImage, styles.tilePlaceholder]} />
+          )}
+          <View style={styles.lockOverlay} />
+          {item.superliked_me && (
+            <View style={styles.tileSuperlike}>
+              <Ionicons name="star" size={11} color="#fff" />
+            </View>
+          )}
+          <View style={styles.lockBadge}>
+            <Ionicons name="lock-closed" size={20} color="#fff" />
+          </View>
+        </Pressable>
+      );
+    }
     return (
       <Pressable style={styles.tile} onPress={() => setSelected(item)}>
         {photo && photo.media_type === "video" ? (
@@ -107,8 +131,22 @@ export default function LikesScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{t("likes.title")}</Text>
-      {!candidates || candidates.length === 0 ? (
+      <ScreenHeader title={t("likes.title")} />
+      {!isPremium && candidates && candidates.length > 0 && (
+        <View style={styles.lockedBanner}>
+          <Ionicons name="lock-closed" size={14} color={colors.accentDark} />
+          <Text style={styles.lockedBannerText}>{t("likes.premiumHint", { count: candidates.length })}</Text>
+        </View>
+      )}
+      {isLoading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={colors.accent} />
+        </View>
+      ) : isError ? (
+        <View style={styles.centered}>
+          <Text style={styles.emptyText}>{t("likes.loadError")}</Text>
+        </View>
+      ) : !candidates || candidates.length === 0 ? (
         <View style={styles.centered}>
           <Text style={styles.emptyText}>{t("likes.empty")}</Text>
         </View>
@@ -165,7 +203,18 @@ export default function LikesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
-  header: { fontSize: 24, fontWeight: "800", padding: 16, paddingTop: 48, color: colors.navy },
+  lockedBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginHorizontal: 16,
+    marginBottom: 10,
+    backgroundColor: colors.creamDeep,
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  lockedBannerText: { fontSize: 12.5, color: colors.accentDark, fontWeight: "700", flexShrink: 1 },
   centered: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
   emptyText: { color: colors.muted, textAlign: "center" },
   grid: { paddingHorizontal: 12, paddingBottom: 16, gap: 12 },
@@ -183,6 +232,17 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   tileImage: { width: "100%", height: "100%" },
+  tileImageLocked: { opacity: 0.7 },
+  lockOverlay: { position: "absolute", left: 0, right: 0, top: 0, bottom: 0, backgroundColor: "rgba(11,41,68,0.28)" },
+  lockBadge: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   tilePlaceholder: { alignItems: "center", justifyContent: "center" },
   tileVideoPlaceholder: { backgroundColor: colors.navy, alignItems: "center", justifyContent: "center" },
   tileGradient: { position: "absolute", left: 0, right: 0, bottom: 0, height: "45%" },
