@@ -194,7 +194,13 @@
     "settings": "设置",
     "shop": "商店",
     "superlikeCredits": "{{count}}个超级喜欢",
-    "boostCredits": "{{count}}次曝光加速"
+    "boostCredits": "{{count}}次曝光加速",
+    "completeProfileCta": "完善你的资料",
+    "premiumBannerTitle": "开通会员",
+    "premiumBannerBody": "解锁高级筛选、查看谁喜欢了你等更多特权。",
+    "premiumBannerCta": "了解会员",
+    "premiumActiveTitle": "你已是会员",
+    "premiumActiveBody": "尽享高级筛选等所有会员特权。"
   },
   "editProfile": {
     "title": "编辑资料",

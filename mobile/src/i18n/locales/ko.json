@@ -194,7 +194,13 @@
     "settings": "설정",
     "shop": "상점",
     "superlikeCredits": "슈퍼좋아요 {{count}}개",
-    "boostCredits": "부스트 {{count}}회"
+    "boostCredits": "부스트 {{count}}회",
+    "completeProfileCta": "프로필 완성하기",
+    "premiumBannerTitle": "프리미엄 시작하기",
+    "premiumBannerBody": "고급 필터, 나를 좋아요한 사람 보기 등 다양한 혜택을 이용해보세요.",
+    "premiumBannerCta": "프리미엄 알아보기",
+    "premiumActiveTitle": "프리미엄 회원이에요",
+    "premiumActiveBody": "고급 필터를 비롯한 모든 프리미엄 혜택을 이용 중이에요."
   },
   "editProfile": {
     "title": "프로필 수정",

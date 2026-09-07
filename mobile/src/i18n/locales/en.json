@@ -194,7 +194,13 @@
     "settings": "Settings",
     "shop": "Shop",
     "superlikeCredits": "{{count}} Super Likes",
-    "boostCredits": "{{count}} Boosts"
+    "boostCredits": "{{count}} Boosts",
+    "completeProfileCta": "Complete your profile",
+    "premiumBannerTitle": "Go Premium",
+    "premiumBannerBody": "Unlock advanced filters, see who liked you, and more.",
+    "premiumBannerCta": "Explore Premium",
+    "premiumActiveTitle": "You're Premium",
+    "premiumActiveBody": "Enjoy advanced filters and every premium perk."
   },
   "editProfile": {
     "title": "Edit profile",

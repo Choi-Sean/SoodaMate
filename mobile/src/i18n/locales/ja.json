@@ -194,7 +194,13 @@
     "settings": "設定",
     "shop": "ショップ",
     "superlikeCredits": "スーパーいいね {{count}}回分",
-    "boostCredits": "ブースト {{count}}回分"
+    "boostCredits": "ブースト {{count}}回分",
+    "completeProfileCta": "プロフィールを完成させる",
+    "premiumBannerTitle": "プレミアムに登録",
+    "premiumBannerBody": "高度なフィルターやいいねをくれた人の確認など、特典が使い放題。",
+    "premiumBannerCta": "プレミアムを見る",
+    "premiumActiveTitle": "プレミアム会員です",
+    "premiumActiveBody": "高度なフィルターなど全ての特典をご利用いただけます。"
   },
   "editProfile": {
     "title": "プロフィール編集",
