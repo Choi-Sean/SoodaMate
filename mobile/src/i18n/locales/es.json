@@ -8,7 +8,7 @@
     "likes": "Me gusta"
   },
   "common": {
-    "appName": "SooDa Mate",
+    "appName": "SooDaMate",
     "cancel": "Cancelar",
     "save": "Guardar",
     "delete": "Eliminar",
@@ -18,7 +18,7 @@
     "tryAgain": "Reintentar"
   },
   "auth": {
-    "loginTitle": "SooDa Mate",
+    "loginTitle": "SooDaMate",
     "email": "Correo electrónico",
     "password": "Contraseña",
     "confirmPassword": "Confirmar contraseña",
@@ -149,6 +149,7 @@
     "empty": "No hay perfiles nuevos por ahora — ¡vuelve más tarde!",
     "superlikedYou": "¡Te dio Super Like!",
     "kmAway": "a {{km}} km",
+    "milesAway": "a {{mi}} mi",
     "pass": "Pasar",
     "superLike": "Super Like",
     "like": "Me gusta",
@@ -240,6 +241,7 @@
     "to": "a",
     "maxDistance": "Distancia máxima",
     "distanceKm": "{{km}} km",
+    "distanceMi": "{{mi}} mi",
     "distanceAny": "Sin límite",
     "managePhotosCount": "Administrar fotos ({{count}})",
     "completenessLabel": "Nivel de perfil",

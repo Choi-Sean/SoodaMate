@@ -13,11 +13,11 @@ SUPPORTED_PUSH_LANGUAGES = ("en", "ko")
 _STRINGS: dict[str, dict[str, str]] = {
     "en": {
         "match_title": "It's a match! 🎉",
-        "match_body": "You have a new match on SooDa Mate",
+        "match_body": "You have a new match on SooDaMate",
         "like_title": "New like! 💛",
-        "like_body": "Someone liked you on SooDa Mate",
+        "like_body": "Someone liked you on SooDaMate",
         "superlike_title": "Super Like! ⭐",
-        "superlike_body": "Someone super liked you on SooDa Mate",
+        "superlike_body": "Someone super liked you on SooDaMate",
         "message_body": "sent you a message",
         "verification_approved_title": "You're verified! ✅",
         "verification_approved_body": "Your verification badge is now live on your profile.",

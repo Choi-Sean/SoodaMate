@@ -63,7 +63,7 @@ button { font-family: inherit; }
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
 }
-.logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; color: var(--navy); }
+.logo { display: flex; align-items: center; gap: 10px; font-family: "Fredoka", sans-serif; font-weight: 600; font-size: 19px; color: var(--navy); }
 .logo-mark { width: 34px; height: 34px; }
 .nav-links { display: flex; align-items: center; gap: 30px; font-size: 14.5px; font-weight: 500; color: var(--ink); }
 .nav-links a:hover { color: var(--accent-dark); }

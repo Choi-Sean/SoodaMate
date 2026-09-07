@@ -3,6 +3,7 @@ import { ActivityIndicator, Image, Pressable, Text, View, StyleSheet } from "rea
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFonts, Fredoka_600SemiBold } from "@expo-google-fonts/fredoka";
 import { useTranslation } from "react-i18next";
 
 import ProfileCard from "../../components/ProfileCard";
@@ -32,6 +33,9 @@ function formatCountdown(resetsAt: string): string {
 export default function SwipeScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  // Only the brand wordmark below uses this — falls back to the system
+  // bold font until it loads, so nothing else on this screen waits on it.
+  const [brandFontLoaded] = useFonts({ Fredoka_600SemiBold });
   const { data: candidates, isLoading, isError } = useCandidates();
   const { data: swipeLimit } = useSwipeLimit();
   const swipeMutation = useSwipeAction();
@@ -81,7 +85,7 @@ export default function SwipeScreen() {
       <View style={[styles.brandBar, { paddingTop: insets.top + 10 }]}>
         <View style={styles.brandRow}>
           <Image source={require("../../../assets/icon.png")} style={styles.logo} />
-          <Text style={styles.brandTitle}>SooDa Mate</Text>
+          <Text style={[styles.brandTitle, brandFontLoaded && styles.brandTitleFredoka]}>SooDaMate</Text>
         </View>
         <Pressable style={styles.filterIconButton} onPress={() => setShowFilters(true)} hitSlop={6}>
           <Ionicons name="options-outline" size={20} color={colors.navy} />
@@ -165,6 +169,7 @@ const styles = StyleSheet.create({
   brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   logo: { width: 30, height: 30, borderRadius: 8 },
   brandTitle: { fontSize: 22, fontWeight: "800", color: colors.navy },
+  brandTitleFredoka: { fontFamily: "Fredoka_600SemiBold", fontWeight: "normal" },
   filterIconButton: {
     width: 38,
     height: 38,

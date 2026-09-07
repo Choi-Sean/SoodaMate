@@ -61,7 +61,7 @@ const hasIosFirebase = fs.existsSync(googleServiceInfoPlistPath);
 
 module.exports = {
   expo: {
-    name: "SooDa Mate",
+    name: "SooDaMate",
     // Stuck as "suda-mate" — this is the EAS project's server-side slug
     // (tied to extra.eas.projectId below), and eas build hard-errors on any
     // mismatch between this field and that. Renaming it would mean deleting
@@ -111,13 +111,14 @@ module.exports = {
       "expo-secure-store",
       "expo-localization",
       "expo-video",
+      "expo-font",
       [
         "expo-splash-screen",
         {
           image: "./assets/splash-icon.png",
           imageWidth: 320,
           resizeMode: "contain",
-          backgroundColor: "#FCEBDD",
+          backgroundColor: "#FFF6EC",
         },
       ],
       "@react-native-google-signin/google-signin",
@@ -159,8 +160,8 @@ module.exports = {
       [
         "expo-image-picker",
         {
-          photosPermission: "Allow SooDa Mate to access your photos so you can add them to your profile.",
-          cameraPermission: "Allow SooDa Mate to access your camera so you can take a profile photo.",
+          photosPermission: "Allow SooDaMate to access your photos so you can add them to your profile.",
+          cameraPermission: "Allow SooDaMate to access your camera so you can take a profile photo.",
           microphonePermission: false,
         },
       ],

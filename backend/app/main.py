@@ -20,7 +20,7 @@ from app.routers import (
     ws_chat,
 )
 
-app = FastAPI(title="SooDa Mate API", version="0.1.0")
+app = FastAPI(title="SooDaMate API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,

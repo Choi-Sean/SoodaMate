@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -30,7 +31,7 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
   const { t } = useTranslation();
   const { matchId, otherUserId, otherDisplayName } = route.params;
   const userId = useAuthStore((s) => s.userId);
-  const { data: history } = useQuery({
+  const { data: history, isLoading: historyLoading } = useQuery({
     queryKey: ["messages", matchId],
     queryFn: () => getMessageHistory(matchId),
   });
@@ -150,12 +151,18 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <FlatList
-        data={messages}
-        keyExtractor={(m) => m.id}
-        renderItem={({ item }) => <ChatBubble content={item.content} isMine={item.sender_id === userId} />}
-        contentContainerStyle={styles.list}
-      />
+      {historyLoading ? (
+        <View style={styles.loadingCenter}>
+          <ActivityIndicator size="large" color={colors.accent} />
+        </View>
+      ) : (
+        <FlatList
+          data={messages}
+          keyExtractor={(m) => m.id}
+          renderItem={({ item }) => <ChatBubble content={item.content} isMine={item.sender_id === userId} />}
+          contentContainerStyle={styles.list}
+        />
+      )}
       {isExpired ? (
         <View style={styles.expiredBanner}>
           <Text style={styles.expiredBannerText}>{t("chat.expiredBanner")}</Text>
@@ -189,6 +196,7 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
   list: { paddingVertical: 12, flexGrow: 1 },
+  loadingCenter: { flex: 1, alignItems: "center", justifyContent: "center" },
   menuButton: { paddingHorizontal: 8 },
   menuButtonText: { fontSize: 22, color: colors.ink },
   restrictedBanner: {

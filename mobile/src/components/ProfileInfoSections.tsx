@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import ProfileMedia from "./ProfileMedia";
 import type { Candidate } from "../types";
 import { colors } from "../theme";
+import { formatHeightCm } from "../utils/units";
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -29,11 +30,14 @@ function TextPill({ label }: { label: string }) {
   );
 }
 
-function InfoRow({ icon, text }: { icon: IconName; text: string }) {
+// Most facts use an Ionicon, but a couple read more clearly as a literal
+// emoji than any abstract glyph (height -> a ruler) - `emoji` overrides
+// `icon` when both would otherwise apply.
+function InfoRow({ icon, emoji, text }: { icon?: IconName; emoji?: string; text: string }) {
   return (
     <View style={styles.factRow}>
       <View style={styles.factIconBubble}>
-        <Ionicons name={icon} size={16} color={colors.accentDark} />
+        {emoji ? <Text style={styles.factEmoji}>{emoji}</Text> : <Ionicons name={icon!} size={16} color={colors.accentDark} />}
       </View>
       <Text style={styles.factText}>{text}</Text>
     </View>
@@ -58,15 +62,20 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
  * are all empty, so a bare-bones profile doesn't show a wall of empty
  * cards. */
 export default function ProfileInfoSections({ candidate }: { candidate: Candidate }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const useImperial = i18n.language === "en";
 
   // The verified badge already shows as its own pill on the photo above
   // (MediaCarousel) - repeating it as a fact row here too was redundant.
-  const facts: { icon: IconName; text: string }[] = [];
-  // swap-vertical-outline (stacked up/down arrows) reads as "vertical
-  // measurement" - resize-outline's diagonal arrows looked like a
-  // distance/expand glyph instead of height.
-  if (candidate.height_cm) facts.push({ icon: "swap-vertical-outline", text: t("profileDetail.heightValue", { cm: candidate.height_cm }) });
+  const facts: { icon?: IconName; emoji?: string; text: string }[] = [];
+  // A literal ruler reads unambiguously as "height" - every Ionicons
+  // candidate (resize-outline, swap-vertical-outline) still got misread as
+  // a distance/expand glyph instead.
+  if (candidate.height_cm)
+    facts.push({
+      emoji: "📏",
+      text: useImperial ? formatHeightCm(candidate.height_cm) : t("profileDetail.heightValue", { cm: candidate.height_cm }),
+    });
   if (candidate.occupation) facts.push({ icon: "briefcase-outline", text: candidate.occupation });
   // education is a fixed-key dropdown now (Edit Profile) - older free-text
   // data from before that existed just falls back to showing itself as-is.
@@ -111,7 +120,7 @@ export default function ProfileInfoSections({ candidate }: { candidate: Candidat
       {facts.length > 0 && (
         <View style={styles.factsCard}>
           {facts.map((f, i) => (
-            <InfoRow key={i} icon={f.icon} text={f.text} />
+            <InfoRow key={i} icon={f.icon} emoji={f.emoji} text={f.text} />
           ))}
         </View>
       )}
@@ -203,6 +212,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  factEmoji: { fontSize: 15 },
   factText: { color: colors.ink, fontSize: 15, fontWeight: "500", flexShrink: 1 },
   card: {
     backgroundColor: colors.white,

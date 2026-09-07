@@ -9,12 +9,14 @@ import ScreenHeader from "../../components/ScreenHeader";
 import { useRecommended } from "../../hooks/useRecommended";
 import type { Candidate } from "../../types";
 import { colors } from "../../theme";
+import { formatDistanceKm } from "../../utils/units";
 
 /** Pure browsing — nearby people matching the viewer's preferences, no
  * like/pass actions. The interactive deck lives on the Swipe tab; this is
  * a lightweight recommendation feed you can look through and tap into. */
 export default function DiscoverScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const useImperial = i18n.language === "en";
   const { data: candidates, isLoading, isError } = useRecommended();
   const [selected, setSelected] = useState<Candidate | null>(null);
 
@@ -44,7 +46,11 @@ export default function DiscoverScreen() {
             {item.display_name}, {item.age}
           </Text>
           {item.distance_km != null && (
-            <Text style={styles.tileDistance}>{t("discover.kmAway", { km: Math.round(item.distance_km) })}</Text>
+            <Text style={styles.tileDistance}>
+              {useImperial
+                ? t("discover.milesAway", { mi: formatDistanceKm(item.distance_km) })
+                : t("discover.kmAway", { km: Math.round(item.distance_km) })}
+            </Text>
           )}
         </View>
       </Pressable>

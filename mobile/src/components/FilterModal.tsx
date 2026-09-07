@@ -23,6 +23,7 @@ import {
   WANTS_KIDS_KEYS,
 } from "../constants/demographicOptions";
 import { colors } from "../theme";
+import { formatHeightCm } from "../utils/units";
 
 interface Props {
   visible: boolean;
@@ -33,7 +34,8 @@ interface Props {
  * dimension (everything with a fixed option set — free-text fields like
  * occupation/education/hometown aren't filterable). */
 export default function FilterModal({ visible, onClose }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const useImperial = i18n.language === "en";
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const accessToken = useAuthStore((s) => s.accessToken);
@@ -146,7 +148,8 @@ export default function FilterModal({ visible, onClose }: Props) {
                   value={heightMin}
                   min={50}
                   max={heightMax}
-                  formatValue={(v) => t("profileDetail.heightValue", { cm: v })}
+                  step={useImperial ? 3 : 1} // ~1 inch, so +/- moves the displayed ft/in by a whole step
+                  formatValue={(v) => (useImperial ? formatHeightCm(v) : t("profileDetail.heightValue", { cm: v }))}
                   onChange={setHeightMin}
                 />
                 <NumberStepper
@@ -154,7 +157,8 @@ export default function FilterModal({ visible, onClose }: Props) {
                   value={heightMax}
                   min={heightMin}
                   max={272}
-                  formatValue={(v) => t("profileDetail.heightValue", { cm: v })}
+                  step={useImperial ? 3 : 1}
+                  formatValue={(v) => (useImperial ? formatHeightCm(v) : t("profileDetail.heightValue", { cm: v }))}
                   onChange={setHeightMax}
                 />
               </View>

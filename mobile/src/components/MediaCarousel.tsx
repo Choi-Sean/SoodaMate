@@ -7,6 +7,7 @@ import ProfileMedia from "./ProfileMedia";
 import VerifiedBadge from "./VerifiedBadge";
 import type { Photo } from "../types";
 import { colors } from "../theme";
+import { formatDistanceKm } from "../utils/units";
 
 const GENDER_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
   male: "male",
@@ -40,8 +41,9 @@ export default function MediaCarousel({
   verifiedBadge,
   faceVerified,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const current = media[0];
+  const useImperial = i18n.language === "en";
 
   return (
     <View style={styles.container}>
@@ -91,7 +93,11 @@ export default function MediaCarousel({
         {distanceKm != null && (
           <View style={styles.distanceRow}>
             <Ionicons name="location-sharp" size={13} color={colors.accentSoft} />
-            <Text style={styles.distance}>{t("discover.kmAway", { km: Math.round(distanceKm) })}</Text>
+            <Text style={styles.distance}>
+              {useImperial
+                ? t("discover.milesAway", { mi: formatDistanceKm(distanceKm) })
+                : t("discover.kmAway", { km: Math.round(distanceKm) })}
+            </Text>
           </View>
         )}
       </View>
