@@ -3,7 +3,6 @@ import { Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
-import ProfileMedia from "./ProfileMedia";
 import type { Candidate } from "../types";
 import { colors } from "../theme";
 
@@ -13,6 +12,17 @@ function InfoPill({ icon, label }: { icon: IconName; label: string }) {
   return (
     <View style={styles.pill}>
       <Ionicons name={icon} size={14} color={colors.accentDark} />
+      <Text style={styles.pillText}>{label}</Text>
+    </View>
+  );
+}
+
+// No left icon - used for interests/languages, whose translated labels
+// already carry their own emoji (interests) or don't need one (languages),
+// matching how the same tags render as chips in Edit Profile.
+function TextPill({ label }: { label: string }) {
+  return (
+    <View style={styles.pill}>
       <Text style={styles.pillText}>{label}</Text>
     </View>
   );
@@ -46,7 +56,16 @@ export default function ProfileInfoSections({ candidate }: { candidate: Candidat
   const facts: { icon: IconName; text: string }[] = [];
   if (candidate.height_cm) facts.push({ icon: "resize-outline", text: t("profileDetail.heightValue", { cm: candidate.height_cm }) });
   if (candidate.occupation) facts.push({ icon: "briefcase-outline", text: candidate.occupation });
-  if (candidate.education) facts.push({ icon: "school-outline", text: candidate.education });
+  // education is a fixed-key dropdown now (Edit Profile) - older free-text
+  // data from before that existed just falls back to showing itself as-is.
+  if (candidate.education)
+    facts.push({
+      icon: "school-outline",
+      text: t(`profileSetup.educationOption.${candidate.education}`, { defaultValue: candidate.education }),
+    });
+  // hometown is free text (a place name someone typed/picked) - unlike the
+  // fixed-key fields above, there's no key to translate: it shows in
+  // whichever language it was entered, same as a bio or occupation would.
   if (candidate.hometown) facts.push({ icon: "home-outline", text: candidate.hometown });
 
   const about: { icon: IconName; label: string }[] = [];
@@ -70,8 +89,6 @@ export default function ProfileInfoSections({ candidate }: { candidate: Candidat
     lookingFor.push({ icon: "people-outline", label: t(`profileSetup.wantsKidsOption.${candidate.wants_kids}`, { defaultValue: candidate.wants_kids }) });
   if (candidate.has_kids)
     lookingFor.push({ icon: "people-outline", label: t(`profileSetup.hasKidsOption.${candidate.has_kids}`, { defaultValue: candidate.has_kids }) });
-
-  const extraMedia = candidate.photos.slice(1);
 
   return (
     <View style={styles.container}>
@@ -113,7 +130,11 @@ export default function ProfileInfoSections({ candidate }: { candidate: Candidat
         <Section title={t("profileDetail.interests")}>
           <View style={styles.pillWrap}>
             {candidate.interests.map((interest, i) => (
-              <InfoPill key={i} icon="pricetag-outline" label={interest} />
+              // Known keys (picked via Edit Profile's curated list) resolve
+              // to "🥾 Hiking" etc. via interests.<key> - anything else
+              // (older free-text data from before that picker existed)
+              // just falls back to showing the raw stored text.
+              <TextPill key={i} label={t(`interests.${interest}`, { defaultValue: interest })} />
             ))}
           </View>
         </Section>
@@ -123,17 +144,11 @@ export default function ProfileInfoSections({ candidate }: { candidate: Candidat
         <Section title={t("profileDetail.languages")}>
           <View style={styles.pillWrap}>
             {candidate.languages.map((lang, i) => (
-              <InfoPill key={i} icon="language-outline" label={lang} />
+              <TextPill key={i} label={t(`languages.${lang}`, { defaultValue: lang })} />
             ))}
           </View>
         </Section>
       )}
-
-      {extraMedia.map((media) => (
-        <View key={media.id} style={styles.extraMediaCard}>
-          <ProfileMedia media={media} style={styles.extraMedia} />
-        </View>
-      ))}
     </View>
   );
 }
@@ -177,12 +192,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   pillText: { color: colors.ink, fontSize: 13, fontWeight: "600" },
-  extraMediaCard: {
-    width: "100%",
-    aspectRatio: 0.8,
-    borderRadius: 18,
-    overflow: "hidden",
-    backgroundColor: colors.creamDeep,
-  },
-  extraMedia: { width: "100%", height: "100%" },
 });
