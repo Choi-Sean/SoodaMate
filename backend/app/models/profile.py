@@ -137,13 +137,17 @@ class Photo(Base):
 
 
 class FaceVerification(Base):
-    """One selfie submission for the face-verification badge, reviewed by
-    hand at soodamate.com/verify (an admin-only static page) rather than an
-    automated liveness/face-match vendor — see docs/ARCHITECTURE.md. The
-    photo lives at an unguessable random path in the same R2 bucket profile
-    photos use (technically reachable if someone guessed the exact path —
-    a known limitation flagged for a follow-up private bucket; see PR/commit
-    notes) rather than served through the public photo URL convention."""
+    """One selfie + ID photo submission for the verification badge, reviewed
+    by hand at soodamate.com/verify (an admin-only static page) side by side
+    rather than an automated document-forensics/liveness vendor (Stripe
+    Identity/Veriff/Persona etc. — deliberately deferred until real
+    signup volume makes manual review a bottleneck; see docs/ARCHITECTURE.md).
+    Both photos live at an unguessable random path in the same R2 bucket
+    profile photos use (technically reachable if someone guessed the exact
+    path — a known limitation flagged for a follow-up private bucket) rather
+    than served through the public photo URL convention.
+    id_photo_object_path is nullable only because rows created before this
+    field existed won't have one — every new submission always sets it."""
 
     __tablename__ = "FaceVerifications"
 
@@ -151,7 +155,8 @@ class FaceVerification(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         "UserId", ForeignKey("Users.Id", ondelete="CASCADE"), nullable=False
     )
-    gcs_object_path: Mapped[str] = mapped_column("GcsObjectPath", Unicode(512), nullable=False)
+    gcs_object_path: Mapped[str] = mapped_column("GcsObjectPath", Unicode(512), nullable=False)  # selfie
+    id_photo_object_path: Mapped[str | None] = mapped_column("IdPhotoObjectPath", Unicode(512), nullable=True)
     # "pending" | "approved" | "rejected"
     status: Mapped[str] = mapped_column("Status", Unicode(20), nullable=False, default="pending")
     submitted_at: Mapped[datetime] = mapped_column("SubmittedAt", DateTime(timezone=True), server_default=func.now())

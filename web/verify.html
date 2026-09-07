@@ -29,12 +29,18 @@
     }
     .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
     .card {
       background: var(--white); border: 1px solid var(--border); border-radius: 16px;
       overflow: hidden; display: flex; flex-direction: column;
     }
-    .card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--cream-deep); }
+    .card .photos { display: grid; grid-template-columns: 1fr 1fr; }
+    .card .photos figure { margin: 0; position: relative; }
+    .card .photos img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--cream-deep); display: block; }
+    .card .photos figcaption {
+      position: absolute; bottom: 0; left: 0; right: 0; text-align: center;
+      font-size: 10px; font-weight: 700; color: #fff; background: rgba(11,41,68,0.65); padding: 3px 0;
+    }
     .card .body { padding: 12px 14px; }
     .card .name { font-weight: 800; color: var(--navy); font-size: 14px; margin-bottom: 2px; }
     .card .date { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
@@ -152,7 +158,10 @@
         .map(
           (item) => `
         <div class="card" data-id="${item.id}">
-          <img src="${item.view_url}" alt="" />
+          <div class="photos">
+            <figure><img src="${item.selfie_view_url}" alt="" /><figcaption>Selfie</figcaption></figure>
+            <figure><img src="${item.id_photo_view_url || ''}" alt="" /><figcaption>ID</figcaption></figure>
+          </div>
           <div class="body">
             <div class="name">${item.display_name || "(no name)"}</div>
             <div class="date">${new Date(item.submitted_at).toLocaleString()}</div>

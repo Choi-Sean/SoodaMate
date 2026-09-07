@@ -32,14 +32,16 @@ def build_object_path(user_id: uuid.UUID, content_type: str) -> str:
     return f"users/{user_id}/photos/{uuid.uuid4()}.{ext}"
 
 
-def build_face_verification_object_path(user_id: uuid.UUID, content_type: str) -> str:
+def build_face_verification_object_path(user_id: uuid.UUID, content_type: str, kind: str = "selfie") -> str:
     # A random, unguessable path under the same public bucket (no separate
     # private bucket exists yet — see FaceVerification's model docstring for
     # the follow-up to move this to one). Admin viewing still goes through
     # build_admin_view_url's presigned GET below rather than the public URL
     # convention, so nothing links to this path except that presigned URL.
+    # `kind` (selfie/id_photo) is just a filename prefix for anyone reading
+    # the bucket directly — doesn't affect access control.
     ext = _EXTENSIONS[content_type]
-    return f"verifications/{user_id}/{uuid.uuid4()}.{ext}"
+    return f"verifications/{user_id}/{kind}-{uuid.uuid4()}.{ext}"
 
 
 def media_type_from_object_path(object_path: str) -> str:

@@ -13,8 +13,14 @@ export interface FacePresignResult {
   gcs_object_path: string;
 }
 
-export async function presignFacePhoto(contentType: string): Promise<FacePresignResult> {
-  const resp = await apiClient.post<FacePresignResult>("/verification/face/presign", { content_type: contentType });
+export async function presignFacePhoto(
+  contentType: string,
+  kind: "selfie" | "id_photo" = "selfie"
+): Promise<FacePresignResult> {
+  const resp = await apiClient.post<FacePresignResult>("/verification/face/presign", {
+    content_type: contentType,
+    kind,
+  });
   return resp.data;
 }
 
@@ -23,9 +29,13 @@ export interface FaceVerificationStatus {
   submitted_at?: string | null;
 }
 
-export async function submitFaceVerification(gcsObjectPath: string): Promise<FaceVerificationStatus> {
+export async function submitFaceVerification(
+  selfieObjectPath: string,
+  idPhotoObjectPath: string
+): Promise<FaceVerificationStatus> {
   const resp = await apiClient.post<FaceVerificationStatus>("/verification/face/submit", {
-    gcs_object_path: gcsObjectPath,
+    selfie_object_path: selfieObjectPath,
+    id_photo_object_path: idPhotoObjectPath,
   });
   return resp.data;
 }

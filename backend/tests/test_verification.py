@@ -71,12 +71,23 @@ async def test_face_verification_submit_and_admin_approve_flow(client, monkeypat
 
     user_id, headers = await create_user_with_profile(client, "faceverify1@example.com")
 
-    presign = await client.post("/verification/face/presign", headers=headers, json={"content_type": "image/jpeg"})
-    assert presign.status_code == 200
-    object_path = presign.json()["gcs_object_path"]
-    assert object_path.startswith(f"verifications/{user_id}/")
+    selfie_presign = await client.post(
+        "/verification/face/presign", headers=headers, json={"content_type": "image/jpeg", "kind": "selfie"}
+    )
+    assert selfie_presign.status_code == 200
+    selfie_path = selfie_presign.json()["gcs_object_path"]
+    assert selfie_path.startswith(f"verifications/{user_id}/")
 
-    submit = await client.post("/verification/face/submit", headers=headers, json={"gcs_object_path": object_path})
+    id_presign = await client.post(
+        "/verification/face/presign", headers=headers, json={"content_type": "image/jpeg", "kind": "id_photo"}
+    )
+    id_path = id_presign.json()["gcs_object_path"]
+
+    submit = await client.post(
+        "/verification/face/submit",
+        headers=headers,
+        json={"selfie_object_path": selfie_path, "id_photo_object_path": id_path},
+    )
     assert submit.status_code == 201
     assert submit.json()["status"] == "pending"
 
@@ -108,7 +119,8 @@ async def test_face_verification_submit_and_admin_approve_flow(client, monkeypat
     items = pending.json()
     assert len(items) == 1
     assert items[0]["user_id"] == user_id
-    assert items[0]["view_url"].startswith("https://signed.example/")
+    assert items[0]["selfie_view_url"].startswith("https://signed.example/")
+    assert items[0]["id_photo_view_url"].startswith("https://signed.example/")
 
     verification_id = items[0]["id"]
     approve = await client.post(f"/admin/face-verifications/{verification_id}/approve", headers=headers)
@@ -139,9 +151,17 @@ async def test_face_verification_reject_clears_badge(client, monkeypatch):
     )
 
     user_id, headers = await create_user_with_profile(client, "faceverify2@example.com")
-    presign = await client.post("/verification/face/presign", headers=headers, json={"content_type": "image/jpeg"})
-    object_path = presign.json()["gcs_object_path"]
-    await client.post("/verification/face/submit", headers=headers, json={"gcs_object_path": object_path})
+    selfie_presign = await client.post("/verification/face/presign", headers=headers, json={"content_type": "image/jpeg"})
+    selfie_path = selfie_presign.json()["gcs_object_path"]
+    id_presign = await client.post(
+        "/verification/face/presign", headers=headers, json={"content_type": "image/jpeg", "kind": "id_photo"}
+    )
+    id_path = id_presign.json()["gcs_object_path"]
+    await client.post(
+        "/verification/face/submit",
+        headers=headers,
+        json={"selfie_object_path": selfie_path, "id_photo_object_path": id_path},
+    )
 
     from app.database import async_session_factory
     from app.models.user import User
