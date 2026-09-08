@@ -7,6 +7,7 @@ export interface ProfileUpdateInput {
   birth_date: string; // YYYY-MM-DD
   gender: Gender;
   interested_in: InterestedIn;
+  open_to_language_exchange?: boolean;
   bio?: string | null;
   bio2?: string | null;
   bio3?: string | null;
@@ -117,6 +118,7 @@ export interface BasicFilterInput {
   languages_filter?: string[];
   interests_filter?: string[];
   verified_only?: boolean;
+  language_exchange_only?: boolean;
   expand_distance_if_low?: boolean;
   expand_others_if_low?: boolean;
 }

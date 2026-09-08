@@ -248,6 +248,8 @@
     "hometownPlaceholder": "例：釜山",
     "iAm": "自分の性別",
     "interestedIn": "興味のある性別",
+    "languageExchangeLabel": "言語交換も歓迎",
+    "languageExchangeHint": "恋愛だけでなく言語交換にも興味があることを表示します。",
     "to": "〜",
     "managePhotosCount": "写真を管理 ({{count}}枚)",
     "completenessLabel": "プロフィール充実度",
@@ -258,7 +260,7 @@
     "title": "写真と動画",
     "addVideo": "動画を追加（最大{{seconds}}秒）",
     "reorderHint": "矢印で順番を変更できます — 最初の写真が相手に一番最初に表示されます。",
-    "setDefault": "メインに設定",
+    "setDefault": "メイン",
     "deleteLastTitle": "この写真は削除できません",
     "deleteLastBody": "プロフィールには最低1枚の写真または動画が必要です。",
     "viewerClose": "閉じる",
@@ -426,7 +428,9 @@
     "interests": "私の興味・関心",
     "languages": "話せる言語",
     "heightValue": "{{cm}}cm",
-    "photoVerified": "写真認証済み"
+    "photoVerified": "写真認証済み",
+    "videoProfile": "動画プロフィール",
+    "languageExchange": "言語交換"
   },
   "filters": {
     "title": "フィルター",
@@ -445,6 +449,8 @@
     "interestsPlaceholder": "すべての興味",
     "verifiedOnlyLabel": "写真認証済みのみ",
     "verifiedOnlyBody": "写真認証を完了したプロフィールのみ表示します。",
+    "languageExchangeOnlyLabel": "言語交換希望者のみ",
+    "languageExchangeOnlyBody": "言語交換にも興味があるプロフィールのみ表示します。",
     "expandDistanceTitle": "足りない場合は少し遠くの人も表示",
     "expandOthersTitle": "足りない場合は他の条件の人も表示",
     "expandBody": "年齢・身長・距離の条件を優先し、条件に合う人が少ない場合のみ、それ以外の人もあわせて表示します。",

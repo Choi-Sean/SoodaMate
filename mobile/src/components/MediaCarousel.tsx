@@ -24,6 +24,7 @@ interface Props {
   superlikedMe: boolean;
   verifiedBadge: "work" | "school" | null;
   faceVerified?: boolean;
+  openToLanguageExchange?: boolean;
 }
 
 /** The full-bleed opening photo/video (Hinge-style — a single hero shot up
@@ -40,10 +41,12 @@ export default function MediaCarousel({
   superlikedMe,
   verifiedBadge,
   faceVerified,
+  openToLanguageExchange,
 }: Props) {
   const { t, i18n } = useTranslation();
   const current = media[0];
   const useImperial = i18n.language === "en";
+  const hasVideo = media.some((p) => p.media_type === "video");
 
   return (
     <View style={styles.container}>
@@ -75,10 +78,32 @@ export default function MediaCarousel({
       )}
 
       <View style={styles.infoOverlay}>
-        {(verifiedBadge || faceVerified) && (
-          <View style={styles.verifiedPill}>
-            <VerifiedBadge size={14} />
-            <Text style={styles.verifiedPillText}>{t("profileDetail.photoVerified")}</Text>
+        {(faceVerified || verifiedBadge || hasVideo || openToLanguageExchange) && (
+          <View style={styles.badgeRow}>
+            {faceVerified && (
+              <View style={styles.badge}>
+                <VerifiedBadge size={14} />
+                <Text style={styles.badgeText}>{t("profileDetail.photoVerified")}</Text>
+              </View>
+            )}
+            {verifiedBadge && (
+              <View style={styles.badge}>
+                <Ionicons name={verifiedBadge === "work" ? "briefcase" : "school"} size={13} color="#fff" />
+                <Text style={styles.badgeText}>{t(`verification.kind${verifiedBadge === "work" ? "Work" : "School"}`)}</Text>
+              </View>
+            )}
+            {hasVideo && (
+              <View style={styles.badge}>
+                <Ionicons name="videocam" size={13} color="#fff" />
+                <Text style={styles.badgeText}>{t("profileDetail.videoProfile")}</Text>
+              </View>
+            )}
+            {openToLanguageExchange && (
+              <View style={styles.badge}>
+                <Ionicons name="chatbubbles" size={13} color="#fff" />
+                <Text style={styles.badgeText}>{t("profileDetail.languageExchange")}</Text>
+              </View>
+            )}
           </View>
         )}
         <View style={styles.nameRow}>
@@ -140,7 +165,8 @@ const styles = StyleSheet.create({
   },
   superlikeBadgeText: { color: "#fff", fontWeight: "700", fontSize: 12 },
   infoOverlay: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 20 },
-  verifiedPill: {
+  badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 8 },
+  badge: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
@@ -149,9 +175,8 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingVertical: 4,
     paddingHorizontal: 10,
-    marginBottom: 8,
   },
-  verifiedPillText: { color: "#fff", fontSize: 11.5, fontWeight: "700" },
+  badgeText: { color: "#fff", fontSize: 11.5, fontWeight: "700" },
   nameRow: { flexDirection: "row", alignItems: "flex-end", gap: 8 },
   genderIcon: { marginBottom: 3 },
   name: { color: "#fff", fontSize: 26, fontWeight: "800", flexShrink: 1 },

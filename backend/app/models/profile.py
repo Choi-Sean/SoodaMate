@@ -34,6 +34,14 @@ class Profile(Base):
     interested_in: Mapped[str] = mapped_column(
         "InterestedIn", Unicode(10), nullable=False
     )  # 'male' | 'female' | 'other' | 'all'
+    # A trait of the profile itself (like gender/interested_in above), not a
+    # filter someone else applies — shown on the candidate card so two
+    # people who both want to practice each other's language can spot that
+    # before ever swiping. See language_exchange_only below for the
+    # Basic-tab filter that searches on this.
+    open_to_language_exchange: Mapped[bool] = mapped_column(
+        "OpenToLanguageExchange", Boolean, default=False, nullable=False
+    )
     bio: Mapped[str | None] = mapped_column("Bio", UnicodeText, nullable=True)
     # Two more free-text prompts alongside the main bio (Hinge/Bumble-style
     # "a few more things about me"), same nullable/unbounded-length shape —
@@ -106,6 +114,10 @@ class Profile(Base):
     languages_filter: Mapped[str | None] = mapped_column("LanguagesFilter", Unicode(255), nullable=True)
     interests_filter: Mapped[str | None] = mapped_column("InterestsFilter", Unicode(500), nullable=True)
     verified_only: Mapped[bool] = mapped_column("VerifiedOnly", Boolean, default=False, nullable=False)
+    # Restricts candidates to open_to_language_exchange == True above.
+    language_exchange_only: Mapped[bool] = mapped_column(
+        "LanguageExchangeOnly", Boolean, default=False, nullable=False
+    )
     # Bumble's own two independent "if I run out" toggles: relax the
     # distance cap first, and only if that's still not enough, drop every
     # optional Basic filter above (age/height/distance/race/languages/

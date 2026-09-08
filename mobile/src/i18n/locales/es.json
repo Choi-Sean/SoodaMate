@@ -248,6 +248,8 @@
     "hometownPlaceholder": "ej: Busan",
     "iAm": "Soy",
     "interestedIn": "Interesado/a en",
+    "languageExchangeLabel": "Abierto/a a intercambio de idiomas",
+    "languageExchangeHint": "Muestra que también te interesa un intercambio de idiomas, no solo citas.",
     "to": "a",
     "managePhotosCount": "Administrar fotos ({{count}})",
     "completenessLabel": "Nivel de perfil",
@@ -258,7 +260,7 @@
     "title": "Fotos y video",
     "addVideo": "Agregar un video (hasta {{seconds}}s)",
     "reorderHint": "Usa las flechas para cambiar el orden — tu primera foto es lo primero que ven.",
-    "setDefault": "Establecer como principal",
+    "setDefault": "Principal",
     "deleteLastTitle": "No se puede eliminar esta foto",
     "deleteLastBody": "Tu perfil necesita al menos una foto o video.",
     "viewerClose": "Cerrar",
@@ -426,7 +428,9 @@
     "interests": "Mis intereses",
     "languages": "Idiomas",
     "heightValue": "{{cm}} cm",
-    "photoVerified": "Foto verificada"
+    "photoVerified": "Foto verificada",
+    "videoProfile": "Perfil en video",
+    "languageExchange": "Intercambio de idiomas"
   },
   "filters": {
     "title": "Filtros",
@@ -445,6 +449,8 @@
     "interestsPlaceholder": "Cualquier interés",
     "verifiedOnlyLabel": "Solo verificados con foto",
     "verifiedOnlyBody": "Muestra solo perfiles que completaron la verificación de foto.",
+    "languageExchangeOnlyLabel": "Solo intercambio de idiomas",
+    "languageExchangeOnlyBody": "Muestra solo perfiles que también están abiertos a un intercambio de idiomas.",
     "expandDistanceTitle": "Ver personas un poco más lejos si se agotan",
     "expandOthersTitle": "Mostrar otras personas si se agotan",
     "expandBody": "Priorizaremos tus preferencias de edad, altura y distancia, y solo iremos más allá si no hay suficientes personas que coincidan.",

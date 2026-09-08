@@ -6,6 +6,7 @@ const SUPPORTED_LANGS = ["ko", "en", "es", "zh", "ja"];
 const LANG_LABELS = { ko: "한국어", en: "English", es: "Español", zh: "中文", ja: "日本語" };
 
 const translations = {
+  "nav.why": { ko: "차별점", en: "Why us", es: "Por qué nosotros", zh: "差异化优势", ja: "選ばれる理由" },
   "nav.features": { ko: "기능", en: "Features", es: "Funciones", zh: "功能", ja: "機能" },
   "nav.rule": { ko: "매칭 방식", en: "How Matching Works", es: "Cómo funciona", zh: "配对方式", ja: "マッチングの仕組み" },
   "nav.safety": { ko: "안전", en: "Safety", es: "Seguridad", zh: "安全保障", ja: "安全性" },
@@ -47,6 +48,51 @@ const translations = {
     es: "Senderismo los fines de semana, cafés entre semana 🌿",
     zh: "周末爬山，平日探店咖啡馆 🌿",
     ja: "週末は登山、平日はカフェ巡り 🌿",
+  },
+
+  "why.head.title": {
+    ko: "다른 데이팅 앱과는 다릅니다",
+    en: "What sets us apart",
+    es: "Lo que nos hace diferentes",
+    zh: "与其他交友软件不同",
+    ja: "他のアプリとは違います",
+  },
+  "why.head.sub": {
+    ko: "수다메이트만의 세 가지 차별점을 소개합니다.",
+    en: "Three things you won't find on most other dating apps.",
+    es: "Tres cosas que no encontrarás en la mayoría de otras apps de citas.",
+    zh: "大多数其他交友软件都没有的三大特色。",
+    ja: "他の多くのアプリにはない、3つの特徴です。",
+  },
+  "why.1.title": { ko: "신뢰 3종 세트", en: "Triple trust check", es: "Triple verificación de confianza", zh: "三重信任保障", ja: "3つの信頼の証" },
+  "why.1.body": {
+    ko: "사진 인증, 영상 프로필, 재직·학교 인증까지 — 세 가지 신뢰 장치를 동시에 갖춘 몇 안 되는 데이팅 앱이에요. 가짜 프로필 걱정은 이제 그만.",
+    en: "Photo verification, video profiles, and work/school verification — all three at once. One of the few dating apps with this much identity assurance built in.",
+    es: "Verificación de foto, perfiles en video y verificación laboral/escolar, las tres a la vez. Una de las pocas apps de citas con tanta garantía de identidad.",
+    zh: "照片认证、视频资料、职场/学校认证三重保障同时具备 —— 少数拥有如此完善身份保障的交友软件之一。",
+    ja: "写真認証、動画プロフィール、職場・学校認証。この3つを同時に備えたアプリはまだ多くありません。",
+  },
+  "why.2.title": {
+    ko: "한국 + 다국어, 국경 없는 인연",
+    en: "Korea, without the language barrier",
+    es: "Corea, sin la barrera del idioma",
+    zh: "在韩国，跨越语言的相遇",
+    ja: "韓国で、言葉の壁を越えて",
+  },
+  "why.2.body": {
+    ko: "5개 언어 지원과 언어교류 기능으로, 한국에 있는 외국인과 한국인이 자연스럽게 만날 수 있어요.",
+    en: "With 5 languages and a language-exchange option, it's easy for Koreans and people living in Korea from anywhere to meet naturally.",
+    es: "Con 5 idiomas y una opción de intercambio de idiomas, es fácil que coreanos y extranjeros en Corea se conozcan de forma natural.",
+    zh: "支持5种语言，还有语言交流功能，让在韩外国人与韩国人能自然相识。",
+    ja: "5言語対応と言語交換機能で、韓国在住の外国人と韓国人が自然に出会えます。",
+  },
+  "why.3.title": { ko: "필터는 무료로", en: "Filters, free", es: "Filtros, gratis", zh: "筛选功能，完全免费", ja: "フィルターは無料" },
+  "why.3.body": {
+    ko: "키·인종·언어·관심사 같은 필터를 프리미엄 결제 없이도 자유롭게 써보세요. 진짜 필요한 곳에만 돈을 쓰면 돼요.",
+    en: "Height, ethnicity, languages, interests — filter by all of it without paying a cent. Spend on premium only where it actually matters.",
+    es: "Altura, etnia, idiomas, intereses: fíltralo todo sin pagar nada. Paga premium solo donde realmente importa.",
+    zh: "身高、种族、语言、兴趣等筛选条件，无需付费即可自由使用。把钱花在真正需要的地方。",
+    ja: "身長・人種・言語・興味など、課金なしで自由にフィルターを使えます。本当に必要なところにだけ課金すればOK。",
   },
 
   "features.head.title": { ko: "왜 수다메이트일까요", en: "Why SooDaMate", es: "Por qué SooDaMate", zh: "为什么选择数搭伴侣", ja: "なぜ数多メイトなのか" },

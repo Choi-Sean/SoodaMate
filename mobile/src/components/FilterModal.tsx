@@ -56,6 +56,7 @@ export default function FilterModal({ visible, onClose }: Props) {
   const [languagesFilter, setLanguagesFilter] = useState<string[]>([]);
   const [interestsFilter, setInterestsFilter] = useState<string[]>([]);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [languageExchangeOnly, setLanguageExchangeOnly] = useState(false);
   const [expandDistanceIfLow, setExpandDistanceIfLow] = useState(true);
   const [expandOthersIfLow, setExpandOthersIfLow] = useState(true);
   const [religionFilter, setReligionFilter] = useState<string[]>([]);
@@ -81,6 +82,7 @@ export default function FilterModal({ visible, onClose }: Props) {
     setLanguagesFilter(profile.languages_filter);
     setInterestsFilter(profile.interests_filter);
     setVerifiedOnly(profile.verified_only);
+    setLanguageExchangeOnly(profile.language_exchange_only);
     setExpandDistanceIfLow(profile.expand_distance_if_low);
     setExpandOthersIfLow(profile.expand_others_if_low);
     setReligionFilter(profile.religion_filter);
@@ -114,6 +116,7 @@ export default function FilterModal({ visible, onClose }: Props) {
         languages_filter: languagesFilter,
         interests_filter: interestsFilter,
         verified_only: verifiedOnly,
+        language_exchange_only: languageExchangeOnly,
         expand_distance_if_low: expandDistanceIfLow,
         expand_others_if_low: expandOthersIfLow,
       });
@@ -238,6 +241,12 @@ export default function FilterModal({ visible, onClose }: Props) {
                   <Switch value={verifiedOnly} onValueChange={setVerifiedOnly} trackColor={{ true: colors.navy }} />
                 </View>
                 <Text style={styles.switchHint}>{t("filters.verifiedOnlyBody")}</Text>
+
+                <View style={styles.switchRow}>
+                  <Text style={styles.switchLabel}>{t("filters.languageExchangeOnlyLabel")}</Text>
+                  <Switch value={languageExchangeOnly} onValueChange={setLanguageExchangeOnly} trackColor={{ true: colors.navy }} />
+                </View>
+                <Text style={styles.switchHint}>{t("filters.languageExchangeOnlyBody")}</Text>
               </View>
             </>
           ) : isPremium ? (

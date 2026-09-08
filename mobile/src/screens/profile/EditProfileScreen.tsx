@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Switch, Text, TextInput, View, StyleSheet } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
@@ -49,6 +49,7 @@ export default function EditProfileScreen({ navigation }: Props) {
   const [bio2, setBio2] = useState("");
   const [bio3, setBio3] = useState("");
   const [interestedIn, setInterestedIn] = useState<InterestedIn>("female");
+  const [openToLanguageExchange, setOpenToLanguageExchange] = useState(false);
   const [locationLat, setLocationLat] = useState<number | null>(null);
   const [locationLng, setLocationLng] = useState<number | null>(null);
 
@@ -77,6 +78,7 @@ export default function EditProfileScreen({ navigation }: Props) {
     setBio2(profile.bio2 ?? "");
     setBio3(profile.bio3 ?? "");
     setInterestedIn(profile.interested_in === "other" ? "all" : profile.interested_in);
+    setOpenToLanguageExchange(profile.open_to_language_exchange);
     setLocationLat(profile.location_lat);
     setLocationLng(profile.location_lng);
     setRaceEthnicity(profile.race_ethnicity);
@@ -122,6 +124,7 @@ export default function EditProfileScreen({ navigation }: Props) {
         birth_date: profile.birth_date,
         gender: profile.gender,
         interested_in: interestedIn,
+        open_to_language_exchange: openToLanguageExchange,
         bio: bio.trim() || null,
         bio2: bio2.trim() || null,
         bio3: bio3.trim() || null,
@@ -269,6 +272,14 @@ export default function EditProfileScreen({ navigation }: Props) {
               <Text style={interestedIn === g ? styles.chipTextSelected : styles.chipText}>{t(`profileSetup.${g}`)}</Text>
             </Pressable>
           ))}
+        </View>
+
+        <View style={[styles.switchRow, styles.fieldGap]}>
+          <View style={styles.switchTextWrap}>
+            <Text style={styles.switchLabel}>{t("editProfile.languageExchangeLabel")}</Text>
+            <Text style={styles.switchHint}>{t("editProfile.languageExchangeHint")}</Text>
+          </View>
+          <Switch value={openToLanguageExchange} onValueChange={setOpenToLanguageExchange} trackColor={{ true: colors.navy }} />
         </View>
 
         <View style={styles.fieldGap}>
@@ -444,6 +455,10 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   fieldGap: { marginTop: 16 },
+  switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  switchTextWrap: { flex: 1 },
+  switchLabel: { fontSize: 14, fontWeight: "600", color: colors.ink },
+  switchHint: { fontSize: 12, color: colors.muted, marginTop: 3, lineHeight: 16 },
   error: { color: colors.danger, marginBottom: 12 },
   fieldLabel: { fontSize: 14, fontWeight: "600", marginBottom: 8, color: colors.muted },
   fieldLabelSpaced: { marginTop: 16 },

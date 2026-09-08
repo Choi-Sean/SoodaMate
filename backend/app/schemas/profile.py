@@ -44,6 +44,7 @@ class ProfileUpdate(BaseModel):
     birth_date: date
     gender: str = Field(pattern="^(male|female|other)$")
     interested_in: str = Field(pattern="^(male|female|other|all)$")
+    open_to_language_exchange: bool = False
     bio: str | None = Field(default=None, max_length=1000)
     bio2: str | None = Field(default=None, max_length=1000)
     bio3: str | None = Field(default=None, max_length=1000)
@@ -78,6 +79,7 @@ class ProfileOut(BaseModel):
     birth_date: date
     gender: str
     interested_in: str
+    open_to_language_exchange: bool = False
     bio: str | None
     bio2: str | None = None
     bio3: str | None = None
@@ -228,6 +230,7 @@ class BasicFilterUpdate(BaseModel):
     languages_filter: list[str] = Field(default_factory=list)
     interests_filter: list[str] = Field(default_factory=list)
     verified_only: bool = False
+    language_exchange_only: bool = False
     expand_distance_if_low: bool = True
     expand_others_if_low: bool = True
 

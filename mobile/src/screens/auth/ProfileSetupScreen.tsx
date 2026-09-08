@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActivityIndicator, Image, Pressable, ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Image, Pressable, ScrollView, Switch, Text, TextInput, View, StyleSheet } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useTranslation } from "react-i18next";
 
@@ -42,6 +42,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   const [birthDate, setBirthDate] = useState(""); // YYYY-MM-DD
   const [gender, setGender] = useState<Gender>("male");
   const [interestedIn, setInterestedIn] = useState<InterestedIn>("female");
+  const [openToLanguageExchange, setOpenToLanguageExchange] = useState(false);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [locationLat, setLocationLat] = useState<number | null>(null);
   const [locationLng, setLocationLng] = useState<number | null>(null);
@@ -111,6 +112,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         birth_date: birthDate,
         gender,
         interested_in: interestedIn,
+        open_to_language_exchange: openToLanguageExchange,
         bio: bio.trim() || null,
         bio2: bio2.trim() || null,
         bio3: bio3.trim() || null,
@@ -238,6 +240,14 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
             <Text style={interestedIn === g ? styles.chipTextSelected : styles.chipText}>{t(`profileSetup.${g}`)}</Text>
           </Pressable>
         ))}
+      </View>
+
+      <View style={styles.switchRow}>
+        <View style={styles.switchTextWrap}>
+          <Text style={styles.switchLabel}>{t("editProfile.languageExchangeLabel")}</Text>
+          <Text style={styles.switchHint}>{t("editProfile.languageExchangeHint")}</Text>
+        </View>
+        <Switch value={openToLanguageExchange} onValueChange={setOpenToLanguageExchange} trackColor={{ true: colors.navy }} />
       </View>
 
       <LocationPicker
@@ -401,6 +411,10 @@ const styles = StyleSheet.create({
   },
   label: { fontSize: 14, fontWeight: "600", marginTop: 12, marginBottom: 8, color: colors.muted },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 16 },
+  switchTextWrap: { flex: 1 },
+  switchLabel: { fontSize: 14, fontWeight: "600", color: colors.ink },
+  switchHint: { fontSize: 12, color: colors.muted, marginTop: 3, lineHeight: 16 },
   chip: {
     borderWidth: 1,
     borderColor: colors.border,

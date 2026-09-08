@@ -54,6 +54,7 @@ async def _to_candidates_out(
             languages=_comma_list(profile.languages),
             verified_badge=profile.verified_badge,
             face_verified=profile.face_verified,
+            open_to_language_exchange=profile.open_to_language_exchange,
         )
         for profile, distance_km, superliked_me in results
     ]

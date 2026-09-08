@@ -89,6 +89,7 @@ export default function ProfileCard({ candidate, flush }: Props) {
           superlikedMe={candidate.superliked_me}
           verifiedBadge={candidate.verified_badge}
           faceVerified={candidate.face_verified}
+          openToLanguageExchange={candidate.open_to_language_exchange}
         />
         <ProfileInfoSections candidate={candidate} />
       </ScrollView>

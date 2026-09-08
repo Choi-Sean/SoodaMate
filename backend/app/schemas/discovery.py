@@ -34,3 +34,4 @@ class CandidateOut(BaseModel):
     languages: list[str] = []
     verified_badge: str | None = None
     face_verified: bool = False
+    open_to_language_exchange: bool = False

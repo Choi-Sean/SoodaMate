@@ -232,8 +232,8 @@ async def set_basic_filters(
 ) -> ProfileOut:
     """Free for everyone, unlike set_premium_filters above — every field
     here (distance, race/ethnicity, height, languages, interests, verified-
-    only, and the two "if I run out" expansion toggles) is part of the
-    Basic filters tab, not Advanced."""
+    only, language-exchange-only, and the two "if I run out" expansion
+    toggles) is part of the Basic filters tab, not Advanced."""
     profile = await db.get(Profile, user.id)
     if profile is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "complete your profile first")
@@ -245,6 +245,7 @@ async def set_basic_filters(
     profile.languages_filter = ",".join(body.languages_filter) if body.languages_filter else None
     profile.interests_filter = ",".join(body.interests_filter) if body.interests_filter else None
     profile.verified_only = body.verified_only
+    profile.language_exchange_only = body.language_exchange_only
     profile.expand_distance_if_low = body.expand_distance_if_low
     profile.expand_others_if_low = body.expand_others_if_low
 

@@ -248,6 +248,8 @@
     "hometownPlaceholder": "e.g. Busan",
     "iAm": "I am",
     "interestedIn": "Interested in",
+    "languageExchangeLabel": "Open to language exchange",
+    "languageExchangeHint": "Show that you're also open to a language exchange, not just dating.",
     "to": "to",
     "managePhotosCount": "Manage photos ({{count}})",
     "completenessLabel": "Profile strength",
@@ -259,7 +261,7 @@
     "addVideo": "Add a video (up to {{seconds}}s)",
     "reorderHint": "Use the arrows to reorder — your first photo is what people see first.",
     "primary": "First",
-    "setDefault": "Set as default",
+    "setDefault": "Default",
     "deleteLastTitle": "Can't delete this photo",
     "deleteLastBody": "Your profile needs at least one photo or video.",
     "viewerClose": "Close"
@@ -426,7 +428,9 @@
     "interests": "My Interests",
     "languages": "Languages",
     "heightValue": "{{cm}} cm",
-    "photoVerified": "Photo Verified"
+    "photoVerified": "Photo Verified",
+    "videoProfile": "Video profile",
+    "languageExchange": "Language exchange"
   },
   "filters": {
     "title": "Filters",
@@ -445,6 +449,8 @@
     "interestsPlaceholder": "Any interest",
     "verifiedOnlyLabel": "Photo verified only",
     "verifiedOnlyBody": "Only show profiles that have completed photo verification.",
+    "languageExchangeOnlyLabel": "Language exchange only",
+    "languageExchangeOnlyBody": "Only show profiles that are also open to a language exchange.",
     "expandDistanceTitle": "See people slightly further away if I run out",
     "expandOthersTitle": "Show other people if I run out",
     "expandBody": "We'll prioritize your age, height, and distance preferences, and only go beyond them if there aren't enough people who match.",

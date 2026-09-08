@@ -64,8 +64,9 @@ def _csv_contains_any(column, values: list[str]):
 def _basic_filters(viewer_profile: Profile) -> list:
     """Every free (Basic-tab) filter dimension beyond age/gender/distance,
     which get_candidates already applies inline — race/ethnicity, height,
-    languages, interests, and verified-only. None of this requires
-    is_premium_member; see routers/profiles.py::set_basic_filters."""
+    languages, interests, verified-only, and language-exchange-only. None
+    of this requires is_premium_member; see
+    routers/profiles.py::set_basic_filters."""
     filters = []
     if viewer_profile.race_filter:
         filters.append(Profile.race_ethnicity.in_(viewer_profile.race_filter.split(",")))
@@ -79,6 +80,8 @@ def _basic_filters(viewer_profile: Profile) -> list:
         filters.append(_csv_contains_any(Profile.interests, viewer_profile.interests_filter.split(",")))
     if viewer_profile.verified_only:
         filters.append(Profile.face_verified)
+    if viewer_profile.language_exchange_only:
+        filters.append(Profile.open_to_language_exchange)
     return filters
 
 

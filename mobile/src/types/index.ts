@@ -26,6 +26,7 @@ export interface Profile {
   birth_date: string;
   gender: Gender;
   interested_in: InterestedIn;
+  open_to_language_exchange: boolean;
   bio: string | null;
   bio2: string | null;
   bio3: string | null;
@@ -59,6 +60,7 @@ export interface Profile {
   languages_filter: string[];
   interests_filter: string[];
   verified_only: boolean;
+  language_exchange_only: boolean;
   expand_distance_if_low: boolean;
   expand_others_if_low: boolean;
   premium_filters: PremiumFilters;
@@ -104,6 +106,7 @@ export interface Candidate {
   languages: string[];
   verified_badge: "work" | "school" | null;
   face_verified: boolean;
+  open_to_language_exchange: boolean;
 }
 
 export interface Match {

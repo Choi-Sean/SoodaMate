@@ -248,6 +248,8 @@
     "hometownPlaceholder": "예: 부산",
     "iAm": "저는",
     "interestedIn": "관심 있는 성별",
+    "languageExchangeLabel": "언어교류도 환영해요",
+    "languageExchangeHint": "연애 상대뿐 아니라 언어교류 상대도 찾고 있다는 걸 함께 보여줘요.",
     "to": "~",
     "managePhotosCount": "사진 관리 ({{count}}장)",
     "completenessLabel": "프로필 완성도",
@@ -258,7 +260,7 @@
     "title": "사진 및 동영상",
     "addVideo": "동영상 추가 (최대 {{seconds}}초)",
     "reorderHint": "화살표로 순서를 바꿀 수 있어요 — 첫 번째 사진이 가장 먼저 보여요.",
-    "setDefault": "대표 사진으로 설정",
+    "setDefault": "대표",
     "deleteLastTitle": "사진을 삭제할 수 없어요",
     "deleteLastBody": "프로필에는 최소 1장의 사진 또는 동영상이 있어야 해요.",
     "viewerClose": "닫기",
@@ -426,7 +428,9 @@
     "interests": "내 관심사",
     "languages": "구사 언어",
     "heightValue": "{{cm}}cm",
-    "photoVerified": "사진 인증 완료"
+    "photoVerified": "사진 인증 완료",
+    "videoProfile": "영상 프로필",
+    "languageExchange": "언어교류"
   },
   "filters": {
     "title": "필터",
@@ -445,6 +449,8 @@
     "interestsPlaceholder": "전체 관심사",
     "verifiedOnlyLabel": "사진 인증된 회원만",
     "verifiedOnlyBody": "사진 인증을 완료한 프로필만 표시합니다.",
+    "languageExchangeOnlyLabel": "언어교류 희망자만 보기",
+    "languageExchangeOnlyBody": "언어교류에도 관심 있는 프로필만 표시합니다.",
     "expandDistanceTitle": "부족하면 좀 더 먼 사람도 보여주기",
     "expandOthersTitle": "부족하면 조건에 안 맞는 사람도 보여주기",
     "expandBody": "나이, 키, 거리 조건을 우선 적용하고, 조건에 맞는 사람이 부족할 때만 그 외 사람들도 함께 보여드려요.",

@@ -240,6 +240,9 @@ section { padding: 88px 24px; }
 .section-head h2 { font-size: clamp(26px, 3.4vw, 36px); font-weight: 900; color: var(--navy); letter-spacing: -0.01em; }
 .section-head p { margin-top: 12px; color: var(--muted); font-size: 15.5px; }
 
+/* ---- why-us grid (reuses .feature-grid/.feature-card below) ---- */
+.why { background: var(--accent-soft); }
+
 /* ---- feature grid ---- */
 .features { background: var(--white); }
 .feature-grid {
