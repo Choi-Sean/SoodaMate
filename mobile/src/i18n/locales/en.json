@@ -423,6 +423,8 @@
   },
   "profileDetail": {
     "bio": "My Bio",
+    "bio2": "More About Me",
+    "bio3": "One More Thing",
     "about": "About Me",
     "lookingFor": "I'm Looking For",
     "interests": "My Interests",

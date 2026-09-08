@@ -131,6 +131,18 @@ export default function ProfileInfoSections({ candidate }: { candidate: Candidat
         </Section>
       )}
 
+      {candidate.bio2 && (
+        <Section title={t("profileDetail.bio2")}>
+          <Text style={styles.bioText}>{candidate.bio2}</Text>
+        </Section>
+      )}
+
+      {candidate.bio3 && (
+        <Section title={t("profileDetail.bio3")}>
+          <Text style={styles.bioText}>{candidate.bio3}</Text>
+        </Section>
+      )}
+
       {about.length > 0 && (
         <Section title={t("profileDetail.about")}>
           <View style={styles.pillWrap}>

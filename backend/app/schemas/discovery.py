@@ -11,6 +11,8 @@ class CandidateOut(BaseModel):
     age: int
     gender: str
     bio: str | None
+    bio2: str | None = None
+    bio3: str | None = None
     photos: list[PhotoOut]
     distance_km: float | None = None
     superliked_me: bool = False

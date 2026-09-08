@@ -423,6 +423,8 @@
   },
   "profileDetail": {
     "bio": "私について",
+    "bio2": "もう少し詳しく",
+    "bio3": "もうひとつ",
     "about": "自己紹介",
     "lookingFor": "探している関係",
     "interests": "私の興味・関心",

@@ -86,6 +86,8 @@ export interface Candidate {
   age: number;
   gender: Gender;
   bio: string | null;
+  bio2: string | null;
+  bio3: string | null;
   photos: Photo[];
   distance_km: number | null;
   superliked_me: boolean;

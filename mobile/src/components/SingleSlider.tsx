@@ -22,6 +22,17 @@ export default function SingleSlider({ label, min, max, value, step = 1, onChang
   const [trackWidth, setTrackWidth] = useState(0);
   const startValueRef = useRef(0);
 
+  // Same fix as RangeSlider.tsx: panResponder below is created exactly
+  // once via useRef, so its callbacks would otherwise close over whatever
+  // value/onChange existed at the very first render forever. Routing
+  // through this ref (kept in sync every render) means a drag always
+  // starts from the slider's actual current value instead of wherever it
+  // happened to be on mount — without it, every drag after the first one
+  // computed its delta from that stale starting point, making the thumb
+  // jump to the wrong place.
+  const latest = useRef({ min, max, step, value, trackWidth, onChange });
+  latest.current = { min, max, step, value, trackWidth, onChange };
+
   const range = max - min;
   const usableWidth = Math.max(1, trackWidth - THUMB_SIZE);
 
@@ -31,6 +42,9 @@ export default function SingleSlider({ label, min, max, value, step = 1, onChang
   }
 
   function dxToValue(startValue: number, dx: number): number {
+    const { min, max, step, trackWidth } = latest.current;
+    const range = max - min;
+    const usableWidth = Math.max(1, trackWidth - THUMB_SIZE);
     if (usableWidth <= 0) return startValue;
     const deltaValue = (dx / usableWidth) * range;
     const raw = startValue + deltaValue;
@@ -47,10 +61,10 @@ export default function SingleSlider({ label, min, max, value, step = 1, onChang
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
-        startValueRef.current = value;
+        startValueRef.current = latest.current.value;
       },
       onPanResponderMove: (_evt, gesture) => {
-        onChange(dxToValue(startValueRef.current, gesture.dx));
+        latest.current.onChange(dxToValue(startValueRef.current, gesture.dx));
       },
     })
   ).current;

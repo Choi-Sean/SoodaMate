@@ -36,6 +36,40 @@ async def test_matching_gender_candidate_appears(client):
 
 
 @pytest.mark.asyncio
+async def test_candidate_bio2_and_bio3_are_visible_to_other_users(client):
+    """Regression test: bio2/bio3 were added to Profile/ProfileOut (so a
+    user could set them on their own profile) but CandidateOut/
+    _to_candidates_out were never updated to also serialize them - the
+    fields saved but silently never reached anyone else's Discover/Swipe
+    feed."""
+    viewer_id, viewer_headers = await create_user_with_profile(
+        client, "viewer_bio23@example.com", gender="male", interested_in="female"
+    )
+    candidate_id, candidate_headers = await create_user_with_profile(
+        client, "candidate_bio23@example.com", gender="female", interested_in="male"
+    )
+    resp = await client.put(
+        "/profiles/me",
+        headers=candidate_headers,
+        json={
+            "display_name": "Test User",
+            "legal_first_name": "Test User",
+            "birth_date": "1999-01-01",
+            "gender": "female",
+            "interested_in": "male",
+            "bio2": "More about me",
+            "bio3": "One more thing",
+        },
+    )
+    assert resp.status_code == 200
+
+    candidates = await client.get("/discovery/candidates", headers=viewer_headers)
+    candidate = next(c for c in candidates.json() if c["user_id"] == candidate_id)
+    assert candidate["bio2"] == "More about me"
+    assert candidate["bio3"] == "One more thing"
+
+
+@pytest.mark.asyncio
 async def test_non_matching_gender_preference_excluded(client):
     _, viewer_headers = await create_user_with_profile(
         client, "viewer2@example.com", gender="male", interested_in="female"

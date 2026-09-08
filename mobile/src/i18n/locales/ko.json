@@ -423,6 +423,8 @@
   },
   "profileDetail": {
     "bio": "내 소개",
+    "bio2": "조금 더 알아보기",
+    "bio3": "그리고 한 가지 더",
     "about": "나에 대해",
     "lookingFor": "찾고 있는 관계",
     "interests": "내 관심사",

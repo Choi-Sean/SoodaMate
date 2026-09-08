@@ -34,6 +34,8 @@ async def _to_candidates_out(
             age=_age(profile.birth_date),
             gender=profile.gender,
             bio=profile.bio,
+            bio2=profile.bio2,
+            bio3=profile.bio3,
             photos=[PhotoOut.model_validate(p) for p in photos_by_user.get(profile.user_id, [])],
             distance_km=distance_km,
             superliked_me=superliked_me,

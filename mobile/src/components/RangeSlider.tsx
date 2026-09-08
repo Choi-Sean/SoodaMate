@@ -25,6 +25,20 @@ export default function RangeSlider({ label, min, max, valueMin, valueMax, step 
   const [trackWidth, setTrackWidth] = useState(0);
   const startValueRef = useRef(0);
 
+  // The two PanResponders below are created exactly once via useRef (see
+  // the .current pattern further down) — recreating them every render
+  // would risk resetting the gesture responder's negotiation mid-drag.
+  // But that means their callbacks close over whatever min/max/valueMin/
+  // valueMax/onChange existed at that very first render, unless they read
+  // through this ref instead — kept in sync on every render — so a drag
+  // always computes from the current values. Without this, every drag
+  // after the first one used the stale mount-time values: e.g. dragging
+  // the min handle would silently snap the max handle back to whatever it
+  // was when the component first mounted, since onPanResponderMove's own
+  // `onChange(next, valueMax)` call would pass that frozen valueMax.
+  const latest = useRef({ min, max, step, valueMin, valueMax, trackWidth, onChange });
+  latest.current = { min, max, step, valueMin, valueMax, trackWidth, onChange };
+
   const range = max - min;
   const usableWidth = Math.max(1, trackWidth - THUMB_SIZE);
 
@@ -34,6 +48,9 @@ export default function RangeSlider({ label, min, max, valueMin, valueMax, step 
   }
 
   function dxToValue(startValue: number, dx: number): number {
+    const { min, max, step, trackWidth } = latest.current;
+    const range = max - min;
+    const usableWidth = Math.max(1, trackWidth - THUMB_SIZE);
     if (usableWidth <= 0) return startValue;
     const deltaValue = (dx / usableWidth) * range;
     const raw = startValue + deltaValue;
@@ -50,9 +67,10 @@ export default function RangeSlider({ label, min, max, valueMin, valueMax, step 
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
-        startValueRef.current = valueMin;
+        startValueRef.current = latest.current.valueMin;
       },
       onPanResponderMove: (_evt, gesture) => {
+        const { valueMax, onChange } = latest.current;
         const next = dxToValue(startValueRef.current, gesture.dx);
         onChange(Math.min(next, valueMax), valueMax);
       },
@@ -64,9 +82,10 @@ export default function RangeSlider({ label, min, max, valueMin, valueMax, step 
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
-        startValueRef.current = valueMax;
+        startValueRef.current = latest.current.valueMax;
       },
       onPanResponderMove: (_evt, gesture) => {
+        const { valueMin, onChange } = latest.current;
         const next = dxToValue(startValueRef.current, gesture.dx);
         onChange(valueMin, Math.max(next, valueMin));
       },

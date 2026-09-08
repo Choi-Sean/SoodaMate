@@ -423,6 +423,8 @@
   },
   "profileDetail": {
     "bio": "我的简介",
+    "bio2": "更多关于我",
+    "bio3": "还有一件事",
     "about": "关于我",
     "lookingFor": "我在寻找",
     "interests": "我的兴趣",
