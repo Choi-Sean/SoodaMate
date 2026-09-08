@@ -1,17 +1,7 @@
-// Location picker's country list is scoped to countries where one of the
-// app's supported languages (Korean, English, Japanese, Chinese, Spanish)
-// is widely spoken, rather than all ~250 ISO countries — this app's target
-// markets, not a general-purpose address form.
-export const SUPPORTED_COUNTRY_CODES = [
-  // Korean
-  "KR",
-  // Japanese
-  "JP",
-  // Chinese
-  "CN", "TW", "HK", "MO", "SG",
-  // English
-  "US", "GB", "CA", "AU", "NZ", "IE", "ZA", "PH",
-  // Spanish
-  "ES", "MX", "AR", "CO", "CL", "PE", "VE", "EC", "GT", "CU",
-  "BO", "DO", "HN", "PY", "SV", "NI", "CR", "PA", "UY",
-] as const;
+// Location picker's country list is scoped to the app's actual current
+// target markets, not all ~250 ISO countries or even every country where a
+// supported UI language is spoken — deliberately narrowed to just these
+// two for now, per explicit product direction. Widen this back out (the
+// previous list covered every KR/JP/CN/EN/ES-speaking country) once the
+// app expands beyond Korea + the US.
+export const SUPPORTED_COUNTRY_CODES = ["KR", "US"] as const;
