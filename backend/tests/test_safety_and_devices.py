@@ -33,6 +33,26 @@ async def test_cannot_block_or_report_self(client):
 
 
 @pytest.mark.asyncio
+async def test_block_or_report_nonexistent_user_is_404_not_500(client):
+    """Regression test: a candidate's card can sit in the deck for a while
+    before the user acts on it - if the target account was deleted in that
+    window, block/report used to hit an unhandled FK IntegrityError (500)
+    instead of a clean 404."""
+    a_id, a_headers = await create_user_with_profile(client, "se@example.com")
+    import uuid
+
+    ghost_id = str(uuid.uuid4())
+
+    resp = await client.post("/safety/block", headers=a_headers, json={"user_id": ghost_id})
+    assert resp.status_code == 404
+
+    resp = await client.post(
+        "/safety/report", headers=a_headers, json={"user_id": ghost_id, "reason": "harassment"}
+    )
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
 async def test_register_and_reregister_device_token(client):
     _, headers = await create_user_with_profile(client, "sd@example.com")
 

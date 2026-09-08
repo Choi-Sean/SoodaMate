@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActivityIndicator, Linking, Pressable, Switch, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Pressable, Switch, Text, View, StyleSheet } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
@@ -12,6 +12,7 @@ import { SUPPORTED_LANGUAGES, setLanguage, type SupportedLanguage } from "../../
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
 import { colors } from "../../theme";
 import { showAlert } from "../../utils/alert";
+import { openExternalUrl } from "../../utils/openExternalUrl";
 
 type Props = NativeStackScreenProps<ProfileStackParamList, "Settings">;
 
@@ -97,10 +98,10 @@ export default function SettingsScreen({ navigation }: Props) {
         <Text style={styles.rowText}>{t("settings.verification")}</Text>
       </Pressable>
 
-      <Pressable style={styles.row} onPress={() => Linking.openURL(`${env.marketingSiteUrl}/privacy-policy.html`)}>
+      <Pressable style={styles.row} onPress={() => openExternalUrl(`${env.marketingSiteUrl}/privacy-policy.html`)}>
         <Text style={styles.rowText}>{t("settings.privacyPolicy")}</Text>
       </Pressable>
-      <Pressable style={styles.row} onPress={() => Linking.openURL(`${env.marketingSiteUrl}/terms.html`)}>
+      <Pressable style={styles.row} onPress={() => openExternalUrl(`${env.marketingSiteUrl}/terms.html`)}>
         <Text style={styles.rowText}>{t("settings.termsOfService")}</Text>
       </Pressable>
 

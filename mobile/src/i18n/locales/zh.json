@@ -457,7 +457,7 @@
     "expandOthersTitle": "人数不足时显示其他条件的人",
     "expandBody": "我们会优先按照您的年龄、身高和距离条件匹配，仅在符合条件的人数不足时才会显示其他人。",
     "premiumLockedTitle": "解锁更多筛选条件",
-    "premiumLockedBody": "升级为高级会员即可按宗教、政治观点、运动习惯等更多条件筛选。",
+    "premiumLockedBody": "升级为高级会员即可按身高、宗教、政治观点、运动习惯等更多条件筛选。",
     "upgrade": "升级为高级会员",
     "apply": "应用筛选"
   }

@@ -31,6 +31,17 @@ In the service's **Variables** tab, set everything `backend/.env` has locally, p
 
 **Credential-file variables on Railway**: Railway's filesystem is ephemeral and there's no simple "upload a file" step for env vars the way some other host UIs offer. This bit `/uploads/presign` for real once photo upload was actually exercised against production (`google.auth.exceptions.DefaultCredentialsError` — no ADC available in the container) — the migration to R2 above sidesteps it entirely since R2 auth is a plain access-key/secret pair, not a credential file. `FIREBASE_CREDENTIALS_PATH` still has the same issue and is still unresolved (push notifications currently no-op silently on Railway rather than erroring — see `push_service.py`); same fix shape would apply there if/when it's needed: accept the service-account JSON *content* via an env var and use `firebase_admin.credentials.Certificate(json.loads(...))` instead of a file path.
 
+**R2 bucket CORS**: separately from the backend's own `CORS_ORIGINS` above (which only governs calls *to the FastAPI service*), the R2 bucket itself needs its own CORS policy — the actual photo/video PUT goes directly from the browser to R2's endpoint via a presigned URL (see `storage_service.generate_upload_url`), bypassing the backend entirely, so the backend's CORS middleware never enters into it. A bucket with no CORS policy configured (Cloudflare's default — `get_bucket_cors` 404s with `NoSuchCORSConfiguration` until one is set) makes every *browser-based* upload fail with a bare "Failed to fetch"/`net::ERR_FAILED`, silently, with no server-side error to point at, since native apps never hit this (CORS is a browser-only concept) which is exactly why it can go unnoticed until someone tries uploading a photo from mobile-web. Fix once, on the bucket itself (not per-deploy):
+```python
+import boto3
+from botocore.config import Config
+client = boto3.client("s3", endpoint_url=R2_ENDPOINT_URL, aws_access_key_id=..., aws_secret_access_key=..., region_name="auto", config=Config(signature_version="s3v4"))
+client.put_bucket_cors(Bucket=R2_BUCKET_NAME, CORSConfiguration={
+    "CORSRules": [{"AllowedOrigins": [...same list as CORS_ORIGINS...], "AllowedMethods": ["GET", "PUT", "HEAD"], "AllowedHeaders": ["*"], "ExposeHeaders": ["ETag"], "MaxAgeSeconds": 3600}]
+})
+```
+Re-run this (with the new origin added) any time a new web origin needs to upload photos — e.g. a new preview/staging domain.
+
 ## 3. First deploy
 
 Push to the connected branch (or click **Deploy** in the dashboard) — Railway builds the Dockerfile and starts the service. Watch the build logs for the ODBC driver install step; it's the slowest part of the build.

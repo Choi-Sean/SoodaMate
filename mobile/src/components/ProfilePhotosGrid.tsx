@@ -11,8 +11,10 @@ import { showAlert } from "../utils/alert";
 import { colors } from "../theme";
 import type { Photo } from "../types";
 
-const MAX_PHOTOS = 10;
-const VIDEO_MAX_SECONDS = 30;
+// Photos and the one video slot are capped independently — 6 photos plus
+// 1 video is 7 media items total, not "6 items total including the video".
+const MAX_PHOTOS = 6;
+const VIDEO_MAX_SECONDS = 10;
 
 interface Props {
   photos: Photo[];
@@ -61,6 +63,7 @@ export default function ProfilePhotosGrid({ photos, onChanged }: Props) {
 
   const byId = new Map(photos.map((p) => [p.id, p]));
   const sorted = orderIds.map((id) => byId.get(id)).filter((p): p is Photo => !!p);
+  const photoCount = sorted.filter((p) => p.media_type === "photo").length;
   const hasVideo = sorted.some((p) => p.media_type === "video");
   const previewPhoto = previewId ? byId.get(previewId) ?? null : null;
 
@@ -232,7 +235,7 @@ export default function ProfilePhotosGrid({ photos, onChanged }: Props) {
           </View>
         ))}
 
-        {sorted.length < MAX_PHOTOS && (
+        {photoCount < MAX_PHOTOS && (
           <Pressable style={[styles.tile, styles.addTile]} onPress={handleAddPhoto} disabled={uploading}>
             {uploading ? <ActivityIndicator /> : <Text style={styles.addTileText}>+</Text>}
           </Pressable>
@@ -240,7 +243,7 @@ export default function ProfilePhotosGrid({ photos, onChanged }: Props) {
       </View>
 
       {!hasVideo && (
-        <Pressable style={styles.addVideoButton} onPress={handleAddVideo} disabled={uploading || sorted.length >= MAX_PHOTOS}>
+        <Pressable style={styles.addVideoButton} onPress={handleAddVideo} disabled={uploading}>
           <Ionicons name="videocam" size={18} color={colors.accentDark} />
           <Text style={styles.addVideoText}>{t("photos.addVideo", { seconds: VIDEO_MAX_SECONDS })}</Text>
         </Pressable>

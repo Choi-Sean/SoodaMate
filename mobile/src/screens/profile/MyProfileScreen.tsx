@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Image, Linking, Pressable, ScrollView, Text, View, StyleSheet } from "react-native";
+import { Image, Pressable, ScrollView, Text, View, StyleSheet } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,6 +12,7 @@ import ScreenHeader from "../../components/ScreenHeader";
 import { useAuthStore } from "../../store/authStore";
 import { env } from "../../config/env";
 import { showAlert } from "../../utils/alert";
+import { openExternalUrl } from "../../utils/openExternalUrl";
 import { calculateProfileCompleteness } from "../../utils/profileCompleteness";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
 import { colors } from "../../theme";
@@ -47,7 +48,7 @@ export default function MyProfileScreen({ navigation }: Props) {
     // The web shop has no login of its own — it reads the JWT straight out
     // of the URL (see web/shop.html), since the mobile app is the only place
     // a session exists. Stripe Checkout needs a real browser context anyway.
-    Linking.openURL(`${env.marketingSiteUrl}/shop.html?token=${encodeURIComponent(accessToken ?? "")}`);
+    openExternalUrl(`${env.marketingSiteUrl}/shop.html?token=${encodeURIComponent(accessToken ?? "")}`);
   }
 
   function formatDate(iso: string): string {

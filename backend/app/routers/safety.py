@@ -17,6 +17,13 @@ async def block_user(
 ) -> None:
     if body.user_id == user.id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "cannot block yourself")
+    # The target's card could have been fetched a while before this request
+    # lands (a full discovery deck stays cached client-side) — if the
+    # account was deleted in between, a plain INSERT/EXEC would otherwise
+    # 500 on the FK constraint instead of a clean, expected 404.
+    target = await db.get(User, body.user_id)
+    if target is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "user not found")
     await db.execute(
         text("EXEC sp_UpsertBlock @BlockerId=:blocker_id, @BlockedId=:blocked_id"),
         {"blocker_id": user.id, "blocked_id": body.user_id},
@@ -30,6 +37,10 @@ async def report_user(
 ) -> None:
     if body.user_id == user.id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "cannot report yourself")
+    # Same stale-card race as block_user above.
+    target = await db.get(User, body.user_id)
+    if target is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "user not found")
     db.add(
         Report(reporter_id=user.id, reported_id=body.user_id, reason=body.reason, detail=body.detail)
     )

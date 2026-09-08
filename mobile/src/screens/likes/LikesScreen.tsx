@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActivityIndicator, FlatList, Image, Linking, Modal, Pressable, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, FlatList, Image, Modal, Pressable, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
@@ -15,6 +15,7 @@ import { useSwipeAction } from "../../hooks/useSwipeAction";
 import { getMyProfile } from "../../api/profiles";
 import { useAuthStore } from "../../store/authStore";
 import { env } from "../../config/env";
+import { openExternalUrl } from "../../utils/openExternalUrl";
 import type { SwipeAction } from "../../api/interactions";
 import type { Candidate } from "../../types";
 import { colors } from "../../theme";
@@ -42,7 +43,7 @@ export default function LikesScreen() {
   } | null>(null);
 
   function openShop() {
-    Linking.openURL(`${env.marketingSiteUrl}/shop.html?token=${encodeURIComponent(accessToken ?? "")}`);
+    openExternalUrl(`${env.marketingSiteUrl}/shop.html?token=${encodeURIComponent(accessToken ?? "")}`);
   }
 
   function handleAction(candidate: Candidate, action: SwipeAction) {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, Switch, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, Switch, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,6 +9,7 @@ import { getMyProfile, setAgeFilter, setBasicFilters, setPremiumFilters } from "
 import { useAuthStore } from "../store/authStore";
 import { env } from "../config/env";
 import { showAlert } from "../utils/alert";
+import { openExternalUrl } from "../utils/openExternalUrl";
 import MultiChipSelect from "./MultiChipSelect";
 import MultiSelectDropdown from "./MultiSelectDropdown";
 import RangeSlider from "./RangeSlider";
@@ -33,10 +34,14 @@ interface Props {
   onClose: () => void;
 }
 
-/** Free (Basic tab): age, height, and distance range/cap, ethnicity,
- * languages, interests, photo-verified-only, and the two "if I run out"
- * fallback toggles. Premium (Advanced tab): religion, political view,
- * exercise, smoking, cannabis, relationship goal, wants/has kids. */
+/** Free (Basic tab): age and distance range/cap, ethnicity, languages,
+ * interests, photo-verified-only, language-exchange-only, and the two "if
+ * I run out" fallback toggles. Premium (Advanced tab): height, religion,
+ * political view, exercise, smoking, cannabis, relationship goal, wants/
+ * has kids. Height is still saved via setBasicFilters (a free endpoint —
+ * see routers/profiles.py::set_basic_filters) even though its control now
+ * lives on this premium-gated tab; moving it here is a pure UI decision,
+ * not a backend one, so no schema change was needed for it. */
 export default function FilterModal({ visible, onClose }: Props) {
   const { t, i18n } = useTranslation();
   const useImperial = i18n.language === "en";
@@ -97,7 +102,7 @@ export default function FilterModal({ visible, onClose }: Props) {
 
   function openShop() {
     const shopUrl = env.marketingSiteUrl + "/shop.html?token=" + encodeURIComponent(accessToken ?? "");
-    Linking.openURL(shopUrl);
+    openExternalUrl(shopUrl);
   }
 
   const raceOptions = RACE_ETHNICITY_KEYS.map((key) => ({ key, label: t(`profileSetup.race.${key}`) }));
@@ -169,19 +174,6 @@ export default function FilterModal({ visible, onClose }: Props) {
             <>
               <View style={styles.card}>
                 <RangeSlider
-                  label={t("filters.heightLabel")}
-                  min={50}
-                  max={272}
-                  valueMin={heightMin}
-                  valueMax={heightMax}
-                  step={useImperial ? 3 : 1}
-                  formatValue={(v) => (useImperial ? formatHeightCm(v) : t("profileDetail.heightValue", { cm: v }))}
-                  onChange={(lo, hi) => {
-                    setHeightMin(lo);
-                    setHeightMax(hi);
-                  }}
-                />
-                <RangeSlider
                   label={t("filters.ageLabel")}
                   min={18}
                   max={99}
@@ -251,6 +243,19 @@ export default function FilterModal({ visible, onClose }: Props) {
             </>
           ) : isPremium ? (
             <View style={styles.card}>
+              <RangeSlider
+                label={t("filters.heightLabel")}
+                min={50}
+                max={272}
+                valueMin={heightMin}
+                valueMax={heightMax}
+                step={useImperial ? 3 : 1}
+                formatValue={(v) => (useImperial ? formatHeightCm(v) : t("profileDetail.heightValue", { cm: v }))}
+                onChange={(lo, hi) => {
+                  setHeightMin(lo);
+                  setHeightMax(hi);
+                }}
+              />
               <MultiChipSelect label={t("profileSetup.religion")} options={RELIGION_KEYS} translatePrefix="profileSetup.religionOption" values={religionFilter} onChange={setReligionFilter} />
               <MultiChipSelect label={t("profileSetup.politicalView")} options={POLITICAL_VIEW_KEYS} translatePrefix="profileSetup.politicalViewOption" values={politicalViewFilter} onChange={setPoliticalViewFilter} />
               <MultiChipSelect label={t("profileSetup.exerciseFrequency")} options={EXERCISE_FREQUENCY_KEYS} translatePrefix="profileSetup.exerciseFrequencyOption" values={exerciseFrequencyFilter} onChange={setExerciseFrequencyFilter} />

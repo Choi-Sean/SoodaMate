@@ -167,10 +167,10 @@ class ProfileOut(BaseModel):
 
 class PresignRequest(BaseModel):
     # One video slot per profile (position convention enforced by the
-    # mobile UI, not here) alongside up to 9 photo slots.
+    # mobile UI, not here) alongside up to 6 photo slots.
     content_type: str = Field(pattern="^(image/(jpeg|png|webp)|video/mp4)$")
-    # 10 slots (0-9): up to 9 photos plus the one video slot.
-    position: int = Field(ge=0, le=9)
+    # 7 slots (0-6): up to 6 photos plus the one video slot.
+    position: int = Field(ge=0, le=6)
 
 
 class PresignResponse(BaseModel):
@@ -180,8 +180,8 @@ class PresignResponse(BaseModel):
 
 class PhotoConfirmRequest(BaseModel):
     gcs_object_path: str
-    # 10 slots (0-9): up to 9 photos plus the one video slot.
-    position: int = Field(ge=0, le=9)
+    # 7 slots (0-6): up to 6 photos plus the one video slot.
+    position: int = Field(ge=0, le=6)
 
 
 class PhotoReorderRequest(BaseModel):
