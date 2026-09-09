@@ -32,3 +32,16 @@ class SwipeLimitOut(BaseModel):
     limit: int
     resets_at: datetime | None = None
     unlimited: bool = False
+
+
+class IcebreakerOut(BaseModel):
+    """type is one of shared_kcontent/shared_interest/shared_language_exchange/
+    shared_language/generic; key names the specific shared tag (an
+    interests.<key>/kcontent.<key> i18n key) or is None when there's nothing
+    to point at (shared_language_exchange/generic) — see
+    services/icebreaker_service.py. The suggestion's actual display text is
+    entirely a mobile i18n concern (chat.icebreaker.<type>), interpolating
+    key's translated label."""
+
+    type: str
+    key: str | None = None

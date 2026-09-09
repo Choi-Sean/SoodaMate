@@ -26,10 +26,26 @@ def _get_client():
 
 _EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "video/mp4": "mp4"}
 
+# Images only (no video, no arbitrary files) — deliberately a separate,
+# narrower map from _EXTENSIONS above, enforced by schemas.message.
+# ImagePresignRequest's pattern validator before either path builder below
+# is ever called.
+_IMAGE_EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
+
 
 def build_object_path(user_id: uuid.UUID, content_type: str) -> str:
     ext = _EXTENSIONS[content_type]
     return f"users/{user_id}/photos/{uuid.uuid4()}.{ext}"
+
+
+def build_chat_image_object_path(user_id: uuid.UUID, content_type: str) -> str:
+    ext = _IMAGE_EXTENSIONS[content_type]
+    return f"users/{user_id}/chat/{uuid.uuid4()}.{ext}"
+
+
+def build_story_image_object_path(user_id: uuid.UUID, content_type: str) -> str:
+    ext = _IMAGE_EXTENSIONS[content_type]
+    return f"users/{user_id}/stories/{uuid.uuid4()}.{ext}"
 
 
 def build_face_verification_object_path(user_id: uuid.UUID, content_type: str, kind: str = "selfie") -> str:

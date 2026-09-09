@@ -189,7 +189,23 @@
     "blockConfirm": "拉黑",
     "errorGeneric": "出错了，请稍后再试。",
     "firstMessageRestricted": "现在轮到对方先发消息。",
-    "restrictedBanner": "如果对方24小时内未发送第一条消息，此配对将失效。"
+    "restrictedBanner": "如果对方24小时内未发送第一条消息，此配对将失效。",
+    "sendImage": "发送照片",
+    "imagePermission": "发送照片需要相册访问权限",
+    "imageSendError": "照片发送失败，请重试。",
+    "viewOriginal": "查看原文",
+    "viewTranslated": "查看翻译",
+    "translatedLabel": "已翻译",
+    "icebreakerLabel": "开场话题推荐",
+    "icebreaker": {
+      "shared_kcontent": "你们都喜欢{{label}}！最喜欢哪一点呢？👀",
+      "shared_interest": "你们都喜欢{{label}}！是怎么开始的呢？",
+      "shared_language_exchange": "你们都对语言交流感兴趣！要从哪种语言开始练习呢？",
+      "shared_language": "你们都会说{{label}}！要不先打个招呼？👋",
+      "generic": "不如先打个招呼，破冰一下吧 😊"
+    },
+    "writeCoupleStory": "分享我们的故事",
+    "menuTitle": "选项"
   },
   "profile": {
     "editProfile": "编辑资料",
@@ -227,7 +243,9 @@
     "keepMembership": "保留会员",
     "cancelSuccessTitle": "会员已取消",
     "cancelSuccessBody": "你可以继续使用会员权益至 {{date}}。",
-    "noRefundNotice": "当前计费周期不予退款。"
+    "noRefundNotice": "当前计费周期不予退款。",
+    "coupleStoryCardTitle": "情侣故事",
+    "coupleStoryCardSubtitle": "看看在数搭伴侣上相识相恋的真实情侣故事"
   },
   "editProfile": {
     "title": "编辑资料",
@@ -261,6 +279,8 @@
     "managePhotosCount": "管理照片 ({{count}}张)",
     "completenessLabel": "资料完整度",
     "completenessHint": "资料越完整，配对成功率越高 — 多填写一些信息和照片吧。",
+    "kContentLabel": "喜欢的韩流内容",
+    "kContentHint": "选择你喜欢的韩剧、K-POP、网络漫画 — 是很好的聊天话题。",
     "save": "保存"
   },
   "photos": {
@@ -342,6 +362,32 @@
     "italian": "意大利语",
     "arabic": "阿拉伯语",
     "hindi": "印地语"
+  },
+  "kcontent": {
+    "crash_landing_on_you": "🪂 爱的迫降",
+    "squid_game": "🦑 鱿鱼游戏",
+    "reply_1988": "📼 请回答1988",
+    "goblin": "🗡️ 鬼怪",
+    "itaewon_class": "🍺 梨泰院Class",
+    "hospital_playlist": "🏥 机智的医生生活",
+    "business_proposal": "💼 社内相亲恋爱",
+    "the_glory": "🏆 黑暗荣耀",
+    "bts": "💜 防弹少年团",
+    "blackpink": "🖤 BLACKPINK",
+    "newjeans": "🐰 NewJeans",
+    "seventeen": "💎 SEVENTEEN",
+    "stray_kids": "🐺 Stray Kids",
+    "twice": "🍬 TWICE",
+    "ive": "👑 IVE",
+    "aespa": "🤖 aespa",
+    "solo_leveling": "⚔️ 我独自升级",
+    "true_beauty": "💄 女神降临",
+    "tower_of_god": "🗼 神之塔",
+    "lookism": "🪞 外貌至上主义",
+    "parasite": "🏠 寄生虫",
+    "physical_100": "💪 身体百分百",
+    "running_man": "🏷️ Running Man",
+    "extreme_job": "🍗 极限职业"
   },
   "settings": {
     "title": "设置",
@@ -436,6 +482,7 @@
     "lookingFor": "我在寻找",
     "interests": "我的兴趣",
     "languages": "语言",
+    "kContent": "我喜欢的韩流内容",
     "heightValue": "{{cm}} 厘米",
     "photoVerified": "照片已认证",
     "videoProfile": "视频资料",
@@ -456,6 +503,8 @@
     "languagesPlaceholder": "不限语言",
     "interestsLabel": "兴趣爱好",
     "interestsPlaceholder": "不限兴趣",
+    "kContentLabel": "喜欢的韩流内容",
+    "kContentPlaceholder": "不限韩流内容",
     "verifiedOnlyLabel": "仅显示已认证照片",
     "verifiedOnlyBody": "仅显示已完成照片认证的资料。",
     "languageExchangeOnlyLabel": "仅显示语言交流对象",
@@ -467,5 +516,36 @@
     "premiumLockedBody": "升级为高级会员即可按身高、宗教、政治观点、运动习惯等更多条件筛选。",
     "upgrade": "升级为高级会员",
     "apply": "应用筛选"
+  },
+  "coupleStory": {
+    "feedTitle": "情侣故事",
+    "feedEmpty": "还没有情侣故事 — 来做第一个分享的人吧！",
+    "loadError": "无法加载情侣故事。",
+    "myStoriesButton": "我的故事",
+    "myStoriesTitle": "我的情侣故事",
+    "myStoriesEmpty": "你还没有分享过情侣故事。",
+    "writeTitle": "分享我们的故事",
+    "storyLabel": "你们的故事",
+    "storyPlaceholder": "说说你们是怎么认识并在一起的吧",
+    "addPhotoOptional": "添加情侣照片（可选）",
+    "consentNotice": "需要对方也同意后才会公开到社区。",
+    "submit": "提交",
+    "submitSuccess": "提交成功！对方同意后就会公开啦。",
+    "alreadyExists": "这个配对已经有情侣故事了。",
+    "submitError": "提交失败，请重试。",
+    "statusPending": "等待对方确认",
+    "statusPublished": "已公开",
+    "statusDeclined": "已拒绝",
+    "statusHidden": "已隐藏",
+    "pendingYourAction": "{{name}}想和你一起分享情侣故事",
+    "confirm": "同意并公开",
+    "decline": "拒绝",
+    "declineConfirmTitle": "要拒绝这个故事吗？",
+    "declineConfirmBody": "拒绝后这个故事将不会公开。",
+    "report": "举报",
+    "reportConfirmTitle": "要举报这个故事吗？",
+    "reportSuccess": "举报成功，我们会尽快审核。",
+    "publishedOn": "{{date}} 公开",
+    "errorGeneric": "出错了，请稍后再试。"
   }
 }

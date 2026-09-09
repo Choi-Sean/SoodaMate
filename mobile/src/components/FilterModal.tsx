@@ -26,6 +26,7 @@ import {
   WANTS_KIDS_KEYS,
 } from "../constants/demographicOptions";
 import { INTEREST_KEYS, LANGUAGE_KEYS } from "../constants/interestsAndLanguages";
+import { K_CONTENT_KEYS } from "../constants/kContentTags";
 import { colors } from "../theme";
 import { formatHeightCm, formatDistanceKm } from "../utils/units";
 
@@ -60,6 +61,7 @@ export default function FilterModal({ visible, onClose }: Props) {
   const [raceFilter, setRaceFilter] = useState<string[]>([]);
   const [languagesFilter, setLanguagesFilter] = useState<string[]>([]);
   const [interestsFilter, setInterestsFilter] = useState<string[]>([]);
+  const [kContentFilter, setKContentFilter] = useState<string[]>([]);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [languageExchangeOnly, setLanguageExchangeOnly] = useState(false);
   const [expandDistanceIfLow, setExpandDistanceIfLow] = useState(true);
@@ -86,6 +88,7 @@ export default function FilterModal({ visible, onClose }: Props) {
     setRaceFilter(profile.race_filter);
     setLanguagesFilter(profile.languages_filter);
     setInterestsFilter(profile.interests_filter);
+    setKContentFilter(profile.k_content_filter);
     setVerifiedOnly(profile.verified_only);
     setLanguageExchangeOnly(profile.language_exchange_only);
     setExpandDistanceIfLow(profile.expand_distance_if_low);
@@ -108,6 +111,7 @@ export default function FilterModal({ visible, onClose }: Props) {
   const raceOptions = RACE_ETHNICITY_KEYS.map((key) => ({ key, label: t(`profileSetup.race.${key}`) }));
   const languageOptions = LANGUAGE_KEYS.map((key) => ({ key, label: t(`languages.${key}`) }));
   const interestOptions = INTEREST_KEYS.map((key) => ({ key, label: t(`interests.${key}`) }));
+  const kContentOptions = K_CONTENT_KEYS.map((key) => ({ key, label: t(`kcontent.${key}`) }));
 
   async function handleSave() {
     setSaving(true);
@@ -120,6 +124,7 @@ export default function FilterModal({ visible, onClose }: Props) {
         height_max: heightMax,
         languages_filter: languagesFilter,
         interests_filter: interestsFilter,
+        k_content_filter: kContentFilter,
         verified_only: verifiedOnly,
         language_exchange_only: languageExchangeOnly,
         expand_distance_if_low: expandDistanceIfLow,
@@ -227,6 +232,13 @@ export default function FilterModal({ visible, onClose }: Props) {
                   options={interestOptions}
                   values={interestsFilter}
                   onChange={setInterestsFilter}
+                />
+                <MultiSelectDropdown
+                  label={t("filters.kContentLabel")}
+                  placeholder={t("filters.kContentPlaceholder")}
+                  options={kContentOptions}
+                  values={kContentFilter}
+                  onChange={setKContentFilter}
                 />
                 <View style={styles.switchRow}>
                   <Text style={styles.switchLabel}>{t("filters.verifiedOnlyLabel")}</Text>

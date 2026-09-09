@@ -49,6 +49,11 @@ export function useChatSocket(
             match_id: data.match_id,
             sender_id: data.sender_id,
             content: data.content,
+            message_type: data.message_type ?? "text",
+            image_url: data.image_url ?? null,
+            original_language: data.original_language ?? null,
+            translated_content: data.translated_content ?? null,
+            translated_language: data.translated_language ?? null,
             sent_at: data.sent_at,
             delivered_at: null,
             read_at: null,
@@ -73,7 +78,17 @@ export function useChatSocket(
   const sendMessage = useCallback(
     (content: string) => {
       if (wsRef.current?.readyState !== WebSocket.OPEN) return;
-      wsRef.current.send(JSON.stringify({ type: "message", match_id: matchId, content }));
+      wsRef.current.send(JSON.stringify({ type: "message", match_id: matchId, message_type: "text", content }));
+    },
+    [matchId]
+  );
+
+  const sendImageMessage = useCallback(
+    (imageObjectPath: string) => {
+      if (wsRef.current?.readyState !== WebSocket.OPEN) return;
+      wsRef.current.send(
+        JSON.stringify({ type: "message", match_id: matchId, message_type: "image", image_object_path: imageObjectPath })
+      );
     },
     [matchId]
   );
@@ -83,5 +98,5 @@ export function useChatSocket(
     wsRef.current.send(JSON.stringify({ type: "read", match_id: matchId }));
   }, [matchId]);
 
-  return { connected, sendMessage, markRead };
+  return { connected, sendMessage, sendImageMessage, markRead };
 }

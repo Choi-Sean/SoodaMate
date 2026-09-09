@@ -89,15 +89,45 @@ async def send_like_notification(db: AsyncSession, user_id: uuid.UUID, superlike
 
 
 async def send_message_notification(
-    db: AsyncSession, user_id: uuid.UUID, match_id: uuid.UUID, sender_id: uuid.UUID, sender_name: str
+    db: AsyncSession,
+    user_id: uuid.UUID,
+    match_id: uuid.UUID,
+    sender_id: uuid.UUID,
+    sender_name: str,
+    message_type: str = "text",
+) -> None:
+    lang = await _get_language(db, user_id)
+    body_key = "photo_message_body" if message_type == "image" else "message_body"
+    await send_to_user(
+        db,
+        user_id,
+        sender_name,
+        push_i18n.t(lang, body_key),
+        {"type": "message", "match_id": str(match_id), "sender_id": str(sender_id)},
+    )
+
+
+async def send_couple_story_request_notification(
+    db: AsyncSession, user_id: uuid.UUID, author_name: str, story_id: uuid.UUID
 ) -> None:
     lang = await _get_language(db, user_id)
     await send_to_user(
         db,
         user_id,
-        sender_name,
-        push_i18n.t(lang, "message_body"),
-        {"type": "message", "match_id": str(match_id), "sender_id": str(sender_id)},
+        author_name,
+        push_i18n.t(lang, "couple_story_request_body"),
+        {"type": "couple_story_request", "story_id": str(story_id)},
+    )
+
+
+async def send_couple_story_published_notification(db: AsyncSession, user_id: uuid.UUID, story_id: uuid.UUID) -> None:
+    lang = await _get_language(db, user_id)
+    await send_to_user(
+        db,
+        user_id,
+        push_i18n.t(lang, "couple_story_published_title"),
+        push_i18n.t(lang, "couple_story_published_body"),
+        {"type": "couple_story_published", "story_id": str(story_id)},
     )
 
 

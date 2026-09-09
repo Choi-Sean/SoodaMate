@@ -78,6 +78,8 @@ def _basic_filters(viewer_profile: Profile) -> list:
         filters.append(_csv_contains_any(Profile.languages, viewer_profile.languages_filter.split(",")))
     if viewer_profile.interests_filter:
         filters.append(_csv_contains_any(Profile.interests, viewer_profile.interests_filter.split(",")))
+    if viewer_profile.k_content_filter:
+        filters.append(_csv_contains_any(Profile.k_content_tags, viewer_profile.k_content_filter.split(",")))
     if viewer_profile.verified_only:
         filters.append(Profile.face_verified)
     if viewer_profile.language_exchange_only:

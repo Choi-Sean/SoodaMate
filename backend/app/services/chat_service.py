@@ -77,8 +77,27 @@ def other_participant(match: Match, user_id: uuid.UUID) -> uuid.UUID:
     return match.user_b_id if match.user_a_id == user_id else match.user_a_id
 
 
-async def persist_message(db: AsyncSession, match: Match, sender_id: uuid.UUID, content: str) -> Message:
-    message = Message(match_id=match.id, sender_id=sender_id, content=content)
+async def persist_message(
+    db: AsyncSession,
+    match: Match,
+    sender_id: uuid.UUID,
+    content: str,
+    message_type: str = "text",
+    image_object_path: str | None = None,
+    original_language: str | None = None,
+    translated_content: str | None = None,
+    translated_language: str | None = None,
+) -> Message:
+    message = Message(
+        match_id=match.id,
+        sender_id=sender_id,
+        content=content,
+        message_type=message_type,
+        image_object_path=image_object_path,
+        original_language=original_language,
+        translated_content=translated_content,
+        translated_language=translated_language,
+    )
     db.add(message)
     if not match.first_message_sent:
         match.first_message_sent = True

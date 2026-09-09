@@ -1,13 +1,14 @@
 import uuid
 
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_token
 from app.database import get_db
 from app.models.profile import Profile
 from app.models.user import User
-from app.services import call_service, chat_service, push_service
+from app.services import call_service, chat_service, push_service, storage_service, translation_service
 from app.ws.connection_manager import manager
 
 router = APIRouter(tags=["chat"])
@@ -27,8 +28,14 @@ async def _authenticate(token: str, db: AsyncSession) -> User | None:
 
 
 async def _handle_message(db: AsyncSession, user: User, data: dict) -> None:
+    message_type = data.get("message_type") or "text"
+    if message_type not in ("text", "image"):
+        return
     content = (data.get("content") or "").strip()
-    if not content:
+    image_object_path = data.get("image_object_path") if message_type == "image" else None
+    if message_type == "text" and not content:
+        return
+    if message_type == "image" and not image_object_path:
         return
     try:
         match_id = uuid.UUID(data["match_id"])
@@ -46,22 +53,58 @@ async def _handle_message(db: AsyncSession, user: User, data: dict) -> None:
         )
         return
 
-    message = await chat_service.persist_message(db, match, user.id, content)
     peer_id = chat_service.other_participant(match, user.id)
+
+    # Real-time translation — text messages only, and only when configured
+    # (translation_service.translate silently returns None otherwise) and
+    # the two sides actually read the app in different languages. Computed
+    # here (not in chat_service.persist_message) since it needs the peer's
+    # preferred_language, which persist_message has no reason to know about.
+    original_language: str | None = None
+    translated_content: str | None = None
+    translated_language: str | None = None
+    if message_type == "text":
+        peer_lang = await db.scalar(select(User.preferred_language).where(User.id == peer_id))
+        sender_lang = user.preferred_language
+        if peer_lang and sender_lang and peer_lang != sender_lang:
+            translated = await translation_service.translate(content, target_lang=peer_lang, source_lang=sender_lang)
+            if translated:
+                original_language = sender_lang
+                translated_content = translated
+                translated_language = peer_lang
+
+    message = await chat_service.persist_message(
+        db,
+        match,
+        user.id,
+        content,
+        message_type=message_type,
+        image_object_path=image_object_path,
+        original_language=original_language,
+        translated_content=translated_content,
+        translated_language=translated_language,
+    )
 
     payload = {
         "type": "message",
         "match_id": str(match_id),
         "message_id": str(message.id),
         "sender_id": str(user.id),
+        "message_type": message_type,
         "content": content,
+        "image_url": storage_service.build_public_url(image_object_path) if image_object_path else None,
+        "original_language": original_language,
+        "translated_content": translated_content,
+        "translated_language": translated_language,
         "sent_at": message.sent_at.isoformat(),
     }
     delivered = await manager.send_to_user(peer_id, payload)
     if not delivered:
         sender_profile = await db.get(Profile, user.id)
         sender_name = sender_profile.display_name if sender_profile else "New message"
-        await push_service.send_message_notification(db, peer_id, match_id, user.id, sender_name=sender_name)
+        await push_service.send_message_notification(
+            db, peer_id, match_id, user.id, sender_name=sender_name, message_type=message_type
+        )
 
 
 async def _handle_read(db: AsyncSession, user: User, data: dict) -> None:

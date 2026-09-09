@@ -7,6 +7,7 @@ from app.routers import (
     admin,
     auth,
     calls,
+    couple_stories,
     devices,
     discovery,
     interactions,
@@ -45,6 +46,7 @@ app.include_router(payments.router)
 app.include_router(verification.router)
 app.include_router(calls.router)
 app.include_router(admin.router)
+app.include_router(couple_stories.router)
 
 
 @app.get("/health")

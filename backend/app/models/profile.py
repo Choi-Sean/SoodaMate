@@ -151,6 +151,14 @@ class Profile(Base):
     has_kids: Mapped[str | None] = mapped_column("HasKids", Unicode(30), nullable=True)
     interests: Mapped[str | None] = mapped_column("Interests", Unicode(500), nullable=True)
     languages: Mapped[str | None] = mapped_column("Languages", Unicode(255), nullable=True)
+    # K-content taste tags (K-drama/K-pop/webtoon/K-movie favorites) — same
+    # comma-separated storage convention as interests/languages above, own
+    # curated key list (mobile/src/constants/kContentTags.ts) rather than
+    # reusing INTEREST_KEYS, so the two pickers can evolve independently.
+    # Free to set (like interests); k_content_filter below is the matching
+    # free Basic-tab filter, same relationship as interests/interests_filter.
+    k_content_tags: Mapped[str | None] = mapped_column("KContentTags", Unicode(500), nullable=True)
+    k_content_filter: Mapped[str | None] = mapped_column("KContentFilter", Unicode(500), nullable=True)
     # Set True only by an admin approving a FaceVerification row below —
     # never writable through the regular profile-update endpoint.
     face_verified: Mapped[bool] = mapped_column(

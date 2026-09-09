@@ -25,12 +25,14 @@ import {
 } from "../../constants/demographicOptions";
 import { EDUCATION_KEYS } from "../../constants/educationLevels";
 import { INTEREST_KEYS, LANGUAGE_KEYS } from "../../constants/interestsAndLanguages";
+import { K_CONTENT_KEYS } from "../../constants/kContentTags";
 import type { Gender, InterestedIn } from "../../types";
 import { colors } from "../../theme";
 
 const GENDERS: Gender[] = ["male", "female", "other"];
 const INTERESTS: InterestedIn[] = ["male", "female", "all"];
 const MAX_INTERESTS = 5;
+const MAX_K_CONTENT_TAGS = 6;
 
 interface Props {
   onComplete: () => void;
@@ -65,6 +67,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   const [wantsKids, setWantsKids] = useState<string | null>(null);
   const [hasKids, setHasKids] = useState<string | null>(null);
   const [interests, setInterests] = useState<string[]>([]);
+  const [kContentTags, setKContentTags] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -132,6 +135,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         wants_kids: wantsKids,
         has_kids: hasKids,
         interests,
+        k_content_tags: kContentTags,
         languages,
       });
 
@@ -156,6 +160,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   }));
   const interestOptions = INTEREST_KEYS as unknown as readonly string[];
   const languageOptions = LANGUAGE_KEYS as unknown as readonly string[];
+  const kContentOptions = K_CONTENT_KEYS as unknown as readonly string[];
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -370,6 +375,14 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         translatePrefix="languages"
         values={languages}
         onChange={setLanguages}
+      />
+      <MultiChipSelect
+        label={t("editProfile.kContentLabel")}
+        options={kContentOptions}
+        translatePrefix="kcontent"
+        values={kContentTags}
+        onChange={setKContentTags}
+        max={MAX_K_CONTENT_TAGS}
       />
 
       <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={loading}>

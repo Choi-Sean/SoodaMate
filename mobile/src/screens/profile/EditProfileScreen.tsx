@@ -31,6 +31,7 @@ import {
 } from "../../constants/demographicOptions";
 import { EDUCATION_KEYS } from "../../constants/educationLevels";
 import { INTEREST_KEYS, LANGUAGE_KEYS } from "../../constants/interestsAndLanguages";
+import { K_CONTENT_KEYS } from "../../constants/kContentTags";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
 import type { InterestedIn } from "../../types";
 import { colors } from "../../theme";
@@ -39,6 +40,7 @@ type Props = NativeStackScreenProps<ProfileStackParamList, "EditProfile">;
 
 const INTERESTS: InterestedIn[] = ["male", "female", "all"];
 const MAX_INTERESTS = 5;
+const MAX_K_CONTENT_TAGS = 6;
 
 export default function EditProfileScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
@@ -68,6 +70,7 @@ export default function EditProfileScreen({ navigation }: Props) {
   const [hasKids, setHasKids] = useState<string | null>(null);
   const [interests, setInterests] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
+  const [kContentTags, setKContentTags] = useState<string[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -104,6 +107,7 @@ export default function EditProfileScreen({ navigation }: Props) {
     // rewrites the stored value to only ever contain valid keys.
     setInterests(profile.interests.filter((key) => (INTEREST_KEYS as readonly string[]).includes(key)));
     setLanguages(profile.languages.filter((key) => (LANGUAGE_KEYS as readonly string[]).includes(key)));
+    setKContentTags(profile.k_content_tags.filter((key) => (K_CONTENT_KEYS as readonly string[]).includes(key)));
   }, [profile]);
 
   async function refreshProfile() {
@@ -144,6 +148,7 @@ export default function EditProfileScreen({ navigation }: Props) {
         wants_kids: wantsKids,
         has_kids: hasKids,
         interests,
+        k_content_tags: kContentTags,
         languages,
         // Not editable on this screen anymore (age/distance now live only
         // in the Swipe tab's Filters modal) — round-tripped unchanged so
@@ -168,6 +173,7 @@ export default function EditProfileScreen({ navigation }: Props) {
 
   const interestOptions = INTEREST_KEYS as unknown as readonly string[];
   const languageOptions = LANGUAGE_KEYS as unknown as readonly string[];
+  const kContentOptions = K_CONTENT_KEYS as unknown as readonly string[];
 
   if (isLoading || !profile) {
     return (
@@ -419,6 +425,15 @@ export default function EditProfileScreen({ navigation }: Props) {
           values={languages}
           onChange={setLanguages}
         />
+        <MultiChipSelect
+          label={t("editProfile.kContentLabel")}
+          options={kContentOptions}
+          translatePrefix="kcontent"
+          values={kContentTags}
+          onChange={setKContentTags}
+          max={MAX_K_CONTENT_TAGS}
+        />
+        <Text style={styles.switchHint}>{t("editProfile.kContentHint")}</Text>
       </View>
 
       <Pressable style={styles.primaryButton} onPress={handleSave} disabled={saving}>

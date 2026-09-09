@@ -31,6 +31,7 @@ export interface ProfileUpdateInput {
   has_kids?: string | null;
   interests?: string[];
   languages?: string[];
+  k_content_tags?: string[];
 }
 
 export async function getMyProfile(): Promise<Profile> {
@@ -117,6 +118,7 @@ export interface BasicFilterInput {
   height_max?: number | null;
   languages_filter?: string[];
   interests_filter?: string[];
+  k_content_filter?: string[];
   verified_only?: boolean;
   language_exchange_only?: boolean;
   expand_distance_if_low?: boolean;

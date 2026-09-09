@@ -154,6 +154,17 @@ export default function MyProfileScreen({ navigation }: Props) {
         ))}
       </View>
 
+      <Pressable style={styles.coupleStoryCard} onPress={() => navigation.navigate("CoupleStoriesFeed")}>
+        <View style={styles.coupleStoryIconBubble}>
+          <Ionicons name="heart" size={18} color="#fff" />
+        </View>
+        <View style={styles.coupleStoryTextWrap}>
+          <Text style={styles.coupleStoryTitle}>{t("profile.coupleStoryCardTitle")}</Text>
+          <Text style={styles.coupleStorySubtitle}>{t("profile.coupleStoryCardSubtitle")}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.accentDark} />
+      </Pressable>
+
       <Pressable style={[styles.promoBanner, isPremium && styles.promoBannerActive]} onPress={openShop}>
         <Ionicons name="sparkles" size={22} color={isPremium ? colors.navy : "#fff"} />
         <Text style={[styles.promoTitle, isPremium && styles.promoTitleActive]}>
@@ -317,6 +328,28 @@ const styles = StyleSheet.create({
   explainerTextWrap: { flex: 1 },
   explainerLabel: { fontSize: 13.5, fontWeight: "700", color: colors.navy },
   explainerBody: { fontSize: 12.5, color: colors.muted, marginTop: 2, lineHeight: 17 },
+  coupleStoryCard: {
+    marginTop: 16,
+    backgroundColor: colors.white,
+    borderRadius: 18,
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  coupleStoryIconBubble: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.heart,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  coupleStoryTextWrap: { flex: 1 },
+  coupleStoryTitle: { fontSize: 14.5, fontWeight: "800", color: colors.navy },
+  coupleStorySubtitle: { fontSize: 12, color: colors.muted, marginTop: 2, lineHeight: 16 },
   promoBanner: {
     marginTop: 16,
     backgroundColor: colors.navy,

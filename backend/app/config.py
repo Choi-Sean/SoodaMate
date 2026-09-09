@@ -47,6 +47,14 @@ class Settings(BaseSettings):
 
     firebase_credentials_path: str = ""
 
+    # Google Cloud Translation v2 (https://translation.googleapis.com) — a
+    # plain API key, not a service account. Powers real-time chat
+    # translation (services/translation_service.py); unset means
+    # translation is silently a no-op (chat still sends/receives fine,
+    # just without a translated_content field), same convention as
+    # push_service's unconfigured-Firebase no-op above.
+    google_translate_api_key: str = ""
+
     cors_origins: str = "http://localhost:19006,http://localhost:8081"
 
     # Phase 15 — video call signaling. Public STUN needs no account; TURN is

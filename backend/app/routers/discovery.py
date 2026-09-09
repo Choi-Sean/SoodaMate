@@ -54,6 +54,7 @@ async def _to_candidates_out(
             has_kids=profile.has_kids,
             interests=_comma_list(profile.interests),
             languages=_comma_list(profile.languages),
+            k_content_tags=_comma_list(profile.k_content_tags),
             verified_badge=profile.verified_badge,
             face_verified=profile.face_verified,
             open_to_language_exchange=profile.open_to_language_exchange,

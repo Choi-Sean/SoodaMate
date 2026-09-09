@@ -6,6 +6,8 @@ import EditProfileScreen from "../screens/profile/EditProfileScreen";
 import TravelModeScreen from "../screens/profile/TravelModeScreen";
 import VerificationScreen from "../screens/profile/VerificationScreen";
 import FaceVerificationScreen from "../screens/profile/FaceVerificationScreen";
+import CoupleStoriesFeedScreen from "../screens/profile/CoupleStoriesFeedScreen";
+import MyCoupleStoriesScreen from "../screens/profile/MyCoupleStoriesScreen";
 import SettingsScreen from "../screens/settings/SettingsScreen";
 import { colors } from "../theme";
 
@@ -15,6 +17,8 @@ export type ProfileStackParamList = {
   TravelMode: undefined;
   Verification: undefined;
   FaceVerification: undefined;
+  CoupleStoriesFeed: undefined;
+  MyCoupleStories: undefined;
   Settings: undefined;
 };
 
@@ -39,6 +43,8 @@ export default function ProfileStack() {
       <Stack.Screen name="TravelMode" component={TravelModeScreen} options={{ title: t("settings.travelMode") }} />
       <Stack.Screen name="Verification" component={VerificationScreen} options={{ title: t("settings.verification") }} />
       <Stack.Screen name="FaceVerification" component={FaceVerificationScreen} options={{ title: t("faceVerification.title") }} />
+      <Stack.Screen name="CoupleStoriesFeed" component={CoupleStoriesFeedScreen} options={{ title: t("coupleStory.feedTitle") }} />
+      <Stack.Screen name="MyCoupleStories" component={MyCoupleStoriesScreen} options={{ title: t("coupleStory.myStoriesTitle") }} />
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t("settings.title") }} />
     </Stack.Navigator>
   );

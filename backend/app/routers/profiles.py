@@ -61,6 +61,7 @@ async def update_my_profile(
     profile_data = body.model_dump()
     profile_data["interests"] = ",".join(body.interests) if body.interests else None
     profile_data["languages"] = ",".join(body.languages) if body.languages else None
+    profile_data["k_content_tags"] = ",".join(body.k_content_tags) if body.k_content_tags else None
 
     if profile is None:
         profile = Profile(user_id=user.id, **profile_data, is_profile_complete=is_complete)
@@ -244,6 +245,7 @@ async def set_basic_filters(
     profile.height_filter_max = body.height_max
     profile.languages_filter = ",".join(body.languages_filter) if body.languages_filter else None
     profile.interests_filter = ",".join(body.interests_filter) if body.interests_filter else None
+    profile.k_content_filter = ",".join(body.k_content_filter) if body.k_content_filter else None
     profile.verified_only = body.verified_only
     profile.language_exchange_only = body.language_exchange_only
     profile.expand_distance_if_low = body.expand_distance_if_low

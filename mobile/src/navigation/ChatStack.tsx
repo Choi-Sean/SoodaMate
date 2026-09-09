@@ -1,17 +1,22 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 
 import ChatListScreen from "../screens/chat/ChatListScreen";
 import ChatRoomScreen from "../screens/chat/ChatRoomScreen";
+import SubmitCoupleStoryScreen from "../screens/profile/SubmitCoupleStoryScreen";
 import { colors } from "../theme";
 
 export type ChatStackParamList = {
   ChatList: undefined;
   ChatRoom: { matchId: string; otherUserId: string; otherDisplayName: string };
+  SubmitCoupleStory: { matchId: string; otherDisplayName: string };
 };
 
 const Stack = createNativeStackNavigator<ChatStackParamList>();
 
 export default function ChatStack() {
+  const { t } = useTranslation();
+
   return (
     <Stack.Navigator
       screenOptions={{
@@ -26,6 +31,11 @@ export default function ChatStack() {
         name="ChatRoom"
         component={ChatRoomScreen}
         options={({ route }) => ({ title: route.params.otherDisplayName })}
+      />
+      <Stack.Screen
+        name="SubmitCoupleStory"
+        component={SubmitCoupleStoryScreen}
+        options={{ title: t("coupleStory.writeTitle") }}
       />
     </Stack.Navigator>
   );

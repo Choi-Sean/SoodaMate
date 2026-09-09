@@ -68,6 +68,7 @@ class ProfileUpdate(BaseModel):
     has_kids: str | None = Field(default=None, max_length=30)
     interests: list[str] = Field(default_factory=list)
     languages: list[str] = Field(default_factory=list)
+    k_content_tags: list[str] = Field(default_factory=list)
 
 
 class ProfileOut(BaseModel):
@@ -133,11 +134,21 @@ class ProfileOut(BaseModel):
     has_kids: str | None = None
     interests: list[str] = []
     languages: list[str] = []
+    k_content_tags: list[str] = []
+    k_content_filter: list[str] = []
     updated_at: datetime
     photos: list[PhotoOut] = []
 
     @field_validator(
-        "race_filter", "religion_filter", "interests", "languages", "languages_filter", "interests_filter", mode="before"
+        "race_filter",
+        "religion_filter",
+        "interests",
+        "languages",
+        "languages_filter",
+        "interests_filter",
+        "k_content_tags",
+        "k_content_filter",
+        mode="before",
     )
     @classmethod
     def _split_comma_list(cls, value: object) -> list[str]:
@@ -229,6 +240,7 @@ class BasicFilterUpdate(BaseModel):
     height_max: int | None = Field(default=None, ge=50, le=272)
     languages_filter: list[str] = Field(default_factory=list)
     interests_filter: list[str] = Field(default_factory=list)
+    k_content_filter: list[str] = Field(default_factory=list)
     verified_only: bool = False
     language_exchange_only: bool = False
     expand_distance_if_low: bool = True

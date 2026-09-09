@@ -187,6 +187,16 @@ export default function ProfileInfoSections({ candidate }: { candidate: Candidat
         </Section>
       )}
 
+      {candidate.k_content_tags.length > 0 && (
+        <Section title={t("profileDetail.kContent")}>
+          <View style={styles.pillWrap}>
+            {candidate.k_content_tags.map((tag, i) => (
+              <TextPill key={i} label={t(`kcontent.${tag}`, { defaultValue: tag })} />
+            ))}
+          </View>
+        </Section>
+      )}
+
       {restOfMedia.map((media) => (
         <View key={media.id} style={styles.extraMediaCard}>
           <ProfileMedia media={media} style={styles.extraMedia} />

@@ -189,7 +189,23 @@
     "blockConfirm": "Bloquear",
     "errorGeneric": "Algo salió mal. Inténtalo más tarde.",
     "firstMessageRestricted": "Ahora le toca a la otra persona enviar el primer mensaje.",
-    "restrictedBanner": "Este match expira si no envía el primer mensaje en 24 horas."
+    "restrictedBanner": "Este match expira si no envía el primer mensaje en 24 horas.",
+    "sendImage": "Enviar foto",
+    "imagePermission": "Se necesita permiso de acceso a fotos para enviar una foto",
+    "imageSendError": "No se pudo enviar la foto. Inténtalo de nuevo.",
+    "viewOriginal": "Ver original",
+    "viewTranslated": "Ver traducción",
+    "translatedLabel": "Traducido",
+    "icebreakerLabel": "Sugerencia para iniciar la charla",
+    "icebreaker": {
+      "shared_kcontent": "¡A ambos les gusta {{label}}! ¿Qué es lo que más te gusta? 👀",
+      "shared_interest": "¡A ambos les gusta {{label}}! ¿Cómo empezaste?",
+      "shared_language_exchange": "¡Ambos están abiertos a un intercambio de idiomas! ¿Con qué idioma empezamos?",
+      "shared_language": "¡Ambos hablan {{label}}! ¿Qué tal empezar con un saludo? 👋",
+      "generic": "¿Por qué no rompes el hielo y saludas? 😊"
+    },
+    "writeCoupleStory": "Comparte tu historia de pareja",
+    "menuTitle": "Opciones"
   },
   "profile": {
     "editProfile": "Editar perfil",
@@ -227,7 +243,9 @@
     "keepMembership": "Mantener membresía",
     "cancelSuccessTitle": "Membresía cancelada",
     "cancelSuccessBody": "Puedes seguir usando Premium hasta el {{date}}.",
-    "noRefundNotice": "No se otorgan reembolsos por el periodo de facturación actual."
+    "noRefundNotice": "No se otorgan reembolsos por el periodo de facturación actual.",
+    "coupleStoryCardTitle": "Historias de pareja",
+    "coupleStoryCardSubtitle": "Descubre historias reales de parejas que se conocieron en SooDaMate"
   },
   "editProfile": {
     "title": "Editar perfil",
@@ -261,6 +279,8 @@
     "managePhotosCount": "Administrar fotos ({{count}})",
     "completenessLabel": "Nivel de perfil",
     "completenessHint": "Los perfiles completos consiguen más matches — añade más detalles y fotos.",
+    "kContentLabel": "K-contenido que te gusta",
+    "kContentHint": "Elige tus K-dramas, K-pop y webtoons favoritos — es un gran tema para romper el hielo.",
     "save": "Guardar"
   },
   "photos": {
@@ -342,6 +362,32 @@
     "italian": "Italiano",
     "arabic": "Árabe",
     "hindi": "Hindi"
+  },
+  "kcontent": {
+    "crash_landing_on_you": "🪂 Aterrizaje de emergencia en tu corazón",
+    "squid_game": "🦑 El juego del calamar",
+    "reply_1988": "📼 Reply 1988",
+    "goblin": "🗡️ Goblin",
+    "itaewon_class": "🍺 Itaewon Class",
+    "hospital_playlist": "🏥 Hospital Playlist",
+    "business_proposal": "💼 Business Proposal",
+    "the_glory": "🏆 La Gloria",
+    "bts": "💜 BTS",
+    "blackpink": "🖤 BLACKPINK",
+    "newjeans": "🐰 NewJeans",
+    "seventeen": "💎 SEVENTEEN",
+    "stray_kids": "🐺 Stray Kids",
+    "twice": "🍬 TWICE",
+    "ive": "👑 IVE",
+    "aespa": "🤖 aespa",
+    "solo_leveling": "⚔️ Solo Leveling",
+    "true_beauty": "💄 True Beauty",
+    "tower_of_god": "🗼 Tower of God",
+    "lookism": "🪞 Lookism",
+    "parasite": "🏠 Parásitos",
+    "physical_100": "💪 Physical: 100",
+    "running_man": "🏷️ Running Man",
+    "extreme_job": "🍗 Extreme Job"
   },
   "settings": {
     "title": "Ajustes",
@@ -436,6 +482,7 @@
     "lookingFor": "Estoy buscando",
     "interests": "Mis intereses",
     "languages": "Idiomas",
+    "kContent": "K-contenido que me gusta",
     "heightValue": "{{cm}} cm",
     "photoVerified": "Foto verificada",
     "videoProfile": "Perfil en video",
@@ -456,6 +503,8 @@
     "languagesPlaceholder": "Cualquier idioma",
     "interestsLabel": "Intereses",
     "interestsPlaceholder": "Cualquier interés",
+    "kContentLabel": "K-contenido que le gusta",
+    "kContentPlaceholder": "Cualquier K-contenido",
     "verifiedOnlyLabel": "Solo verificados con foto",
     "verifiedOnlyBody": "Muestra solo perfiles que completaron la verificación de foto.",
     "languageExchangeOnlyLabel": "Solo intercambio de idiomas",
@@ -467,5 +516,36 @@
     "premiumLockedBody": "Hazte Premium para filtrar por altura, religión, opinión política, hábitos de ejercicio y más.",
     "upgrade": "Actualizar a Premium",
     "apply": "Aplicar filtros"
+  },
+  "coupleStory": {
+    "feedTitle": "Historias de pareja",
+    "feedEmpty": "Aún no hay historias de pareja — ¡sé el primero!",
+    "loadError": "No se pudieron cargar las historias de pareja.",
+    "myStoriesButton": "Mis historias",
+    "myStoriesTitle": "Mis historias de pareja",
+    "myStoriesEmpty": "Aún no has compartido una historia de pareja.",
+    "writeTitle": "Comparte tu historia de pareja",
+    "storyLabel": "Tu historia",
+    "storyPlaceholder": "Cuéntanos cómo se conocieron y empezaron a salir",
+    "addPhotoOptional": "Añadir foto de pareja (opcional)",
+    "consentNotice": "No se publicará hasta que tu match también acepte compartirla.",
+    "submit": "Enviar",
+    "submitSuccess": "¡Enviado! Se publicará cuando tu match también acepte compartirla.",
+    "alreadyExists": "Este match ya tiene una historia de pareja.",
+    "submitError": "No se pudo enviar. Inténtalo de nuevo.",
+    "statusPending": "Esperando su aprobación",
+    "statusPublished": "Publicada",
+    "statusDeclined": "Rechazada",
+    "statusHidden": "Oculta",
+    "pendingYourAction": "{{name}} quiere compartir su historia de pareja",
+    "confirm": "Aceptar y publicar",
+    "decline": "Rechazar",
+    "declineConfirmTitle": "¿Rechazar esta historia?",
+    "declineConfirmBody": "No se publicará si la rechazas.",
+    "report": "Reportar",
+    "reportConfirmTitle": "¿Reportar esta historia?",
+    "reportSuccess": "Reportado — lo revisaremos.",
+    "publishedOn": "Publicada el {{date}}",
+    "errorGeneric": "Algo salió mal. Inténtalo más tarde."
   }
 }

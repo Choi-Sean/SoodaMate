@@ -189,7 +189,23 @@
     "blockConfirm": "ブロック",
     "errorGeneric": "問題が発生しました。しばらくしてから再度お試しください。",
     "firstMessageRestricted": "今は相手が先にメッセージを送る番です。",
-    "restrictedBanner": "24時間以内に相手が最初のメッセージを送らない場合、このマッチは無効になります。"
+    "restrictedBanner": "24時間以内に相手が最初のメッセージを送らない場合、このマッチは無効になります。",
+    "sendImage": "写真を送る",
+    "imagePermission": "写真を送るには写真ライブラリへのアクセス許可が必要です",
+    "imageSendError": "写真を送信できませんでした。もう一度お試しください。",
+    "viewOriginal": "原文を見る",
+    "viewTranslated": "翻訳を見る",
+    "translatedLabel": "翻訳済み",
+    "icebreakerLabel": "会話のきっかけ",
+    "icebreaker": {
+      "shared_kcontent": "お二人とも{{label}}が好きなんですね！どこが一番好きですか？👀",
+      "shared_interest": "お二人とも{{label}}が好きなんですね！きっかけは何でしたか？",
+      "shared_language_exchange": "お二人とも言語交換に興味がありますね！どの言語から練習しましょうか？",
+      "shared_language": "お二人とも{{label}}を話せるんですね！まずは挨拶からどうですか？👋",
+      "generic": "まずは挨拶から始めてみませんか？😊"
+    },
+    "writeCoupleStory": "カップルストーリーを投稿",
+    "menuTitle": "オプション"
   },
   "profile": {
     "editProfile": "プロフィール編集",
@@ -227,7 +243,9 @@
     "keepMembership": "メンバーシップを継続",
     "cancelSuccessTitle": "メンバーシップを解約しました",
     "cancelSuccessBody": "{{date}}まで引き続きプレミアムをご利用いただけます。",
-    "noRefundNotice": "今回の請求期間分の返金はありません。"
+    "noRefundNotice": "今回の請求期間分の返金はありません。",
+    "coupleStoryCardTitle": "カップルストーリー",
+    "coupleStoryCardSubtitle": "数多メイトで出会ったカップルのリアルなストーリーをチェック"
   },
   "editProfile": {
     "title": "プロフィール編集",
@@ -261,6 +279,8 @@
     "managePhotosCount": "写真を管理 ({{count}}枚)",
     "completenessLabel": "プロフィール充実度",
     "completenessHint": "プロフィールを充実させるほどマッチ率が上がります — もう少し情報や写真を追加しましょう。",
+    "kContentLabel": "好きなKコンテンツ",
+    "kContentHint": "好きな韓国ドラマ・K-POP・ウェブトゥーンを選んでみましょう — 会話のきっかけになります。",
     "save": "保存"
   },
   "photos": {
@@ -342,6 +362,32 @@
     "italian": "イタリア語",
     "arabic": "アラビア語",
     "hindi": "ヒンディー語"
+  },
+  "kcontent": {
+    "crash_landing_on_you": "🪂 愛の不時着",
+    "squid_game": "🦑 イカゲーム",
+    "reply_1988": "📼 応答せよ1988",
+    "goblin": "🗡️ トッケビ",
+    "itaewon_class": "🍺 梨泰院クラス",
+    "hospital_playlist": "🏥 賢い医師生活",
+    "business_proposal": "💼 ビジネス・プロポーザル",
+    "the_glory": "🏆 ザ・グローリー",
+    "bts": "💜 BTS",
+    "blackpink": "🖤 BLACKPINK",
+    "newjeans": "🐰 NewJeans",
+    "seventeen": "💎 SEVENTEEN",
+    "stray_kids": "🐺 Stray Kids",
+    "twice": "🍬 TWICE",
+    "ive": "👑 IVE",
+    "aespa": "🤖 aespa",
+    "solo_leveling": "⚔️ 俺だけレベルアップな件",
+    "true_beauty": "💄 女神降臨",
+    "tower_of_god": "🗼 神の塔 -Tower of God-",
+    "lookism": "🪞 ルッキズム",
+    "parasite": "🏠 パラサイト 半地下の家族",
+    "physical_100": "💪 フィジカル: 100",
+    "running_man": "🏷️ ランニングマン",
+    "extreme_job": "🍗 エキストリーム・ジョブ"
   },
   "settings": {
     "title": "設定",
@@ -436,6 +482,7 @@
     "lookingFor": "探している関係",
     "interests": "私の興味・関心",
     "languages": "話せる言語",
+    "kContent": "好きなKコンテンツ",
     "heightValue": "{{cm}}cm",
     "photoVerified": "写真認証済み",
     "videoProfile": "動画プロフィール",
@@ -456,6 +503,8 @@
     "languagesPlaceholder": "すべての言語",
     "interestsLabel": "興味・関心",
     "interestsPlaceholder": "すべての興味",
+    "kContentLabel": "好きなKコンテンツ",
+    "kContentPlaceholder": "すべてのKコンテンツ",
     "verifiedOnlyLabel": "写真認証済みのみ",
     "verifiedOnlyBody": "写真認証を完了したプロフィールのみ表示します。",
     "languageExchangeOnlyLabel": "言語交換希望者のみ",
@@ -467,5 +516,36 @@
     "premiumLockedBody": "プレミアムにアップグレードすると、身長・宗教・政治観・運動習慣などさらに多くの条件で絞り込めます。",
     "upgrade": "プレミアムにアップグレード",
     "apply": "フィルターを適用"
+  },
+  "coupleStory": {
+    "feedTitle": "カップルストーリー",
+    "feedEmpty": "まだカップルストーリーがありません — 最初の投稿者になりましょう！",
+    "loadError": "カップルストーリーを読み込めませんでした。",
+    "myStoriesButton": "自分のストーリー",
+    "myStoriesTitle": "自分のカップルストーリー",
+    "myStoriesEmpty": "まだカップルストーリーを投稿していません。",
+    "writeTitle": "カップルストーリーを投稿",
+    "storyLabel": "ストーリー",
+    "storyPlaceholder": "出会って付き合うまでのエピソードを教えてください",
+    "addPhotoOptional": "カップル写真を追加（任意）",
+    "consentNotice": "相手が同意するまでコミュニティには公開されません。",
+    "submit": "送信する",
+    "submitSuccess": "送信しました！相手が同意すると公開されます。",
+    "alreadyExists": "このマッチにはすでにカップルストーリーがあります。",
+    "submitError": "送信できませんでした。もう一度お試しください。",
+    "statusPending": "相手の承認待ち",
+    "statusPublished": "公開済み",
+    "statusDeclined": "拒否されました",
+    "statusHidden": "非表示",
+    "pendingYourAction": "{{name}}さんがカップルストーリーを一緒に投稿したがっています",
+    "confirm": "同意して公開する",
+    "decline": "拒否する",
+    "declineConfirmTitle": "このストーリーを拒否しますか？",
+    "declineConfirmBody": "拒否すると、このストーリーは公開されません。",
+    "report": "通報する",
+    "reportConfirmTitle": "このストーリーを通報しますか？",
+    "reportSuccess": "通報しました — 確認いたします。",
+    "publishedOn": "{{date}}に公開",
+    "errorGeneric": "問題が発生しました。しばらくしてから再度お試しください。"
   }
 }

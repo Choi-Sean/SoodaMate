@@ -76,6 +76,8 @@ export interface Profile {
   has_kids: string | null;
   interests: string[];
   languages: string[];
+  k_content_tags: string[];
+  k_content_filter: string[];
   updated_at: string;
   photos: Photo[];
 }
@@ -106,6 +108,7 @@ export interface Candidate {
   has_kids: string | null;
   interests: string[];
   languages: string[];
+  k_content_tags: string[];
   verified_badge: "work" | "school" | null;
   face_verified: boolean;
   open_to_language_exchange: boolean;
@@ -128,9 +131,34 @@ export interface ChatMessage {
   match_id: string;
   sender_id: string;
   content: string;
+  message_type: "text" | "image";
+  image_url: string | null;
+  original_language: string | null;
+  translated_content: string | null;
+  translated_language: string | null;
   sent_at: string;
   delivered_at: string | null;
   read_at: string | null;
+}
+
+export interface Icebreaker {
+  type: "shared_kcontent" | "shared_interest" | "shared_language_exchange" | "shared_language" | "generic";
+  key: string | null;
+}
+
+export interface CoupleStory {
+  id: string;
+  match_id: string;
+  author_id: string;
+  peer_id: string;
+  author_display_name: string;
+  peer_display_name: string;
+  story_text: string;
+  photo_object_path: string | null;
+  photo_url: string | null;
+  status: "pending" | "published" | "declined" | "hidden";
+  created_at: string;
+  published_at: string | null;
 }
 
 export interface AuthTokens {
