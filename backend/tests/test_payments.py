@@ -13,9 +13,17 @@ async def test_products_listed(client):
 
 
 @pytest.mark.asyncio
-async def test_checkout_session_requires_configured_stripe(client):
+async def test_checkout_session_requires_configured_stripe(client, monkeypatch):
+    import app.services.payment_service as payment_service
+
     _, headers = await create_user_with_profile(client, "pay1@example.com")
-    # No STRIPE_SECRET_KEY configured in test env -> fails loudly, not silently.
+    # Explicitly unset rather than relying on the ambient .env not having a
+    # real key configured — this test's whole premise (Stripe unconfigured
+    # -> fails loudly, not silently) silently stopped holding the moment a
+    # real STRIPE_SECRET_KEY was added to .env for live testing, and the
+    # test started passing for the wrong reason (well, failing, but not
+    # for the reason it claimed to check).
+    monkeypatch.setattr(payment_service.settings, "stripe_secret_key", "")
     resp = await client.post(
         "/payments/create-checkout-session", headers=headers, json={"product_id": "boost_1"}
     )

@@ -16,4 +16,4 @@ websockets==13.1
 boto3==1.43.89
 firebase-admin==6.5.0
 google-auth==2.34.0
-stripe==11.1.1
+stripe==15.6.1

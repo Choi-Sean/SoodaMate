@@ -28,7 +28,7 @@ async def create_checkout_session(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> CreateCheckoutResponse:
-    checkout_url = await payment_service.create_checkout_session(user.id, body.product_id)
+    checkout_url = await payment_service.create_checkout_session(user.id, body.product_id, user.preferred_language)
     return CreateCheckoutResponse(checkout_url=checkout_url)
 
 

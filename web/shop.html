@@ -21,6 +21,14 @@
     }
     .product-card .info h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
     .product-card .info p { font-size: 13px; color: var(--muted); }
+    .product-card .info .desc { margin-top: 2px; }
+    .explainer { display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; }
+    .explainer h2 { font-size: 15px; font-weight: 800; color: var(--navy); }
+    .explainer-row { display: flex; gap: 12px; align-items: flex-start; }
+    .explainer-row .dot { width: 8px; height: 8px; border-radius: 4px; background: var(--accent); margin-top: 7px; flex-shrink: 0; }
+    .explainer-row strong { color: var(--navy); font-weight: 800; }
+    .explainer-row p { font-size: 13.5px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
+    .checkout-error { color: #B3261E; text-align: center; margin: 14px 0; display: none; font-size: 13.5px; }
     .product-card .buy-btn {
       background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
       border: none; border-radius: 999px; padding: 10px 20px; cursor: pointer;
@@ -53,7 +61,25 @@
       로그인 정보가 없어요. 앱의 프로필 &gt; 상점 화면에서 다시 열어주세요.
     </p>
 
+    <div class="explainer">
+      <h2 data-i18n="shop.explainerTitle">뭐가 다른가요?</h2>
+      <div class="explainer-row">
+        <span class="dot"></span>
+        <p><strong data-i18n="shop.explainerPremium.title">프리미엄</strong><br /><span data-i18n="shop.explainerPremium.body">구독하는 동안 계속 적용되는 혜택이에요 — 무제한 스와이프, 나를 좋아요한 사람 보기, 고급 필터를 계속 쓸 수 있어요.</span></p>
+      </div>
+      <div class="explainer-row">
+        <span class="dot"></span>
+        <p><strong data-i18n="shop.explainerSuperlike.title">슈퍼좋아요</strong><br /><span data-i18n="shop.explainerSuperlike.body">특정 한 사람에게 쓰는 1회성 아이템이에요 — 상대방 화면에 하이라이트로 표시돼서 일반 좋아요보다 눈에 잘 띄어요.</span></p>
+      </div>
+      <div class="explainer-row">
+        <span class="dot"></span>
+        <p><strong data-i18n="shop.explainerBoost.title">부스트</strong><br /><span data-i18n="shop.explainerBoost.body">내 프로필을 위한 1회성 아이템이에요 — 30분 동안 모든 사람의 디스커버 피드 맨 위에 노출돼요.</span></p>
+      </div>
+    </div>
+
     <div class="product-list" id="productList"></div>
+
+    <p class="checkout-error" id="checkoutError"></p>
 
     <p class="shop-notice" id="refundNotice" style="display:none" data-i18n="shop.noRefundNotice">멤버십은 앱 안에서 언제든 취소할 수 있어요. 이미 결제된 기간에 대한 환불은 제공되지 않습니다.</p>
 
@@ -86,6 +112,7 @@
     const authErrorEl = document.getElementById("authError");
     const listEl = document.getElementById("productList");
     const refundNoticeEl = document.getElementById("refundNotice");
+    const checkoutErrorEl = document.getElementById("checkoutError");
 
     if (!token) {
       authErrorEl.style.display = "block";
@@ -109,10 +136,18 @@
         .map((p) => {
           const cycleLabel =
             p.billing_cycle === "yearly" ? tr("shop.billedYearly") : p.billing_cycle === "monthly" ? tr("shop.billedMonthly") : "";
+          // Falls back to the backend's raw (Korean) name for a product_id
+          // this page doesn't have a translation for yet, rather than
+          // showing a raw "shop.product.X.name" key string — tr() itself
+          // falls back to returning the key verbatim when it's missing
+          // from `translations`, so check for that entry directly instead.
+          const name = translations[`shop.product.${p.product_id}.name`] ? tr(`shop.product.${p.product_id}.name`) : p.name;
+          const desc = translations[`shop.product.${p.product_id}.desc`] ? tr(`shop.product.${p.product_id}.desc`) : "";
           return `
         <div class="product-card">
           <div class="info">
-            <h3>${p.name}</h3>
+            <h3>${name}</h3>
+            <p class="desc">${desc}</p>
             <p>$${(p.price_usd_cents / 100).toFixed(2)}${cycleLabel ? ` · ${cycleLabel}` : ""}</p>
           </div>
           <button class="buy-btn" data-product-id="${p.product_id}" ${token ? "" : "disabled"}>${tr("shop.buyLabel")}</button>
@@ -148,19 +183,31 @@
     async function startCheckout(productId, btn) {
       btn.disabled = true;
       btn.textContent = tr("shop.buyLoading");
+      checkoutErrorEl.style.display = "none";
       try {
         const resp = await fetch(`${API_BASE_URL}/payments/create-checkout-session`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ product_id: productId }),
         });
+        if (resp.status === 401) {
+          // The access token handed off from the app is short-lived (30
+          // min) - if the buyer spent a while reading the page before
+          // tapping Buy, it can expire before they ever click. A plain
+          // window.alert() here is easy to miss (some mobile browsers/
+          // in-app webviews suppress it outright, which looked exactly
+          // like "nothing happens" when clicking Buy) - an inline element
+          // is always visible instead.
+          throw new Error("expired");
+        }
         if (!resp.ok) throw new Error("checkout session failed");
         const data = await resp.json();
         window.location.href = data.checkout_url;
       } catch (e) {
         btn.disabled = false;
         btn.textContent = tr("shop.buyLabel");
-        alert(tr("shop.checkoutError"));
+        checkoutErrorEl.textContent = tr(e.message === "expired" ? "shop.sessionExpired" : "shop.checkoutError");
+        checkoutErrorEl.style.display = "block";
       }
     }
 

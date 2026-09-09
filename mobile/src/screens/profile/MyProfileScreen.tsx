@@ -137,6 +137,23 @@ export default function MyProfileScreen({ navigation }: Props) {
         </View>
       )}
 
+      <View style={styles.explainerCard}>
+        <Text style={styles.explainerTitle}>{t("profile.explainerTitle")}</Text>
+        {[
+          { label: t("profile.explainerPremiumTitle"), body: t("profile.explainerPremiumBody") },
+          { label: t("profile.explainerSuperlikeTitle"), body: t("profile.explainerSuperlikeBody") },
+          { label: t("profile.explainerBoostTitle"), body: t("profile.explainerBoostBody") },
+        ].map((row, i) => (
+          <View key={i} style={styles.explainerRow}>
+            <View style={styles.explainerDot} />
+            <View style={styles.explainerTextWrap}>
+              <Text style={styles.explainerLabel}>{row.label}</Text>
+              <Text style={styles.explainerBody}>{row.body}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
       <Pressable style={[styles.promoBanner, isPremium && styles.promoBannerActive]} onPress={openShop}>
         <Ionicons name="sparkles" size={22} color={isPremium ? colors.navy : "#fff"} />
         <Text style={[styles.promoTitle, isPremium && styles.promoTitleActive]}>
@@ -285,6 +302,21 @@ const styles = StyleSheet.create({
   },
   featureIconBubble: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   featureCardText: { color: colors.ink, fontWeight: "700", fontSize: 14 },
+  explainerCard: {
+    marginTop: 16,
+    backgroundColor: colors.white,
+    borderRadius: 18,
+    padding: 16,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  explainerTitle: { fontSize: 14, fontWeight: "800", color: colors.navy, marginBottom: 2 },
+  explainerRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
+  explainerDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.accent, marginTop: 6 },
+  explainerTextWrap: { flex: 1 },
+  explainerLabel: { fontSize: 13.5, fontWeight: "700", color: colors.navy },
+  explainerBody: { fontSize: 12.5, color: colors.muted, marginTop: 2, lineHeight: 17 },
   promoBanner: {
     marginTop: 16,
     backgroundColor: colors.navy,

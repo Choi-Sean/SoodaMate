@@ -53,6 +53,55 @@ PRODUCTS: dict[str, dict] = {
     },
 }
 
+# Stripe Checkout's product_data.name is the only product label the buyer
+# actually sees (it's rendered on Stripe's own hosted checkout page, outside
+# our site entirely) - PRODUCTS[...]["name"] above stays a single Korean
+# label for internal/dashboard purposes, but the checkout page itself should
+# match whatever language the buyer uses the app in. Mirrors the same
+# strings shop.html shows via web/i18n.js's shop.product.<id>.name keys -
+# keep both in sync if a product's copy changes. Falls back to English for
+# an unsupported/unset preferred_language, same convention as
+# push_i18n.py's SUPPORTED_PUSH_LANGUAGES fallback.
+_PRODUCT_NAMES: dict[str, dict[str, str]] = {
+    "superlike_pack_5": {
+        "ko": "슈퍼좋아요 5개", "en": "Super Like x5", "es": "5 Super Likes",
+        "zh": "超级喜欢 x5", "ja": "スーパーいいね ×5",
+    },
+    "superlike_pack_20": {
+        "ko": "슈퍼좋아요 20개", "en": "Super Like x20", "es": "20 Super Likes",
+        "zh": "超级喜欢 x20", "ja": "スーパーいいね ×20",
+    },
+    "boost_1": {
+        "ko": "부스트 1회", "en": "Boost x1", "es": "1 Boost",
+        "zh": "曝光加速 x1", "ja": "ブースト ×1",
+    },
+    "membership_monthly": {
+        "ko": "프리미엄 멤버십", "en": "Premium Membership", "es": "Membresía Premium",
+        "zh": "高级会员", "ja": "プレミアム会員",
+    },
+    "membership_yearly": {
+        "ko": "프리미엄 멤버십", "en": "Premium Membership", "es": "Membresía Premium",
+        "zh": "高级会员", "ja": "プレミアム会員",
+    },
+}
+
+
+def _localized_product_name(product_id: str, product: dict, language: str) -> str:
+    names = _PRODUCT_NAMES.get(product_id)
+    if not names:
+        return product["name"]
+    return names.get(language) or names["en"]
+
+
+# All of this app's products are digital features of the app itself
+# (subscription access or in-app credits), delivered over the internet with
+# nothing downloaded and no business use - Stripe Tax (required now that
+# Managed Payments is enabled on the account) needs a product tax code on
+# every line item to classify it; without one, Checkout Session creation
+# fails outright with "the product tax code is missing" before a buyer ever
+# sees a payment form. See https://docs.stripe.com/tax/tax-categories.
+_SAAS_PERSONAL_USE_TAX_CODE = "txcd_10103000"
+
 BOOST_DURATION_MINUTES = 30
 # checkout.session.completed only fires once, at subscription creation — a
 # real renewal charge is a separate invoice.payment_succeeded event this app
@@ -73,7 +122,7 @@ def list_products() -> list[dict]:
     return [{"product_id": pid, **info} for pid, info in PRODUCTS.items()]
 
 
-async def create_checkout_session(user_id: uuid.UUID, product_id: str) -> str:
+async def create_checkout_session(user_id: uuid.UUID, product_id: str, language: str = "en") -> str:
     product = PRODUCTS.get(product_id)
     if product is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "unknown product_id")
@@ -82,7 +131,10 @@ async def create_checkout_session(user_id: uuid.UUID, product_id: str) -> str:
     price_data: dict = {
         "currency": "usd",
         "unit_amount": product["price_usd_cents"],
-        "product_data": {"name": product["name"]},
+        "product_data": {
+            "name": _localized_product_name(product_id, product, language),
+            "tax_code": _SAAS_PERSONAL_USE_TAX_CODE,
+        },
     }
     if is_subscription:
         price_data["recurring"] = {"interval": product["interval"]}
