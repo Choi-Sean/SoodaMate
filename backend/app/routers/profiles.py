@@ -57,7 +57,6 @@ async def update_my_profile(
 ) -> ProfileOut:
     profile = await db.get(Profile, user.id)
     photo_count = await db.scalar(select(Photo).where(Photo.user_id == user.id).limit(1))
-    is_complete = photo_count is not None
 
     # interests/languages are lists on the wire but a single comma-separated
     # column in the DB (same convention as race_filter/religion_filter).
@@ -67,24 +66,30 @@ async def update_my_profile(
     profile_data["k_content_tags"] = ",".join(body.k_content_tags) if body.k_content_tags else None
 
     if profile is None:
-        profile = Profile(user_id=user.id, **profile_data, is_profile_complete=is_complete)
+        profile = Profile(user_id=user.id, **profile_data)
         db.add(profile)
     else:
-        # display_name/legal_first_name/birth_date/gender are all locked
-        # after initial profile creation — a name, age, or gender that keeps
-        # changing makes a user harder to recognize/report, and
-        # legal_first_name/birth_date feed identity checks elsewhere.
-        # Mobile makes all four fields read-only for this reason — this is
-        # the backend enforcing the same rule for direct API calls. A real
-        # change request goes through support@soodamate.com (photo ID
-        # required, reviewed by hand), not this endpoint.
-        profile_data["display_name"] = profile.display_name
-        profile_data["legal_first_name"] = profile.legal_first_name
-        profile_data["birth_date"] = profile.birth_date
-        profile_data["gender"] = profile.gender
+        # display_name/legal_first_name/birth_date/gender lock ONCE SET — a
+        # name, age, or gender that keeps changing makes a user harder to
+        # recognize/report, and legal_first_name/birth_date feed identity
+        # checks elsewhere. But a field that's still blank (a partial/legacy
+        # signup that never captured it) stays editable here until it's
+        # filled — otherwise that user can never finish their profile and is
+        # locked out of the whole app (see RootNavigator's gate). Once set,
+        # a real change goes through support@soodamate.com (photo ID, hand-
+        # reviewed), not this endpoint.
+        for locked in ("display_name", "legal_first_name", "birth_date", "gender"):
+            if getattr(profile, locked):
+                profile_data[locked] = getattr(profile, locked)
         for field, value in profile_data.items():
             setattr(profile, field, value)
-        profile.is_profile_complete = is_complete
+
+    # "Complete" now means a photo AND the core identity fields — not a
+    # photo alone. A row with a blank name/birth_date/gender must not be
+    # allowed past the profile-setup gate.
+    profile.is_profile_complete = bool(
+        photo_count is not None and profile.display_name and profile.birth_date and profile.gender
+    )
 
     await db.commit()
     # onupdate=func.now() (and, for a fresh row, server_default) leaves
@@ -117,7 +122,11 @@ async def confirm_photo(
 
     profile = await db.get(Profile, user.id)
     if profile is not None:
-        profile.is_profile_complete = True
+        # A photo now exists — complete iff the core identity fields are
+        # also filled (see update_my_profile's same rule).
+        profile.is_profile_complete = bool(
+            profile.display_name and profile.birth_date and profile.gender
+        )
 
     await db.commit()
     await db.refresh(photo)

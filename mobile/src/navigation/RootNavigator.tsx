@@ -39,9 +39,20 @@ export default function RootNavigator() {
     return <AuthStack />;
   }
 
-  // 404 means no profile row yet; anything else with is_profile_complete
-  // false also routes back to setup (e.g. profile exists but has no photo).
-  const needsProfileSetup = profileQuery.isError || profileQuery.data?.is_profile_complete === false;
+  // No page is reachable until the profile is genuinely complete: a real
+  // profile row (404 = none yet), the server's own is_profile_complete
+  // flag, AND — belt-and-suspenders in case that flag is ever stale — at
+  // least one photo plus the core identity fields present. Anything short
+  // of that routes to ProfileSetupScreen and nothing else.
+  const p = profileQuery.data;
+  const needsProfileSetup =
+    profileQuery.isError ||
+    !p ||
+    p.is_profile_complete === false ||
+    !p.display_name ||
+    !p.birth_date ||
+    !p.gender ||
+    (p.photos?.length ?? 0) === 0;
 
   if (needsProfileSetup) {
     return (

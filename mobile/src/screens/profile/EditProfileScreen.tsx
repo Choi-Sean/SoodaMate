@@ -34,12 +34,13 @@ import { EDUCATION_KEYS } from "../../constants/educationLevels";
 import { INTEREST_KEYS, LANGUAGE_KEYS } from "../../constants/interestsAndLanguages";
 import { K_CONTENT_KEYS } from "../../constants/kContentTags";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
-import type { InterestedIn } from "../../types";
+import type { Gender, InterestedIn } from "../../types";
 import { colors } from "../../theme";
 
 type Props = NativeStackScreenProps<ProfileStackParamList, "EditProfile">;
 
 const INTERESTS: InterestedIn[] = ["male", "female", "all"];
+const GENDERS: Gender[] = ["male", "female", "other"];
 const MAX_INTERESTS = 5;
 const MAX_K_CONTENT_TAGS = 6;
 
@@ -47,6 +48,18 @@ export default function EditProfileScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const { data: profile, isLoading } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
+
+  // Normally locked, but editable while still blank (a partial/legacy
+  // signup that never captured them) so the user can finish their profile
+  // — the backend applies the same "lock only once set" rule. Whether each
+  // is locked is decided from the *loaded* profile, not this local state,
+  // so a field doesn't lock itself mid-edit.
+  const [name, setName] = useState("");
+  const [gender, setGender] = useState<Gender | "">("");
+  const [birthDate, setBirthDate] = useState("");
+  const nameLocked = !!profile?.display_name;
+  const genderLocked = !!profile?.gender;
+  const birthDateLocked = !!profile?.birth_date;
 
   const [bio, setBio] = useState("");
   const [bio2, setBio2] = useState("");
@@ -78,6 +91,9 @@ export default function EditProfileScreen({ navigation }: Props) {
 
   useEffect(() => {
     if (!profile) return;
+    setName(profile.display_name ?? "");
+    setGender(profile.gender ?? "");
+    setBirthDate(profile.birth_date ?? "");
     setBio(profile.bio ?? "");
     setBio2(profile.bio2 ?? "");
     setBio3(profile.bio3 ?? "");
@@ -117,17 +133,32 @@ export default function EditProfileScreen({ navigation }: Props) {
 
   async function handleSave() {
     if (!profile) return;
+    // Only the fields that are still editable (blank on the loaded profile)
+    // are validated here — a locked field's local state already mirrors the
+    // stored value.
+    if (!nameLocked && !name.trim()) {
+      setError(t("profileSetup.validationMissing"));
+      return;
+    }
+    if (!birthDateLocked && !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+      setError(t("profileSetup.validationMissing"));
+      return;
+    }
+    if (!genderLocked && !gender) {
+      setError(t("profileSetup.validationMissing"));
+      return;
+    }
     setError(null);
     setSaving(true);
     try {
       await updateMyProfile({
-        // Locked after signup (see lockedInfoNote below) — sent back
-        // unchanged; the backend also ignores any attempt to change these
-        // on an existing profile, this just keeps the payload honest.
-        display_name: profile.display_name,
-        legal_first_name: profile.legal_first_name,
-        birth_date: profile.birth_date,
-        gender: profile.gender,
+        // Locked once set — the backend also enforces "lock only once set",
+        // so sending the local state (which mirrors the stored value while
+        // locked) is safe either way.
+        display_name: name.trim() || profile.display_name,
+        legal_first_name: profile.legal_first_name || name.trim(),
+        birth_date: birthDate || profile.birth_date,
+        gender: (gender || profile.gender) as Gender,
         interested_in: interestedIn,
         open_to_language_exchange: openToLanguageExchange,
         bio: bio.trim() || null,
@@ -217,25 +248,57 @@ export default function EditProfileScreen({ navigation }: Props) {
       <Text style={styles.sectionTitle}>{t("editProfile.sectionBasicInfo")}</Text>
       <View style={styles.card}>
         <Text style={styles.fieldLabel}>{t("editProfile.name")}</Text>
-        <View style={styles.lockedField}>
-          <Text style={styles.lockedFieldText}>{profile.display_name}</Text>
-          <Ionicons name="lock-closed" size={14} color={colors.muted} />
-        </View>
+        {nameLocked ? (
+          <View style={styles.lockedField}>
+            <Text style={styles.lockedFieldText}>{profile.display_name}</Text>
+            <Ionicons name="lock-closed" size={14} color={colors.muted} />
+          </View>
+        ) : (
+          <TextInput
+            style={styles.input}
+            placeholder={t("editProfile.displayNamePlaceholder")}
+            value={name}
+            onChangeText={setName}
+          />
+        )}
 
         <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>{t("editProfile.iAm")}</Text>
-        <View style={styles.lockedField}>
-          <Text style={styles.lockedFieldText}>{t(`profileSetup.${profile.gender}`)}</Text>
-          <Ionicons name="lock-closed" size={14} color={colors.muted} />
-        </View>
+        {genderLocked ? (
+          <View style={styles.lockedField}>
+            <Text style={styles.lockedFieldText}>{t(`profileSetup.${profile.gender}`)}</Text>
+            <Ionicons name="lock-closed" size={14} color={colors.muted} />
+          </View>
+        ) : (
+          <View style={styles.row}>
+            {GENDERS.map((g) => (
+              <Pressable
+                key={g}
+                style={[styles.chip, gender === g && styles.chipSelected]}
+                onPress={() => setGender(g)}
+              >
+                <Text style={gender === g ? styles.chipTextSelected : styles.chipText}>{t(`profileSetup.${g}`)}</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
 
         <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>{t("editProfile.birthDate")}</Text>
-        <View style={styles.lockedField}>
-          <Text style={styles.lockedFieldText}>
-            {formatDate(profile.birth_date, i18n.language)}
-            {age != null ? `  ·  ${t("editProfile.age", { age })}` : ""}
-          </Text>
-          <Ionicons name="lock-closed" size={14} color={colors.muted} />
-        </View>
+        {birthDateLocked ? (
+          <View style={styles.lockedField}>
+            <Text style={styles.lockedFieldText}>
+              {formatDate(profile.birth_date, i18n.language)}
+              {age != null ? `  ·  ${t("editProfile.age", { age })}` : ""}
+            </Text>
+            <Ionicons name="lock-closed" size={14} color={colors.muted} />
+          </View>
+        ) : (
+          <TextInput
+            style={styles.input}
+            placeholder={t("profileSetup.birthDate")}
+            value={birthDate}
+            onChangeText={setBirthDate}
+          />
+        )}
 
         <Text style={styles.nameLockNote}>{t("editProfile.lockedInfoNote")}</Text>
       </View>
