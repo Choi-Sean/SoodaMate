@@ -1,3 +1,4 @@
+import json
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -154,9 +155,16 @@ async def create_checkout_session(user_id: uuid.UUID, product_id: str, language:
 async def handle_webhook_event(db: AsyncSession, payload: bytes, sig_header: str | None) -> None:
     stripe_client = _get_stripe()
     try:
-        event = stripe_client.Webhook.construct_event(payload, sig_header, settings.stripe_webhook_secret)
+        stripe_client.Webhook.construct_event(payload, sig_header, settings.stripe_webhook_secret)
     except (ValueError, stripe.SignatureVerificationError) as exc:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid webhook signature") from exc
+
+    # construct_event returns a stripe.Event whose nested `data.object` is a
+    # typed StripeObject (a Session, etc.) that no longer supports dict
+    # methods like .get() in stripe-python >= 12 — it raises AttributeError
+    # instead. The raw payload is already signature-verified above, so parse
+    # it straight to a plain dict and work with that.
+    event = json.loads(payload)
 
     if event["type"] != "checkout.session.completed":
         return  # not a purchase event we act on (e.g. subscription renewals — not used here)
@@ -179,7 +187,7 @@ async def handle_webhook_event(db: AsyncSession, payload: bytes, sig_header: str
         # subscription, not a consumable balance) - 0 rather than None
         # since CreditsGranted is NOT NULL.
         credits_granted=product.get("credits") or 0,
-        raw_payload=str(event),
+        raw_payload=payload.decode("utf-8", "replace"),
     )
     inserted = await try_insert(db, transaction)
     if not inserted:
