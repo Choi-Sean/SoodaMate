@@ -7,6 +7,7 @@ import { useAuthStore } from "../store/authStore";
 import { getMyProfile } from "../api/profiles";
 import { updateLanguagePreference } from "../api/account";
 import { registerForPushNotifications } from "../services/pushNotifications";
+import { usePurchaseReturnWatch } from "../hooks/usePurchaseReturnWatch";
 import { colors } from "../theme";
 import AuthStack from "./AuthStack";
 import MainTabs from "./MainTabs";
@@ -64,6 +65,8 @@ export default function RootNavigator() {
 }
 
 function MainApp() {
+  usePurchaseReturnWatch();
+
   useEffect(() => {
     registerForPushNotifications();
     // Covers a language change made while logged out, or on a device that

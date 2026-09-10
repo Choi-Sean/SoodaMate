@@ -1,27 +1,35 @@
+import json
+
 import pytest
+import stripe
 
 from tests.helpers import create_user_with_profile
+
+_WEBHOOK_SECRET = "whsec_testsecret_0123456789abcdef"
 
 
 async def _grant_membership(client, monkeypatch, user_id: str, event_id: str = "evt_membership_1"):
     import app.services.payment_service as payment_service
 
     monkeypatch.setattr(payment_service.settings, "stripe_secret_key", "sk_test_fake")
-    monkeypatch.setattr(payment_service.settings, "stripe_webhook_secret", "whsec_fake")
-    fake_event = {
+    monkeypatch.setattr(payment_service.settings, "stripe_webhook_secret", _WEBHOOK_SECRET)
+    event = {
         "id": event_id,
+        "object": "event",
         "type": "checkout.session.completed",
         "data": {
             "object": {
                 "id": f"cs_{event_id}",
+                "object": "checkout.session",
                 "subscription": f"sub_{event_id}",
                 "metadata": {"user_id": user_id, "product_id": "membership_monthly"},
             }
         },
     }
-    monkeypatch.setattr(payment_service.stripe.Webhook, "construct_event", lambda *a, **kw: fake_event)
-    resp = await client.post("/payments/webhook", content=b"{}", headers={"stripe-signature": "sig"})
-    assert resp.status_code == 204
+    payload = json.dumps(event)
+    sig = stripe.WebhookSignature.generate_signature_header(payload, _WEBHOOK_SECRET)
+    resp = await client.post("/payments/webhook", content=payload.encode(), headers={"stripe-signature": sig})
+    assert resp.status_code == 204, resp.text
 
 
 async def _set_basic_filters(client, headers, **overrides):

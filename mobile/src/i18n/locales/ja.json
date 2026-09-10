@@ -245,7 +245,11 @@
     "cancelSuccessBody": "{{date}}まで引き続きプレミアムをご利用いただけます。",
     "noRefundNotice": "今回の請求期間分の返金はありません。",
     "coupleStoryCardTitle": "カップルストーリー",
-    "coupleStoryCardSubtitle": "数多メイトで出会ったカップルのリアルなストーリーをチェック"
+    "coupleStoryCardSubtitle": "数多メイトで出会ったカップルのリアルなストーリーをチェック",
+    "purchaseSuccessTitle": "購入完了 🎉",
+    "purchaseSuperlikeSuccess": "スーパーいいねが{{count}}回分追加されました。",
+    "purchaseBoostSuccess": "ブーストが{{count}}回分追加されました。",
+    "purchasePremiumSuccess": "プレミアムが有効になりました。"
   },
   "editProfile": {
     "title": "プロフィール編集",

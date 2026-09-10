@@ -245,7 +245,11 @@
     "cancelSuccessBody": "Puedes seguir usando Premium hasta el {{date}}.",
     "noRefundNotice": "No se otorgan reembolsos por el periodo de facturación actual.",
     "coupleStoryCardTitle": "Historias de pareja",
-    "coupleStoryCardSubtitle": "Descubre historias reales de parejas que se conocieron en SooDaMate"
+    "coupleStoryCardSubtitle": "Descubre historias reales de parejas que se conocieron en SooDaMate",
+    "purchaseSuccessTitle": "Compra completada 🎉",
+    "purchaseSuperlikeSuccess": "Se añadieron {{count}} Super Likes.",
+    "purchaseBoostSuccess": "Se añadieron {{count}} Boosts.",
+    "purchasePremiumSuccess": "Premium ya está activo."
   },
   "editProfile": {
     "title": "Editar perfil",

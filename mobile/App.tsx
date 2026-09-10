@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { AppState, type AppStateStatus, Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { DefaultTheme, NavigationContainer, type Theme } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import RootNavigator from "./src/navigation/RootNavigator";
 import { navigationRef } from "./src/navigation/navigationRef";
@@ -14,6 +15,17 @@ import { initI18n } from "./src/i18n";
 import { colors } from "./src/theme";
 
 const queryClient = new QueryClient();
+
+// react-query's refetch-on-focus is a browser-`window` concept; on native
+// it does nothing unless focusManager is fed the app's foreground state.
+// Wiring it here means every screen's data (profile, credits, matches, ...)
+// refreshes the moment the user returns to the app — notably right after a
+// trip out to the web shop to make a purchase.
+if (Platform.OS !== "web") {
+  AppState.addEventListener("change", (status: AppStateStatus) => {
+    focusManager.setFocused(status === "active");
+  });
+}
 
 // React Navigation's own DefaultTheme colors (a cool gray #f2f2f2 background,
 // iOS-blue primary/tint) have nothing to do with the brand palette — any

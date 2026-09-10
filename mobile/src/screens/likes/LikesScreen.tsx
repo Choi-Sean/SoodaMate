@@ -3,7 +3,7 @@ import { ActivityIndicator, FlatList, Image, Modal, Pressable, Text, View, Style
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import ProfileCard from "../../components/ProfileCard";
@@ -13,9 +13,7 @@ import MatchCelebrationModal from "../matches/MatchCelebrationModal";
 import { useLikedMe } from "../../hooks/useLikedMe";
 import { useSwipeAction } from "../../hooks/useSwipeAction";
 import { getMyProfile } from "../../api/profiles";
-import { useAuthStore } from "../../store/authStore";
-import { env } from "../../config/env";
-import { openExternalUrl } from "../../utils/openExternalUrl";
+import { openShop } from "../../utils/openShop";
 import type { SwipeAction } from "../../api/interactions";
 import type { Candidate } from "../../types";
 import { colors } from "../../theme";
@@ -33,7 +31,7 @@ export default function LikesScreen() {
   const isPremium = myProfile?.is_premium_member ?? false;
   const swipeMutation = useSwipeAction();
   const navigation = useNavigation<any>();
-  const accessToken = useAuthStore((s) => s.accessToken);
+  const queryClient = useQueryClient();
   const [selected, setSelected] = useState<Candidate | null>(null);
   const [matchInfo, setMatchInfo] = useState<{
     matchId: string;
@@ -42,9 +40,7 @@ export default function LikesScreen() {
     otherPhotoUrl: string | null;
   } | null>(null);
 
-  function openShop() {
-    openExternalUrl(`${env.marketingSiteUrl}/shop.html?token=${encodeURIComponent(accessToken ?? "")}`);
-  }
+  const handleOpenShop = () => openShop(queryClient);
 
   function handleAction(candidate: Candidate, action: SwipeAction) {
     if (swipeMutation.isPending) return;
@@ -74,7 +70,7 @@ export default function LikesScreen() {
       // behind it, but no name/age and no tap-through to the profile —
       // that identity reveal is exactly what premium is selling here.
       return (
-        <Pressable style={styles.tile} onPress={openShop}>
+        <Pressable style={styles.tile} onPress={handleOpenShop}>
           {photo ? (
             <Image source={{ uri: photo.url }} style={[styles.tileImage, styles.tileImageLocked]} blurRadius={18} />
           ) : (

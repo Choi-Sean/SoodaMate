@@ -6,10 +6,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import { getMyProfile, setAgeFilter, setBasicFilters, setPremiumFilters } from "../api/profiles";
-import { useAuthStore } from "../store/authStore";
-import { env } from "../config/env";
+import { openShop } from "../utils/openShop";
 import { showAlert } from "../utils/alert";
-import { openExternalUrl } from "../utils/openExternalUrl";
 import MultiChipSelect from "./MultiChipSelect";
 import MultiSelectDropdown from "./MultiSelectDropdown";
 import RangeSlider from "./RangeSlider";
@@ -48,7 +46,6 @@ export default function FilterModal({ visible, onClose }: Props) {
   const useImperial = i18n.language === "en";
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const accessToken = useAuthStore((s) => s.accessToken);
   const { data: profile } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile, enabled: visible });
   const isPremium = profile?.is_premium_member ?? false;
 
@@ -103,10 +100,7 @@ export default function FilterModal({ visible, onClose }: Props) {
     setHasKidsFilter(profile.premium_filters.has_kids_filter);
   }, [visible, profile]);
 
-  function openShop() {
-    const shopUrl = env.marketingSiteUrl + "/shop.html?token=" + encodeURIComponent(accessToken ?? "");
-    openExternalUrl(shopUrl);
-  }
+  const handleOpenShop = () => openShop(queryClient);
 
   const raceOptions = RACE_ETHNICITY_KEYS.map((key) => ({ key, label: t(`profileSetup.race.${key}`) }));
   const languageOptions = LANGUAGE_KEYS.map((key) => ({ key, label: t(`languages.${key}`) }));
@@ -288,7 +282,7 @@ export default function FilterModal({ visible, onClose }: Props) {
 
         <View style={styles.footer}>
           {tab === "advanced" && !isPremium ? (
-            <Pressable style={styles.saveButton} onPress={openShop}>
+            <Pressable style={styles.saveButton} onPress={handleOpenShop}>
               <Text style={styles.saveButtonText}>{t("filters.upgrade")}</Text>
             </Pressable>
           ) : (

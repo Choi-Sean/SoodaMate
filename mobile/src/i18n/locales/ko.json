@@ -245,7 +245,11 @@
     "cancelSuccessBody": "{{date}}까지 프리미엄을 계속 이용할 수 있어요.",
     "noRefundNotice": "이번 결제 주기에 대한 환불은 제공되지 않습니다.",
     "coupleStoryCardTitle": "커플 스토리",
-    "coupleStoryCardSubtitle": "수다메이트에서 만난 커플들의 진짜 이야기를 만나보세요"
+    "coupleStoryCardSubtitle": "수다메이트에서 만난 커플들의 진짜 이야기를 만나보세요",
+    "purchaseSuccessTitle": "결제 완료 🎉",
+    "purchaseSuperlikeSuccess": "슈퍼좋아요 {{count}}개가 추가됐어요.",
+    "purchaseBoostSuccess": "부스트 {{count}}회가 추가됐어요.",
+    "purchasePremiumSuccess": "프리미엄이 활성화됐어요."
   },
   "editProfile": {
     "title": "프로필 수정",

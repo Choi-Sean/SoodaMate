@@ -245,7 +245,11 @@
     "cancelSuccessBody": "你可以继续使用会员权益至 {{date}}。",
     "noRefundNotice": "当前计费周期不予退款。",
     "coupleStoryCardTitle": "情侣故事",
-    "coupleStoryCardSubtitle": "看看在数搭伴侣上相识相恋的真实情侣故事"
+    "coupleStoryCardSubtitle": "看看在数搭伴侣上相识相恋的真实情侣故事",
+    "purchaseSuccessTitle": "购买完成 🎉",
+    "purchaseSuperlikeSuccess": "已添加 {{count}} 个超级喜欢。",
+    "purchaseBoostSuccess": "已添加 {{count}} 次曝光加速。",
+    "purchasePremiumSuccess": "会员已开通。"
   },
   "editProfile": {
     "title": "编辑资料",
