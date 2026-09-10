@@ -3,6 +3,18 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { swipe, type SwipeAction, type SwipeResult } from "../api/interactions";
 import type { Candidate } from "../types";
 
+function dropCandidate(queryClient: ReturnType<typeof useQueryClient>, userId: string) {
+  queryClient.setQueryData<Candidate[]>(["candidates"], (prev) =>
+    (prev ?? []).filter((c) => c.user_id !== userId)
+  );
+  if (queryClient.getQueryData<Candidate[]>(["candidates"])?.length === 0) {
+    queryClient.invalidateQueries({ queryKey: ["candidates"] });
+  }
+  queryClient.setQueryData<Candidate[]>(["likedMe"], (prev) =>
+    (prev ?? []).filter((c) => c.user_id !== userId)
+  );
+}
+
 export function useSwipeAction() {
   const queryClient = useQueryClient();
 
@@ -11,18 +23,17 @@ export function useSwipeAction() {
     onSuccess: (_result, { candidate }) => {
       // Optimistically drop the swiped candidate so the stack advances
       // immediately instead of waiting on a refetch.
-      queryClient.setQueryData<Candidate[]>(["candidates"], (prev) =>
-        (prev ?? []).filter((c) => c.user_id !== candidate.user_id)
-      );
-      if (queryClient.getQueryData<Candidate[]>(["candidates"])?.length === 0) {
-        queryClient.invalidateQueries({ queryKey: ["candidates"] });
-      }
-      // Responding to someone (either direction) drops them out of "who
-      // liked me" on the backend — same optimistic-removal idea as above.
-      queryClient.setQueryData<Candidate[]>(["likedMe"], (prev) =>
-        (prev ?? []).filter((c) => c.user_id !== candidate.user_id)
-      );
+      dropCandidate(queryClient, candidate.user_id);
       queryClient.invalidateQueries({ queryKey: ["swipeLimit"] });
+    },
+    onError: (err: any, { candidate }) => {
+      // A 404 means that account was deleted after the deck was fetched —
+      // drop the card so the user isn't stuck swiping a ghost. Any other
+      // error (429 limit, 402 no-superlikes, network) leaves the card in
+      // place so the action can be retried.
+      if (err?.response?.status === 404) {
+        dropCandidate(queryClient, candidate.user_id);
+      }
     },
   });
 }

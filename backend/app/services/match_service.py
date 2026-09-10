@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.interaction import Match, Swipe
 from app.models.profile import Photo, Profile
+from app.models.user import User
 from app.schemas.match import MatchOut, SwipeLimitOut, SwipeResponse
 from app.services import push_service
 from app.services.storage_service import build_public_url
@@ -73,6 +74,14 @@ async def record_swipe(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid action")
     if from_user_id == to_user_id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "cannot swipe on yourself")
+
+    # The target's card may have been fetched well before this swipe lands
+    # (the discovery deck is cached client-side) — if that account was
+    # deleted in the meantime, sp_RecordSwipe's Swipe insert would blow up on
+    # the FK with a 500 instead of a clean, expected 404. Same guard as
+    # safety.py's block_user/report_user.
+    if await db.get(User, to_user_id) is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "user not found")
 
     limit_status = await get_swipe_limit_status(db, from_user_id)
     if limit_status.remaining <= 0:

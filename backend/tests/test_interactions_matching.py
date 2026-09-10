@@ -68,3 +68,17 @@ async def test_blocked_user_cannot_be_swiped(client):
 
     resp = await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
     assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_swipe_on_nonexistent_user_is_404_not_500(client):
+    """A candidate deleted after the deck was fetched -> a clean 404, not an
+    unhandled FK IntegrityError 500 from sp_RecordSwipe."""
+    _, headers = await create_user_with_profile(client, "swipe-ghost@example.com")
+    for action in ("like", "pass", "superlike"):
+        resp = await client.post(
+            f"/interactions/{action}",
+            headers=headers,
+            json={"to_user_id": "00000000-0000-0000-0000-000000000000"},
+        )
+        assert resp.status_code == 404, f"{action}: {resp.status_code}"
