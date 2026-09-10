@@ -2,6 +2,7 @@ import uuid
 
 from pydantic import BaseModel
 
+from app.schemas.moment import MomentOut
 from app.schemas.profile import PhotoOut
 
 
@@ -38,3 +39,4 @@ class CandidateOut(BaseModel):
     verified_badge: str | None = None
     face_verified: bool = False
     open_to_language_exchange: bool = False
+    moments: list[MomentOut] = []

@@ -23,3 +23,14 @@ export function calculateAge(birthDateIso: string): number | null {
 export function formatDate(iso: string, language: string): string {
   return new Date(iso + "T00:00:00").toLocaleDateString(language, { year: "numeric", month: "long", day: "numeric" });
 }
+
+/** Formats a full ISO datetime (a server `created_at`/`published_at`, with
+ * time and timezone) as a plain calendar date in the given locale. Unlike
+ * formatDate above — which expects a bare "YYYY-MM-DD" and appends a
+ * time — this parses the timestamp as-is. Returns "" for anything
+ * unparsable rather than rendering "Invalid Date". */
+export function formatTimestampDate(iso: string, language: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(language, { year: "numeric", month: "long", day: "numeric" });
+}

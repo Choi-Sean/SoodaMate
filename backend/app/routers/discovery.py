@@ -8,8 +8,10 @@ from app.deps import get_current_user
 from app.models.profile import Profile
 from app.models.user import User
 from app.schemas.discovery import CandidateOut
+from app.schemas.moment import MomentOut
 from app.schemas.profile import PhotoOut
 from app.services.discovery_service import get_candidates, get_photos_for_users, get_users_who_liked_me
+from app.services.moment_service import get_moments_for_users
 
 router = APIRouter(prefix="/discovery", tags=["discovery"])
 
@@ -26,7 +28,9 @@ def _comma_list(value: str | None) -> list[str]:
 async def _to_candidates_out(
     db: AsyncSession, results: list[tuple[Profile, float | None, bool]]
 ) -> list[CandidateOut]:
-    photos_by_user = await get_photos_for_users(db, [p.user_id for p, _, _ in results])
+    user_ids = [p.user_id for p, _, _ in results]
+    photos_by_user = await get_photos_for_users(db, user_ids)
+    moments_by_user = await get_moments_for_users(db, user_ids)
     return [
         CandidateOut(
             user_id=profile.user_id,
@@ -58,6 +62,7 @@ async def _to_candidates_out(
             verified_badge=profile.verified_badge,
             face_verified=profile.face_verified,
             open_to_language_exchange=profile.open_to_language_exchange,
+            moments=[MomentOut.model_validate(m) for m in moments_by_user.get(profile.user_id, [])],
         )
         for profile, distance_km, superliked_me in results
     ]

@@ -293,6 +293,15 @@
     "viewerClose": "닫기",
     "primary": "대표"
   },
+  "moments": {
+    "sectionTitle": "요즘 나",
+    "editLabel": "요즘 나",
+    "editHint": "최근 사진과 짧은 근황을 올려보세요 — 프로필이 더 생생해져요. 최근 6개만 보여요.",
+    "addButton": "추가",
+    "captionPlaceholder": "짧게 한마디 (선택)",
+    "post": "올리기",
+    "deleteConfirmTitle": "이 게시물을 삭제할까요?"
+  },
   "faceVerification": {
     "title": "얼굴 인증",
     "subtitle": "셀카 한 장이면 프로필에 인증 뱃지가 표시돼요. 모든 제출은 실제 관리자가 직접 검토해요.",

@@ -27,6 +27,13 @@ export async function presignStoryImage(contentType: string): Promise<PresignRes
   return resp.data;
 }
 
+/** Images only — used by a "요즘 나 / Lately" moment. See
+ * routers/uploads.py::presign_moment_image. */
+export async function presignMomentImage(contentType: string): Promise<PresignResult> {
+  const resp = await apiClient.post<PresignResult>("/uploads/presign-moment-image", { content_type: contentType });
+  return resp.data;
+}
+
 /** Uploads a photo or video's raw bytes directly to R2 via the presigned
  * URL — never routes through our own backend. */
 export async function uploadToPresignedUrl(uploadUrl: string, fileUri: string, contentType: string): Promise<void> {

@@ -12,6 +12,7 @@ import MultiChipSelect from "../../components/MultiChipSelect";
 import LocationPicker from "../../components/LocationPicker";
 import SelectDropdown, { DropdownOption } from "../../components/SelectDropdown";
 import ProfilePhotosGrid from "../../components/ProfilePhotosGrid";
+import MomentsEditor from "../../components/MomentsEditor";
 import VerifiedBadge from "../../components/VerifiedBadge";
 import ProfileCompletenessBar from "../../components/ProfileCompletenessBar";
 import HeightInput from "../../components/HeightInput";
@@ -190,6 +191,8 @@ export default function EditProfileScreen({ navigation }: Props) {
       {error && <Text style={styles.error}>{error}</Text>}
 
       <ProfilePhotosGrid photos={profile.photos} onChanged={refreshProfile} />
+
+      <MomentsEditor moments={profile.moments} onChanged={refreshProfile} />
 
       <ProfileCompletenessBar percent={calculateProfileCompleteness(profile)} />
 

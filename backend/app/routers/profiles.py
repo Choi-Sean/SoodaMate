@@ -21,7 +21,8 @@ from app.schemas.profile import (
     ProfileUpdate,
     TravelModeRequest,
 )
-from app.services import storage_service
+from app.schemas.moment import MomentOut
+from app.services import moment_service, storage_service
 from app.services.payment_service import is_premium_member
 
 router = APIRouter(prefix="/profiles", tags=["profiles"])
@@ -34,8 +35,10 @@ async def _load_profile_out(db: AsyncSession, user_id) -> ProfileOut:
     photos = (
         await db.execute(select(Photo).where(Photo.user_id == user_id).order_by(Photo.position))
     ).scalars().all()
+    moments = await moment_service.list_moments(db, user_id)
     out = ProfileOut.model_validate(profile)
     out.photos = [PhotoOut.model_validate(p) for p in photos]
+    out.moments = [MomentOut.model_validate(m) for m in moments]
     return out
 
 

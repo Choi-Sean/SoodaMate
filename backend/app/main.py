@@ -13,6 +13,7 @@ from app.routers import (
     interactions,
     matches,
     messages,
+    moments,
     payments,
     profiles,
     safety,
@@ -47,6 +48,7 @@ app.include_router(verification.router)
 app.include_router(calls.router)
 app.include_router(admin.router)
 app.include_router(couple_stories.router)
+app.include_router(moments.router)
 
 
 @app.get("/health")

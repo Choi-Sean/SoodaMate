@@ -293,6 +293,15 @@
     "viewerClose": "Cerrar",
     "primary": "Principal"
   },
+  "moments": {
+    "sectionTitle": "Últimamente",
+    "editLabel": "Últimamente",
+    "editHint": "Comparte algunas fotos recientes y qué has estado haciendo — le da vida a tu perfil. Solo se muestran las últimas 6.",
+    "addButton": "Añadir",
+    "captionPlaceholder": "Di algo breve (opcional)",
+    "post": "Publicar",
+    "deleteConfirmTitle": "¿Eliminar este momento?"
+  },
   "faceVerification": {
     "title": "Verificación facial",
     "subtitle": "Tómate una selfie rápida para obtener una insignia verificada en tu perfil. Cada envío es revisado por una persona real.",

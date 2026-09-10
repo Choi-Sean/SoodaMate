@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
-import { Text, View, StyleSheet } from "react-native";
+import { Image, ScrollView, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
 import ProfileMedia from "./ProfileMedia";
 import type { Candidate } from "../types";
 import { colors } from "../theme";
+import { formatTimestampDate } from "../utils/age";
 import { formatHeightCm } from "../utils/units";
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -64,6 +65,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 export default function ProfileInfoSections({ candidate }: { candidate: Candidate }) {
   const { t, i18n } = useTranslation();
   const useImperial = i18n.language === "en";
+  const moments = candidate.moments ?? [];
 
   // The verified badge already shows as its own pill on the photo above
   // (MediaCarousel) - repeating it as a fact row here too was redundant.
@@ -140,6 +142,20 @@ export default function ProfileInfoSections({ candidate }: { candidate: Candidat
       {candidate.bio3 && (
         <Section title={t("profileDetail.bio3")}>
           <Text style={styles.bioText}>{candidate.bio3}</Text>
+        </Section>
+      )}
+
+      {moments.length > 0 && (
+        <Section title={t("moments.sectionTitle")}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.momentStrip}>
+            {moments.map((m) => (
+              <View key={m.id} style={styles.momentCard}>
+                <Image source={{ uri: m.image_url }} style={styles.momentImage} />
+                {m.caption ? <Text style={styles.momentCaption} numberOfLines={3}>{m.caption}</Text> : null}
+                <Text style={styles.momentDate}>{formatTimestampDate(m.created_at, i18n.language)}</Text>
+              </View>
+            ))}
+          </ScrollView>
         </Section>
       )}
 
@@ -248,6 +264,11 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 15, fontWeight: "800", color: colors.navy, marginBottom: 12 },
   bioText: { color: colors.ink, fontSize: 15, lineHeight: 22 },
+  momentStrip: { gap: 10, paddingRight: 4 },
+  momentCard: { width: 130, borderRadius: 12, backgroundColor: colors.creamDeep, overflow: "hidden", paddingBottom: 8 },
+  momentImage: { width: 130, height: 130 },
+  momentCaption: { fontSize: 12, color: colors.ink, paddingHorizontal: 8, paddingTop: 6, lineHeight: 16 },
+  momentDate: { fontSize: 10, color: colors.muted, paddingHorizontal: 8, paddingTop: 3 },
   pillWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   pill: {
     flexDirection: "row",

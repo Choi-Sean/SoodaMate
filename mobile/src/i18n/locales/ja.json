@@ -293,6 +293,15 @@
     "viewerClose": "閉じる",
     "primary": "メイン"
   },
+  "moments": {
+    "sectionTitle": "最近の私",
+    "editLabel": "最近の私",
+    "editHint": "最近の写真と近況を少し載せてみましょう — プロフィールが生き生きします。表示は最新6件までです。",
+    "addButton": "追加",
+    "captionPlaceholder": "ひとことどうぞ（任意）",
+    "post": "投稿する",
+    "deleteConfirmTitle": "この投稿を削除しますか？"
+  },
   "faceVerification": {
     "title": "顔認証",
     "subtitle": "セルフィーを撮るだけでプロフィールに認証バッジが表示されます。提出内容は実際のスタッフが確認します。",

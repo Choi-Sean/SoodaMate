@@ -4,6 +4,7 @@ from datetime import date, datetime, timezone
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
+from app.schemas.moment import MomentOut
 from app.services.storage_service import build_public_url
 from app.utils.premium import is_premium
 
@@ -138,6 +139,7 @@ class ProfileOut(BaseModel):
     k_content_filter: list[str] = []
     updated_at: datetime
     photos: list[PhotoOut] = []
+    moments: list[MomentOut] = []
 
     @field_validator(
         "race_filter",

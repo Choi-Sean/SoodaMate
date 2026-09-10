@@ -293,6 +293,15 @@
     "viewerClose": "关闭",
     "primary": "封面"
   },
+  "moments": {
+    "sectionTitle": "最近的我",
+    "editLabel": "最近的我",
+    "editHint": "分享几张近期照片和近况 — 让你的资料更鲜活。只显示最近的6条。",
+    "addButton": "添加",
+    "captionPlaceholder": "简单说一句（可选）",
+    "post": "发布",
+    "deleteConfirmTitle": "要删除这条动态吗？"
+  },
   "faceVerification": {
     "title": "人脸认证",
     "subtitle": "拍一张自拍即可获得资料认证徽章，每份提交都会有真人审核。",

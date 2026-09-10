@@ -48,6 +48,11 @@ def build_story_image_object_path(user_id: uuid.UUID, content_type: str) -> str:
     return f"users/{user_id}/stories/{uuid.uuid4()}.{ext}"
 
 
+def build_moment_image_object_path(user_id: uuid.UUID, content_type: str) -> str:
+    ext = _IMAGE_EXTENSIONS[content_type]
+    return f"users/{user_id}/moments/{uuid.uuid4()}.{ext}"
+
+
 def build_face_verification_object_path(user_id: uuid.UUID, content_type: str, kind: str = "selfie") -> str:
     # A random, unguessable path under the same public bucket (no separate
     # private bucket exists yet — see FaceVerification's model docstring for

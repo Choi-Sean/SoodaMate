@@ -9,6 +9,13 @@ export interface Photo {
   media_type: "photo" | "video";
 }
 
+export interface Moment {
+  id: string;
+  image_url: string;
+  caption: string | null;
+  created_at: string;
+}
+
 export interface PremiumFilters {
   political_view_filter: string[];
   exercise_frequency_filter: string[];
@@ -80,6 +87,7 @@ export interface Profile {
   k_content_filter: string[];
   updated_at: string;
   photos: Photo[];
+  moments: Moment[];
 }
 
 export interface Candidate {
@@ -112,6 +120,7 @@ export interface Candidate {
   verified_badge: "work" | "school" | null;
   face_verified: boolean;
   open_to_language_exchange: boolean;
+  moments: Moment[];
 }
 
 export interface Match {

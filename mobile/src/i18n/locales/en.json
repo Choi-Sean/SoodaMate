@@ -293,6 +293,15 @@
     "deleteLastBody": "Your profile needs at least one photo or video.",
     "viewerClose": "Close"
   },
+  "moments": {
+    "sectionTitle": "Lately",
+    "editLabel": "Lately",
+    "editHint": "Share a few recent photos and what you've been up to — it makes your profile feel alive. Only the last 6 show.",
+    "addButton": "Add",
+    "captionPlaceholder": "Say something short (optional)",
+    "post": "Post",
+    "deleteConfirmTitle": "Delete this moment?"
+  },
   "faceVerification": {
     "title": "Face verification",
     "subtitle": "Take a quick selfie to get a verified badge on your profile. A real person reviews every submission.",
