@@ -34,7 +34,7 @@ from tests.helpers import cleanup_tracked_test_users, track_test_user  # noqa: E
 # /login and /refresh never create one, so they're deliberately excluded —
 # tracking them could otherwise mark a pre-existing (possibly real) account
 # for deletion just because a test happened to log in as it.
-_USER_CREATING_PATHS = {"/auth/signup", "/auth/google", "/auth/kakao", "/auth/apple"}
+_USER_CREATING_PATHS = {"/auth/signup", "/auth/google", "/auth/apple"}
 
 
 async def _track_created_user(response: Response) -> None:

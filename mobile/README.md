@@ -1,6 +1,6 @@
 # mobile — SooDa Mate
 
-React Native app built with Expo (dev client, not Expo Go — Google/Kakao
+React Native app built with Expo (dev client, not Expo Go — Google/Apple
 login and AdMob need native modules Expo Go doesn't include).
 
 ## Local setup
@@ -22,16 +22,18 @@ npx expo start
   which is available in this dev environment, so on-device verification
   happens on your own machine.
 - `w` to run in a browser via react-native-web — useful for a quick sanity
-  check of screens/navigation, but Google Sign-In and Kakao Login throw on
-  web (native-only, see `src/services/googleAuth.ts` /
-  `src/services/kakaoAuth.ts`).
+  check of screens/navigation, but Google Sign-In and Sign in with Apple
+  throw on web (native-only, see `src/services/googleAuth.ts` /
+  `src/services/appleAuth.ts`).
 - `npx tsc --noEmit` type-checks the whole app without running anything.
 
 ## Native auth setup (one-time, per platform)
 
-Neither Google nor Kakao accounts exist yet — until they do, the Google/Kakao
-buttons on the login screen will fail; email/password auth works
-immediately once the backend is running.
+No Google OAuth client exists yet — until one does, the Google button on the
+login screen will fail; email/password auth works immediately once the
+backend is running. Sign in with Apple only requires the paid Apple
+Developer account already needed for App Store submission — no separate
+account/config beyond the bundle id already set in `app.config.js`.
 
 - **Google**: create an OAuth client in Google Cloud Console (type: Web
   application) and set its client ID as both `GOOGLE_OAUTH_CLIENT_ID` in
@@ -39,10 +41,10 @@ immediately once the backend is running.
   both places, because the backend verifies the id_token's audience against
   it. Android additionally needs your debug/release SHA-1 fingerprint
   registered in the same Google Cloud project.
-- **Kakao**: create an app in Kakao Developers, set `EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY`
-  here (the config plugin in `app.config.js` wires it into the native
-  `AndroidManifest.xml` / `Info.plist` URL scheme automatically on prebuild)
-  and `KAKAO_REST_API_KEY` in `backend/.env`.
+- **Apple**: only shows on iOS (`Platform.OS === "ios"` in `LoginScreen.tsx`),
+  per Apple's own guidance. Nothing to configure beyond the Apple Developer
+  account — `expo-apple-authentication`'s identityToken verifies against the
+  app's bundle id (`APPLE_BUNDLE_ID` in `backend/.env`, already defaulted).
 
 ## Structure
 
@@ -50,7 +52,7 @@ immediately once the backend is running.
 - `src/screens/` — one folder per feature area; includes Travel Mode and Verification (Profile stack) alongside the core Discover/Matches/Chat/Profile/Settings screens
 - `src/api/` — thin axios wrappers per backend resource, `client.ts` handles the JWT header + refresh-on-401
 - `src/store/authStore.ts` — Zustand; tokens persisted via `expo-secure-store` on native, `localStorage` on web (`src/services/secureStorage.ts`)
-- `src/services/` — native SDK wrappers (Google/Kakao sign-in); guarded to throw cleanly on web instead of crashing the bundle
+- `src/services/` — native SDK wrappers (Google/Apple sign-in); guarded to throw cleanly on web instead of crashing the bundle
 - `src/services/deepLinking.ts` — handles `soodamate://shop`, the redirect back from the website's Stripe checkout (see `web/shop-success.html`)
 - `src/theme.ts` — shared color tokens (warm cream/orange/navy, matches the SooDaList family look, not a generic pink dating-app palette)
 - `src/i18n/` — i18next setup + `locales/{ko,en,es,zh,ja}.json`; `SettingsScreen` has the language switcher

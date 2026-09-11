@@ -53,14 +53,11 @@ openssl rand -hex 32 | tr -d '\n' | gcloud secrets create sooda-date-secret-key 
 # From Google Cloud Console → APIs & Services → Credentials (OAuth client, Web application type):
 echo -n "<your-google-oauth-web-client-id>" | gcloud secrets create sooda-date-google-oauth-client-id --data-file=-
 
-# From Kakao Developers → App → App Keys:
-echo -n "<your-kakao-rest-api-key>" | gcloud secrets create sooda-date-kakao-rest-api-key --data-file=-
-
 # The Firebase service-account JSON downloaded in step 0:
 gcloud secrets create sooda-date-firebase-credentials --data-file=path/to/firebase-service-account.json
 ```
 
-Any of these can be skipped for a first deploy (Google/Kakao login and push just no-op until their secret has a real value, same as local dev) — but `sooda-date-database-url` and `sooda-date-secret-key` are required for the app to boot at all.
+Any of these can be skipped for a first deploy (Google login and push just no-op until their secret has a real value, same as local dev) — but `sooda-date-database-url` and `sooda-date-secret-key` are required for the app to boot at all.
 
 ## 4. Deploy the backend
 

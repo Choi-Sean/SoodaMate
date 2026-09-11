@@ -16,11 +16,6 @@ export async function loginWithGoogle(idToken: string): Promise<AuthTokens> {
   return resp.data;
 }
 
-export async function loginWithKakao(accessToken: string): Promise<AuthTokens> {
-  const resp = await apiClient.post<AuthTokens>("/auth/kakao", { access_token: accessToken });
-  return resp.data;
-}
-
 export async function loginWithApple(identityToken: string): Promise<AuthTokens> {
   const resp = await apiClient.post<AuthTokens>("/auth/apple", { identity_token: identityToken });
   return resp.data;

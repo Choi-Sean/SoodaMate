@@ -12,15 +12,14 @@ Auto-generated interactive docs are always the source of truth: run the backend 
 
 All protected endpoints require `Authorization: Bearer <access_token>`.
 
-## Auth — Google / Kakao (Phase 2)
+## Auth — Google / Apple (Phase 2)
 
 | Method | Path | Body | Notes |
 |---|---|---|---|
 | POST | `/auth/google` | `{id_token}` | Verifies against Google's public certs (audience = `GOOGLE_OAUTH_CLIENT_ID`); creates or links a user |
-| POST | `/auth/kakao` | `{access_token}` | Verifies via `kapi.kakao.com/v2/user/me`; creates or links a user |
 | POST | `/auth/apple` | `{identity_token}` | Verifies the JWT locally against Apple's public JWKS (`https://appleid.apple.com/auth/keys`), audience = `APPLE_BUNDLE_ID`; creates or links a user. Required by Apple App Store Review Guideline 4.8 (any app offering third-party login like Google must also offer Sign in with Apple), not just a nice-to-have |
 
-All three (plus email) return the same `TokenResponse` shape. If the provider's email matches an existing account, the new provider is linked to that account instead of creating a duplicate user.
+Both (plus email) return the same `TokenResponse` shape. If the provider's email matches an existing account, the new provider is linked to that account instead of creating a duplicate user.
 
 ## Profiles / Discovery / Matching (Phase 3, extended Phase 17/18)
 

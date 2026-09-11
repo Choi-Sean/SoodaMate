@@ -21,5 +21,4 @@ export const colors = {
   border: "#ECE7E2",
   white: "#FFFFFF",
   danger: "#D92D20",
-  kakaoYellow: "#FEE500",
 };

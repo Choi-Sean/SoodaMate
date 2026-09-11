@@ -11,9 +11,9 @@ APPLE_ISSUER = "https://appleid.apple.com"
 
 class AppleVerifier(OAuthProviderVerifier):
     """Verifies the identityToken from expo-apple-authentication's
-    signInAsync() — a JWT signed by Apple, not an opaque access token like
-    Kakao's, so verification is local (fetch Apple's public JWKS, check
-    signature/issuer/audience/expiry) rather than a userinfo API call."""
+    signInAsync() — a JWT signed by Apple, not an opaque access token that
+    would need a userinfo API call, so verification is local (fetch Apple's
+    public JWKS, check signature/issuer/audience/expiry)."""
 
     async def verify(self, token: str) -> ExternalIdentity:
         try:

@@ -22,11 +22,8 @@ function withRNFirebaseDisableSPM(config) {
   });
 }
 
-// app.config.js instead of app.json so the Kakao native app key (needed for
-// the URL scheme the OAuth redirect lands on) can come from an env var
-// instead of being hardcoded — no Kakao app exists yet, so this is empty
-// until the user creates one (see docs/ENV_VARS.md at the repo root).
-const kakaoNativeAppKey = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? "";
+// app.config.js instead of app.json so dynamic values like the AdMob app
+// IDs below can come from an env var instead of being hardcoded.
 
 // Google's official test AdMob app IDs — safe to ship as the default since
 // no real AdMob account exists yet; swap via env once one does.
@@ -123,12 +120,6 @@ module.exports = {
       ],
       "@react-native-google-signin/google-signin",
       "expo-apple-authentication",
-      [
-        "@react-native-seoul/kakao-login",
-        {
-          kakaoAppKey: kakaoNativeAppKey,
-        },
-      ],
       [
         "react-native-google-mobile-ads",
         {

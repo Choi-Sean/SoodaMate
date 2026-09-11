@@ -17,10 +17,6 @@ class GoogleAuthRequest(BaseModel):
     id_token: str
 
 
-class KakaoAuthRequest(BaseModel):
-    access_token: str
-
-
 class AppleAuthRequest(BaseModel):
     identity_token: str
 

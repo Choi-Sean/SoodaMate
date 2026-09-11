@@ -21,18 +21,6 @@ async def test_google_login_creates_user_then_reuses_identity(client, monkeypatc
 
 
 @pytest.mark.asyncio
-async def test_kakao_login_creates_user(client, monkeypatch):
-    async def fake_verify(token: str) -> ExternalIdentity:
-        return ExternalIdentity(provider_user_id="kakao-uid-1", email=None, raw_claims={})
-
-    monkeypatch.setattr(auth_router.kakao_verifier, "verify", fake_verify)
-
-    resp = await client.post("/auth/kakao", json={"access_token": "whatever"})
-    assert resp.status_code == 200
-    assert "user_id" in resp.json()
-
-
-@pytest.mark.asyncio
 async def test_google_login_invalid_token_rejected(client, monkeypatch):
     async def fake_verify(token: str) -> ExternalIdentity:
         raise ValueError("bad token")

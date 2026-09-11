@@ -56,7 +56,7 @@ class AuthProvider(Base):
         # has provider_user_id=NULL, so a plain UNIQUE(provider,
         # provider_user_id) would reject the second email signup entirely on
         # MSSQL. Filtered index only enforces uniqueness for real (non-NULL)
-        # OAuth provider_user_ids (google/kakao).
+        # OAuth provider_user_ids (google/apple).
         Index(
             "uq_provider_identity",
             "Provider",
@@ -70,7 +70,7 @@ class AuthProvider(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         "UserId", ForeignKey("Users.Id", ondelete="CASCADE"), nullable=False
     )
-    provider: Mapped[str] = mapped_column("Provider", Unicode(20), nullable=False)  # 'google' | 'kakao' | 'email'
+    provider: Mapped[str] = mapped_column("Provider", Unicode(20), nullable=False)  # 'google' | 'apple' | 'email'
     provider_user_id: Mapped[str | None] = mapped_column("ProviderUserId", Unicode(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
 

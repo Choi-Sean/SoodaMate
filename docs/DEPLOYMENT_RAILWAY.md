@@ -22,7 +22,7 @@ In the service's **Variables** tab, set everything `backend/.env` has locally, p
 | `APP_ENV` | `production` |
 | `SECRET_KEY` | a real random value (`openssl rand -hex 32`), not the dev placeholder |
 | `DATABASE_URL` | the real MSSQL connection string (same shape as local `.env` — `mssql+aioodbc://...&MARS_Connection=yes`) |
-| `GOOGLE_OAUTH_CLIENT_ID`, `KAKAO_REST_API_KEY` | once those accounts exist |
+| `GOOGLE_OAUTH_CLIENT_ID` | once that account exists |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` | photo storage — Cloudflare R2 (S3-compatible), chosen for its zero egress fee. Plain access-key/secret pair, not a credential file, so none of the Railway file-path issues below apply to this one |
 | `FIREBASE_CREDENTIALS_PATH` | file-vs-path issue below still applies to this one (push notifications) |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | from the Stripe Dashboard, once that account exists |

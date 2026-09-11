@@ -7,7 +7,7 @@ import App from './App';
 // React tree, at module scope. Guarded because @react-native-firebase has no
 // web build and (until a real Firebase project exists) may not even be
 // linked natively — same no-op-until-configured pattern used everywhere else
-// Firebase/Kakao/AdMob show up in this app.
+// Firebase/AdMob show up in this app.
 if (Platform.OS !== 'web') {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires

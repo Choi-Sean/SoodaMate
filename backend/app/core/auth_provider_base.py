@@ -12,7 +12,7 @@ class ExternalIdentity:
 
 
 class OAuthProviderVerifier(ABC):
-    """Common interface every external auth provider (Google, Kakao, future
+    """Common interface every external auth provider (Google, Apple, future
     phone-OTP, etc.) implements. auth_service only ever talks to this
     interface, so adding a new provider never requires touching issuance
     logic — just a new verifier + one router endpoint."""

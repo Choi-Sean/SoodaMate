@@ -7,7 +7,6 @@
 | `SECRET_KEY` | generate locally (`openssl rand -hex 32`) | JWT signing key, keep secret |
 | `DATABASE_URL` | your hosted SQL Server instance | `mssql+aioodbc://user:pass@host:1433/db?driver=ODBC+Driver+17+for+SQL+Server&Encrypt=yes&TrustServerCertificate=yes&MARS_Connection=yes&Connection+Timeout=15` — **no Docker/local container**, connect directly to a real MSSQL instance for every environment including tests. `MARS_Connection=yes` is required or aioodbc throws "Connection is busy with results for another command." `Connection+Timeout=15` bounds how long a connection attempt can hang against a slow/unreachable shared-hosting instance — recommended after a real `pytest` run once silently hung indefinitely (no query-level timeout exists yet; this only bounds the initial connection handshake, not a stalled query on an already-open connection) |
 | `GOOGLE_OAUTH_CLIENT_ID` | Google Cloud Console → APIs & Services → Credentials → OAuth client (type: Web application) | Used as the audience when verifying id_tokens from the mobile app |
-| `KAKAO_REST_API_KEY` | Kakao Developers → App → App Keys | REST API key |
 | `APPLE_BUNDLE_ID` | — | Defaults to `com.soodalist.soodamate` (the real bundle id, already set in `mobile/app.config.js`) — only override if the bundle id ever changes. No separate Apple account/key needed beyond the paid Apple Developer Program membership App Store submission already requires; just enable the "Sign In with Apple" capability on the App ID in the developer portal |
 | `R2_ACCOUNT_ID` | Cloudflare dashboard → R2 → Overview (right side, "Account ID") | Used to build the S3-compatible endpoint `https://<account_id>.r2.cloudflarestorage.com` |
 | `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` | Cloudflare dashboard → R2 → Manage R2 API Tokens → Create API Token (permission: Object Read & Write, scoped to the bucket below) | S3-style credential pair; the secret is only shown once at creation |
@@ -29,7 +28,6 @@
 | `EXPO_PUBLIC_API_BASE_URL` | — | Points at local backend or the deployed Railway URL |
 | `EXPO_PUBLIC_MARKETING_SITE_URL` | — | The deployed Vercel URL; used to open the Stripe shop (`Linking.openURL`) and privacy/terms links |
 | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | same OAuth client as backend's `GOOGLE_OAUTH_CLIENT_ID` | `@react-native-google-signin/google-signin` needs the *web* client id, not an android/iOS one |
-| `EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY` | Kakao Developers → App → App Keys | Native app key, plus URL scheme registration in iOS/Android native config |
 | `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID` / `EXPO_PUBLIC_ADMOB_IOS_APP_ID` | AdMob console, after app registered | The *app*-level IDs (one per platform); falls back to Google's test IDs until set |
 | `EXPO_PUBLIC_ADMOB_ANDROID_NATIVE_UNIT_ID` / `EXPO_PUBLIC_ADMOB_IOS_NATIVE_UNIT_ID` | AdMob console → Ad units, after creating a Native unit per platform | Falls back to Google's test native unit ID until set (`src/components/AdCard.native.tsx`) — the in-swipe-deck sponsored card, replacing the old banner strip |
 | `FIREBASE_CONFIG` | Firebase Console → Project settings → your app | google-services.json / GoogleService-Info.plist |

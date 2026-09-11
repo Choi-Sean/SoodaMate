@@ -10,7 +10,7 @@ import { colors } from "../../theme";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Signup">;
 
-const PROVIDER_DISPLAY_NAMES: Record<string, string> = { google: "Google", kakao: "Kakao", apple: "Apple" };
+const PROVIDER_DISPLAY_NAMES: Record<string, string> = { google: "Google", apple: "Apple" };
 
 // signup_with_email (see backend/app/services/auth_service.py) returns a
 // structured 409 detail — {message, providers} — when the email is already

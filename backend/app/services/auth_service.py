@@ -55,7 +55,7 @@ async def login_with_email(db: AsyncSession, email: str, password: str) -> Token
 async def login_or_signup_with_provider(
     db: AsyncSession, provider: str, identity: ExternalIdentity
 ) -> TokenResponse:
-    """Shared resolution path for Google/Kakao/any future OAuth provider:
+    """Shared resolution path for Google/Apple/any future OAuth provider:
     find an existing linked account, or create a new user + link, then issue
     the same app-level JWT every auth path returns."""
     link = await db.scalar(

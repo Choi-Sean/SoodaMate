@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import * as authApi from "../../api/auth";
 import { useAuthStore } from "../../store/authStore";
 import { signInWithGoogle } from "../../services/googleAuth";
-import { signInWithKakao } from "../../services/kakaoAuth";
 import { signInWithApple } from "../../services/appleAuth";
 import type { AuthStackParamList } from "../../navigation/AuthStack";
 import { colors } from "../../theme";
@@ -41,8 +40,6 @@ export default function LoginScreen({ navigation }: Props) {
       const idToken = await signInWithGoogle();
       if (idToken) login(await authApi.loginWithGoogle(idToken));
     });
-  const handleKakaoLogin = () =>
-    run("kakao", async () => login(await authApi.loginWithKakao(await signInWithKakao())));
   const handleAppleLogin = () =>
     run("apple", async () => {
       const identityToken = await signInWithApple();
@@ -93,23 +90,13 @@ export default function LoginScreen({ navigation }: Props) {
         )}
       </Pressable>
 
-      <View style={styles.divider} />
-
-      <Pressable style={styles.kakaoButton} onPress={handleKakaoLogin} disabled={loading !== null}>
-        {loading === "kakao" ? (
-          <ActivityIndicator />
-        ) : (
-          <View style={styles.buttonContent}>
-            <Image source={require("../../../assets/kakao-logo.png")} style={styles.providerLogo} />
-            <Text style={styles.kakaoButtonText}>{t("auth.continueWithKakao")}</Text>
-          </View>
-        )}
-      </Pressable>
-
       {Platform.OS === "ios" && (
-        <Pressable style={styles.appleButton} onPress={handleAppleLogin} disabled={loading !== null}>
-          {loading === "apple" ? <ActivityIndicator color="#fff" /> : <Text style={styles.appleButtonText}>{t("auth.continueWithApple")}</Text>}
-        </Pressable>
+        <>
+          <View style={styles.divider} />
+          <Pressable style={styles.appleButton} onPress={handleAppleLogin} disabled={loading !== null}>
+            {loading === "apple" ? <ActivityIndicator color="#fff" /> : <Text style={styles.appleButtonText}>{t("auth.continueWithApple")}</Text>}
+          </Pressable>
+        </>
       )}
 
       <Pressable onPress={() => navigation.navigate("Signup")}>
@@ -149,8 +136,6 @@ const styles = StyleSheet.create({
   },
   googleButtonText: { fontSize: 16, fontWeight: "500", color: colors.ink },
   divider: { height: 1, backgroundColor: colors.border, marginTop: 16, marginBottom: 4 },
-  kakaoButton: { backgroundColor: colors.kakaoYellow, borderRadius: 10, padding: 14, alignItems: "center", marginTop: 12 },
-  kakaoButtonText: { fontSize: 16, fontWeight: "500", color: "#000" },
   appleButton: { backgroundColor: "#000", borderRadius: 10, padding: 14, alignItems: "center", marginTop: 12 },
   appleButtonText: { fontSize: 16, fontWeight: "500", color: "#fff" },
   link: { textAlign: "center", marginTop: 24, color: colors.accentDark },

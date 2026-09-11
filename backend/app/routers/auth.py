@@ -5,7 +5,6 @@ from app.database import get_db
 from app.schemas.auth import (
     AppleAuthRequest,
     GoogleAuthRequest,
-    KakaoAuthRequest,
     LoginRequest,
     RefreshRequest,
     SignupRequest,
@@ -14,7 +13,6 @@ from app.schemas.auth import (
 from app.services import auth_service
 from app.services.oauth.apple import apple_verifier
 from app.services.oauth.google import google_verifier
-from app.services.oauth.kakao import kakao_verifier
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -41,15 +39,6 @@ async def google_login(body: GoogleAuthRequest, db: AsyncSession = Depends(get_d
     except ValueError as exc:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, str(exc)) from exc
     return await auth_service.login_or_signup_with_provider(db, "google", identity)
-
-
-@router.post("/kakao", response_model=TokenResponse)
-async def kakao_login(body: KakaoAuthRequest, db: AsyncSession = Depends(get_db)) -> TokenResponse:
-    try:
-        identity = await kakao_verifier.verify(body.access_token)
-    except ValueError as exc:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, str(exc)) from exc
-    return await auth_service.login_or_signup_with_provider(db, "kakao", identity)
 
 
 @router.post("/apple", response_model=TokenResponse)
