@@ -142,6 +142,8 @@ export default function MyProfileScreen({ navigation }: Props) {
           { label: t("profile.explainerPremiumTitle"), body: t("profile.explainerPremiumBody") },
           { label: t("profile.explainerSuperlikeTitle"), body: t("profile.explainerSuperlikeBody") },
           { label: t("profile.explainerBoostTitle"), body: t("profile.explainerBoostBody") },
+          { label: t("profile.explainerAiMatchTitle"), body: t("profile.explainerAiMatchBody") },
+          { label: t("profile.explainerUnlimitedMatchingTitle"), body: t("profile.explainerUnlimitedMatchingBody") },
         ].map((row, i) => (
           <View key={i} style={styles.explainerRow}>
             <View style={styles.explainerDot} />

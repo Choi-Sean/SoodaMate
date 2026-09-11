@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Unicode, Uuid, func
+from sqlalchemy import DateTime, ForeignKey, Integer, Unicode, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -26,6 +26,16 @@ class BlindChatQueueEntry(Base):
     # convention as Profile.interests/race_ethnicity) selected for *this*
     # queue session — re-queueing can pick a different set each time.
     categories: Mapped[str] = mapped_column("Categories", Unicode(255), nullable=False)
+    # Per-session filter overrides (see schemas.match.BlindChatQueueRequest)
+    # — MUST be persisted here, not just used one-shot at join time, because
+    # this row is what a *later* joiner's own search finds and matches
+    # against. NULL means "no override — use my profile defaults," checked
+    # the same way on both sides of a pairing (see
+    # blind_chat_service._compatibility_filters).
+    gender_filter: Mapped[str | None] = mapped_column("GenderFilter", Unicode(10), nullable=True)
+    min_age_filter: Mapped[int | None] = mapped_column("MinAgeFilter", Integer, nullable=True)
+    max_age_filter: Mapped[int | None] = mapped_column("MaxAgeFilter", Integer, nullable=True)
+    max_distance_km_filter: Mapped[int | None] = mapped_column("MaxDistanceKmFilter", Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
     # Set by whichever OTHER user's queue call claims this entry to pair with
     # it — the waiting side's own next GET/POST then sees this and reports

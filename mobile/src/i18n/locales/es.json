@@ -225,6 +225,10 @@
     "explainerSuperlikeBody": "Un impulso único para una persona — verá tu perfil resaltado, así destacas frente a un like normal.",
     "explainerBoostTitle": "Boost",
     "explainerBoostBody": "Un impulso único para ti — tu perfil salta al principio del feed de Descubrir de todos durante 30 minutos.",
+    "explainerAiMatchTitle": "Match con IA",
+    "explainerAiMatchBody": "Sáltate la cola de Chat a ciegas — te empareja al instante con quien mejor encaje, según intereses, edad y distancia.",
+    "explainerUnlimitedMatchingTitle": "Matching ilimitado",
+    "explainerUnlimitedMatchingBody": "Sin límite diario de matches en Chat a ciegas — sigue emparejándote todo lo que quieras.",
     "perksTitle": "Lo que obtienes con Premium",
     "perkUnlimitedSwipes": "Deslizamientos ilimitados",
     "perkSeeWhoLikedYou": "Ver quién te dio like",
@@ -582,6 +586,16 @@
     "incomingRevealRequest": "{{name}} quiere revelar los perfiles",
     "acceptReveal": "Aceptar y revelar",
     "revealPending": "Pediste revelar los perfiles — esperando respuesta",
-    "requestReveal": "Pedir revelar perfiles"
+    "requestReveal": "Pedir revelar perfiles",
+    "filtersTitle": "Filtros",
+    "genderFilterLabel": "Género",
+    "ageFilterLabel": "Edad",
+    "distanceFilterLabel": "Límite de distancia",
+    "dailyLimitRemaining": "Te quedan {{count}} matches gratis hoy",
+    "dailyLimitReached": "Ya usaste tus matches gratis de hoy. Consigue Matching ilimitado para seguir.",
+    "aiMatchButton": "Buscar con Match con IA",
+    "aiMatchTitle": "Match con IA",
+    "aiMatchNoneFound": "Nadie está esperando ahora mismo — inténtalo de nuevo en un rato. No se usó tu crédito.",
+    "aiMatchNoCredits": "Te quedaste sin créditos de Match con IA. Puedes comprar más en la tienda."
   }
 }

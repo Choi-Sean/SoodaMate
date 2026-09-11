@@ -225,6 +225,10 @@
     "explainerSuperlikeBody": "用于某一个人的一次性道具——对方会看到你被高亮显示，比普通喜欢更显眼。",
     "explainerBoostTitle": "曝光加速",
     "explainerBoostBody": "用于你自己资料的一次性道具——30分钟内置顶显示在所有人的发现页面。",
+    "explainerAiMatchTitle": "AI匹配",
+    "explainerAiMatchBody": "跳过盲聊排队，根据兴趣、年龄和距离，立即为你匹配最合适的对象。",
+    "explainerUnlimitedMatchingTitle": "无限匹配",
+    "explainerUnlimitedMatchingBody": "盲聊不再受每日免费匹配次数限制，可以持续匹配。",
     "perksTitle": "会员特权",
     "perkUnlimitedSwipes": "无限次滑动",
     "perkSeeWhoLikedYou": "查看谁喜欢了你",
@@ -582,6 +586,16 @@
     "incomingRevealRequest": "{{name}}想要公开资料",
     "acceptReveal": "同意并公开",
     "revealPending": "已请求公开资料 — 等待对方回应",
-    "requestReveal": "请求公开资料"
+    "requestReveal": "请求公开资料",
+    "filtersTitle": "筛选条件",
+    "genderFilterLabel": "性别",
+    "ageFilterLabel": "年龄",
+    "distanceFilterLabel": "距离限制",
+    "dailyLimitRemaining": "今日还剩{{count}}次免费匹配",
+    "dailyLimitReached": "今日免费匹配次数已用完，购买无限匹配即可继续使用。",
+    "aiMatchButton": "用AI匹配立即寻找",
+    "aiMatchTitle": "AI匹配",
+    "aiMatchNoneFound": "目前没有等待中的对象，请稍后再试 — 匹配权未被扣除。",
+    "aiMatchNoCredits": "AI匹配权已用完，可在商店购买。"
   }
 }

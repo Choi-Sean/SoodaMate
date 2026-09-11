@@ -151,6 +151,14 @@ const translations = {
     zh: "想安静浏览就开启隐身模式，想认识异地的人就打开旅行模式。",
     ja: "静かに閲覧したい時はシークレットモード、他の地域の出会いが気になる時は旅行モードを。",
   },
+  "feature.7.title": { ko: "블라인드 채팅", en: "Blind Chat", es: "Chat a ciegas", zh: "盲聊", ja: "ブラインドチャット" },
+  "feature.7.body": {
+    ko: "관심사가 통하는 검증된 회원과 먼저 대화부터 시작하세요. 이름과 사진은 서로 동의할 때만 공개돼요.",
+    en: "Start with conversation, not a photo — chat with a verified member who shares your interests. Names and photos only go public once both sides agree.",
+    es: "Empieza por la conversación, no por la foto — chatea con un miembro verificado que comparte tus intereses. Los nombres y fotos solo se revelan si ambos están de acuerdo.",
+    zh: "先聊天，不看脸——与兴趣相投的认证会员开始匿名对话。只有双方都同意，姓名和照片才会公开。",
+    ja: "写真より先に会話から — 趣味が合う認証済みメンバーとチャット。名前と写真はお互いが同意したときだけ公開されます。",
+  },
 
   "how.head.title": { ko: "시작하는 방법", en: "How to get started", es: "Cómo empezar", zh: "如何开始", ja: "始め方" },
   "how.head.sub": {
@@ -656,6 +664,45 @@ const translations = {
     es: "Swipes ilimitados, ve quién te dio like y filtros avanzados — se renueva cada año, más barato que mes a mes.",
     zh: "无限滑动、查看谁喜欢了你、高级筛选——每年自动续费，比按月付费更划算。",
     ja: "無制限スワイプ、いいねしてくれた人の確認、詳細フィルターなど — 毎年自動更新、月払いよりお得です。",
+  },
+
+  "shop.product.ai_match_pack_1.name": { ko: "AI 매칭권 1회", en: "AI Match x1", es: "1 Match con IA", zh: "AI匹配 x1", ja: "AIマッチ ×1" },
+  "shop.product.ai_match_pack_1.desc": {
+    ko: "블라인드 채팅 대기 없이, 나와 가장 잘 맞는 상대와 바로 매칭돼요.",
+    en: "Skip the Blind Chat queue — get matched instantly with your best fit.",
+    es: "Sáltate la cola de Chat a ciegas — te empareja al instante con tu mejor match.",
+    zh: "跳过盲聊排队，立即匹配最合适的对象。",
+    ja: "ブラインドチャットの順番待ちなしで、最も相性の良い相手とすぐマッチング。",
+  },
+  "shop.product.ai_match_pack_5.name": { ko: "AI 매칭권 5회", en: "AI Match x5", es: "5 Matches con IA", zh: "AI匹配 x5", ja: "AIマッチ ×5" },
+  "shop.product.ai_match_pack_5.desc": {
+    ko: "블라인드 채팅 대기 없이, 나와 가장 잘 맞는 상대와 바로 매칭돼요.",
+    en: "Skip the Blind Chat queue — get matched instantly with your best fit.",
+    es: "Sáltate la cola de Chat a ciegas — te empareja al instante con tu mejor match.",
+    zh: "跳过盲聊排队，立即匹配最合适的对象。",
+    ja: "ブラインドチャットの順番待ちなしで、最も相性の良い相手とすぐマッチング。",
+  },
+  "shop.product.unlimited_matching_week.name": {
+    ko: "무제한 매칭 1주일", en: "Unlimited Matching — 1 week", es: "Matching ilimitado — 1 semana",
+    zh: "无限匹配 — 1周", ja: "無制限マッチング — 1週間",
+  },
+  "shop.product.unlimited_matching_week.desc": {
+    ko: "1주일 동안 블라인드 채팅 하루 무료 매칭 횟수 제한이 사라져요.",
+    en: "No daily Blind Chat match cap for 1 week.",
+    es: "Sin límite diario de matches en Chat a ciegas durante 1 semana.",
+    zh: "1周内盲聊不再受每日免费匹配次数限制。",
+    ja: "1週間、ブラインドチャットの1日の無料マッチング回数制限がなくなります。",
+  },
+  "shop.product.unlimited_matching_month.name": {
+    ko: "무제한 매칭 1개월", en: "Unlimited Matching — 1 month", es: "Matching ilimitado — 1 mes",
+    zh: "无限匹配 — 1个月", ja: "無制限マッチング — 1ヶ月",
+  },
+  "shop.product.unlimited_matching_month.desc": {
+    ko: "1개월 동안 블라인드 채팅 하루 무료 매칭 횟수 제한이 사라져요.",
+    en: "No daily Blind Chat match cap for 1 month.",
+    es: "Sin límite diario de matches en Chat a ciegas durante 1 mes.",
+    zh: "1个月内盲聊不再受每日免费匹配次数限制。",
+    ja: "1ヶ月間、ブラインドチャットの1日の無料マッチング回数制限がなくなります。",
   },
 
   "shopSuccess.title": { ko: "결제가 완료됐어요!", en: "Payment complete!", es: "¡Pago completado!", zh: "支付已完成！", ja: "決済が完了しました！" },

@@ -34,6 +34,36 @@ PRODUCTS: dict[str, dict] = {
         "credits": 1,
         "price_usd_cents": 399,
     },
+    # Blind chat monetization (see services/blind_chat_service.py). AI match
+    # credits are consumable, same shape as superlike/boost above.
+    "ai_match_pack_1": {
+        "name": "AI 매칭권 1회",
+        "credit_kind": "ai_match",
+        "credits": 1,
+        "price_usd_cents": 199,
+    },
+    "ai_match_pack_5": {
+        "name": "AI 매칭권 5회",
+        "credit_kind": "ai_match",
+        "credits": 5,
+        "price_usd_cents": 699,
+    },
+    # unlimited_matching_days is a fixed-duration top-up (extends
+    # Profile.unlimited_matching_until), not a real Stripe Subscription like
+    # membership_* below — nothing to cancel, only more time to stack on top
+    # of whatever's left (same one-time-purchase mode as superlike/boost).
+    "unlimited_matching_week": {
+        "name": "무제한 매칭 1주일",
+        "credit_kind": "unlimited_matching_days",
+        "days": 7,
+        "price_usd_cents": 399,
+    },
+    "unlimited_matching_month": {
+        "name": "무제한 매칭 1개월",
+        "credit_kind": "unlimited_matching_days",
+        "days": 30,
+        "price_usd_cents": 699,
+    },
     # Real recurring Stripe Subscriptions (mode="subscription" below), not
     # one-time top-ups — create_checkout_session/handle_webhook_event branch
     # on credit_kind == "membership" to use the subscription path.
@@ -75,6 +105,22 @@ _PRODUCT_NAMES: dict[str, dict[str, str]] = {
     "boost_1": {
         "ko": "부스트 1회", "en": "Boost x1", "es": "1 Boost",
         "zh": "曝光加速 x1", "ja": "ブースト ×1",
+    },
+    "ai_match_pack_1": {
+        "ko": "AI 매칭권 1회", "en": "AI Match x1", "es": "1 Match con IA",
+        "zh": "AI匹配 x1", "ja": "AIマッチ ×1",
+    },
+    "ai_match_pack_5": {
+        "ko": "AI 매칭권 5회", "en": "AI Match x5", "es": "5 Matches con IA",
+        "zh": "AI匹配 x5", "ja": "AIマッチ ×5",
+    },
+    "unlimited_matching_week": {
+        "ko": "무제한 매칭 1주일", "en": "Unlimited Matching — 1 week", "es": "Matching ilimitado — 1 semana",
+        "zh": "无限匹配 — 1周", "ja": "無制限マッチング — 1週間",
+    },
+    "unlimited_matching_month": {
+        "ko": "무제한 매칭 1개월", "en": "Unlimited Matching — 1 month", "es": "Matching ilimitado — 1 mes",
+        "zh": "无限匹配 — 1个月", "ja": "無制限マッチング — 1ヶ月",
     },
     "membership_monthly": {
         "ko": "프리미엄 멤버십", "en": "Premium Membership", "es": "Membresía Premium",
@@ -201,6 +247,17 @@ async def handle_webhook_event(db: AsyncSession, payload: bytes, sig_header: str
         profile.superlike_credits += product["credits"]
     elif product["credit_kind"] == "boost":
         profile.boost_credits += product["credits"]
+    elif product["credit_kind"] == "ai_match":
+        profile.ai_match_credits += product["credits"]
+    elif product["credit_kind"] == "unlimited_matching_days":
+        # Stacks on top of remaining time, same as superlike/boost credits —
+        # unlike membership below, this isn't a subscription that replaces
+        # what was there.
+        base = profile.unlimited_matching_until
+        if base is not None and base.tzinfo is None:
+            base = base.replace(tzinfo=timezone.utc)
+        start = max(base, datetime.now(timezone.utc)) if base else datetime.now(timezone.utc)
+        profile.unlimited_matching_until = start + timedelta(days=product["days"])
     elif product["credit_kind"] == "membership":
         # A fresh subscription, not a top-up — no stacking on remaining
         # time (that made sense for the old one-time-purchase model, not a

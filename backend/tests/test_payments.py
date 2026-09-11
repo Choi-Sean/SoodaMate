@@ -112,6 +112,49 @@ async def test_webhook_grants_membership(client, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_webhook_grants_ai_match_credits(client, monkeypatch):
+    import app.services.payment_service as payment_service
+
+    user_id, headers = await create_user_with_profile(client, "pay-aimatch@example.com")
+    monkeypatch.setattr(payment_service.settings, "stripe_secret_key", "sk_test_fake")
+    monkeypatch.setattr(payment_service.settings, "stripe_webhook_secret", _WEBHOOK_SECRET)
+
+    event = _checkout_completed("evt_aimatch_1", "cs_aimatch_1", user_id, "ai_match_pack_5")
+    resp = await client.post("/payments/webhook", **_webhook_post_args(event))
+    assert resp.status_code == 204, resp.text
+
+    balance = await client.get("/payments/balance", headers=headers)
+    assert balance.json()["ai_match_credits"] == 5
+
+
+@pytest.mark.asyncio
+async def test_webhook_grants_unlimited_matching_and_stacks_on_repurchase(client, monkeypatch):
+    import app.services.payment_service as payment_service
+
+    user_id, headers = await create_user_with_profile(client, "pay-unlimited@example.com")
+    monkeypatch.setattr(payment_service.settings, "stripe_secret_key", "sk_test_fake")
+    monkeypatch.setattr(payment_service.settings, "stripe_webhook_secret", _WEBHOOK_SECRET)
+
+    event1 = _checkout_completed("evt_unl_1", "cs_unl_1", user_id, "unlimited_matching_week")
+    resp1 = await client.post("/payments/webhook", **_webhook_post_args(event1))
+    assert resp1.status_code == 204
+
+    balance1 = await client.get("/payments/balance", headers=headers)
+    first_until = balance1.json()["unlimited_matching_until"]
+    assert first_until is not None
+
+    # A second purchase stacks on top of the remaining time rather than
+    # replacing it (same "add to whatever's left" semantics as credits).
+    event2 = _checkout_completed("evt_unl_2", "cs_unl_2", user_id, "unlimited_matching_week")
+    resp2 = await client.post("/payments/webhook", **_webhook_post_args(event2))
+    assert resp2.status_code == 204
+
+    balance2 = await client.get("/payments/balance", headers=headers)
+    second_until = balance2.json()["unlimited_matching_until"]
+    assert second_until > first_until
+
+
+@pytest.mark.asyncio
 async def test_activate_boost_requires_credits(client):
     _, headers = await create_user_with_profile(client, "pay3@example.com")
     resp = await client.post("/payments/activate-boost", headers=headers)

@@ -148,6 +148,25 @@ export interface BlindChatQueueStatus {
   match_id: string | null;
 }
 
+export interface BlindChatFilters {
+  gender?: "male" | "female" | "other" | null;
+  min_age?: number | null;
+  max_age?: number | null;
+  max_distance_km?: number | null;
+}
+
+export interface BlindChatLimit {
+  remaining: number;
+  limit: number;
+  resets_at: string | null;
+  unlimited: boolean;
+}
+
+export interface AiMatchResult {
+  found: boolean;
+  match: Match | null;
+}
+
 export interface ChatMessage {
   id: string;
   match_id: string;

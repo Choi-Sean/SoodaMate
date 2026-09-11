@@ -225,6 +225,10 @@
     "explainerSuperlikeBody": "A one-time boost for one person — they'll see you highlighted, so you stand out from a regular like.",
     "explainerBoostTitle": "Boost",
     "explainerBoostBody": "A one-time boost for you — your profile jumps to the top of everyone's Discover feed for 30 minutes.",
+    "explainerAiMatchTitle": "AI Matching",
+    "explainerAiMatchBody": "Skip the Blind Chat queue — get matched instantly with whoever's the best fit, based on interests, age, and distance.",
+    "explainerUnlimitedMatchingTitle": "Unlimited Matching",
+    "explainerUnlimitedMatchingBody": "No daily cap on Blind Chat matches — keep matching as much as you want.",
     "perksTitle": "What you get with Premium",
     "perkUnlimitedSwipes": "Unlimited swipes",
     "perkSeeWhoLikedYou": "See who liked you",
@@ -582,6 +586,16 @@
     "incomingRevealRequest": "{{name}} wants to reveal profiles",
     "acceptReveal": "Accept & reveal",
     "revealPending": "You asked to reveal profiles — waiting for a response",
-    "requestReveal": "Ask to reveal profiles"
+    "requestReveal": "Ask to reveal profiles",
+    "filtersTitle": "Filters",
+    "genderFilterLabel": "Gender",
+    "ageFilterLabel": "Age",
+    "distanceFilterLabel": "Distance limit",
+    "dailyLimitRemaining": "{{count}} free matches left today",
+    "dailyLimitReached": "You've used today's free matches. Get Unlimited Matching to keep going.",
+    "aiMatchButton": "Find with AI Matching",
+    "aiMatchTitle": "AI Matching",
+    "aiMatchNoneFound": "No one's waiting right now — try again in a bit. Your credit wasn't used.",
+    "aiMatchNoCredits": "You're out of AI Match credits. You can buy more in the shop."
   }
 }

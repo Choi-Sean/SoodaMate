@@ -68,6 +68,19 @@ class Profile(Base):
         "BoostActiveUntil", DateTime(timezone=True), nullable=True
     )
 
+    # Blind chat monetization (see services/blind_chat_service.py). Consumed
+    # 1-per-instant-match by POST /blind-chat/ai-match, same consumable-
+    # credit shape as superlike_credits above. unlimited_matching_until is a
+    # fixed-duration top-up (extends like a credit, not a cancellable
+    # subscription) rather than reusing premium_until's Stripe-subscription
+    # machinery — simpler because there's nothing to cancel, only more time
+    # to add; is_premium members already get this for free (see
+    # blind_chat_service.is_unlimited_matching_active).
+    ai_match_credits: Mapped[int] = mapped_column("AiMatchCredits", Integer, default=0, nullable=False)
+    unlimited_matching_until: Mapped[datetime | None] = mapped_column(
+        "UnlimitedMatchingUntil", DateTime(timezone=True), nullable=True
+    )
+
     # Phase 18 — incognito + travel mode (free, not paywalled per product decision)
     is_incognito: Mapped[bool] = mapped_column("IsIncognito", Boolean, default=False, nullable=False)
     travel_lat: Mapped[float | None] = mapped_column("TravelLat", nullable=True)

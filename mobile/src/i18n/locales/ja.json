@@ -225,6 +225,10 @@
     "explainerSuperlikeBody": "特定の一人に使う1回限りのアイテムです — 相手の画面でハイライト表示され、通常のいいねより目立ちます。",
     "explainerBoostTitle": "ブースト",
     "explainerBoostBody": "自分のプロフィール用の1回限りのアイテムです — 30分間、みんなの「見つける」フィードの上位に表示されます。",
+    "explainerAiMatchTitle": "AIマッチング",
+    "explainerAiMatchBody": "ブラインドチャットの順番待ちなしで、興味・年齢・距離をもとに最も相性の良い相手とすぐにマッチングします。",
+    "explainerUnlimitedMatchingTitle": "無制限マッチング",
+    "explainerUnlimitedMatchingBody": "ブラインドチャットの1日の無料マッチング回数制限なしで、いつでもマッチングできます。",
     "perksTitle": "プレミアムの特典",
     "perkUnlimitedSwipes": "スワイプ無制限",
     "perkSeeWhoLikedYou": "いいねをくれた人を確認",
@@ -582,6 +586,16 @@
     "incomingRevealRequest": "{{name}}さんがプロフィール公開を希望しています",
     "acceptReveal": "同意して公開する",
     "revealPending": "プロフィール公開をリクエストしました — 返信を待っています",
-    "requestReveal": "プロフィール公開をリクエスト"
+    "requestReveal": "プロフィール公開をリクエスト",
+    "filtersTitle": "フィルター",
+    "genderFilterLabel": "性別",
+    "ageFilterLabel": "年齢",
+    "distanceFilterLabel": "距離制限",
+    "dailyLimitRemaining": "本日の無料マッチング残り{{count}}回",
+    "dailyLimitReached": "本日の無料マッチングを使い切りました。無制限マッチングを購入すると続けられます。",
+    "aiMatchButton": "AIマッチングで探す",
+    "aiMatchTitle": "AIマッチング",
+    "aiMatchNoneFound": "今は待機中の相手がいません。少ししてからもう一度お試しください — クレジットは消費されていません。",
+    "aiMatchNoCredits": "AIマッチング権がありません。ショップで購入できます。"
   }
 }

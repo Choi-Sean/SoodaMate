@@ -47,6 +47,15 @@ class SwipeLimitOut(BaseModel):
 
 class BlindChatQueueRequest(BaseModel):
     categories: list[str] = Field(min_length=1, max_length=10)
+    # Optional per-session narrowing, layered on top of the profile's own
+    # stored gender/age compatibility rules (never widens past them) — None
+    # means "use my profile defaults," same convention as the Basic filters'
+    # optional fields in profiles.py. max_distance_km of 0/None means no
+    # distance cap for this session.
+    gender: str | None = None  # 'male' | 'female' | 'other', restricts the candidate's gender
+    min_age: int | None = None
+    max_age: int | None = None
+    max_distance_km: int | None = None
 
 
 class BlindChatQueueStatusOut(BaseModel):
@@ -56,6 +65,29 @@ class BlindChatQueueStatusOut(BaseModel):
 
     status: str
     match_id: uuid.UUID | None = None
+
+
+class BlindChatLimitOut(BaseModel):
+    """Mirrors SwipeLimitOut's shape — see
+    blind_chat_service.get_blind_chat_limit_status."""
+
+    remaining: int
+    limit: int
+    resets_at: datetime | None = None
+    unlimited: bool = False
+
+
+class AiMatchRequest(BaseModel):
+    categories: list[str] = Field(min_length=1, max_length=10)
+
+
+class AiMatchOut(BaseModel):
+    """found=False means no compatible member is available right now — the
+    credit is never consumed in that case (see blind_chat_service.find_ai_match),
+    so match is always None when found is False."""
+
+    found: bool
+    match: MatchOut | None = None
 
 
 class IcebreakerOut(BaseModel):

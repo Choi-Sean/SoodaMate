@@ -48,6 +48,8 @@ async def get_balance(
         superlike_credits=profile.superlike_credits if profile else 0,
         boost_credits=profile.boost_credits if profile else 0,
         boost_active_until=profile.boost_active_until if profile else None,
+        ai_match_credits=profile.ai_match_credits if profile else 0,
+        unlimited_matching_until=profile.unlimited_matching_until if profile else None,
     )
 
 

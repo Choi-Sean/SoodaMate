@@ -225,6 +225,10 @@
     "explainerSuperlikeBody": "특정 한 사람에게 쓰는 1회성 아이템이에요 — 상대방 화면에 하이라이트로 표시돼서 일반 좋아요보다 눈에 잘 띄어요.",
     "explainerBoostTitle": "부스트",
     "explainerBoostBody": "내 프로필을 위한 1회성 아이템이에요 — 30분 동안 모든 사람의 디스커버 피드 맨 위에 노출돼요.",
+    "explainerAiMatchTitle": "AI 매칭",
+    "explainerAiMatchBody": "블라인드 채팅에서 대기 없이 바로 매칭돼요 — 관심사·나이·거리를 분석해서 가장 잘 맞는 상대를 찾아드려요.",
+    "explainerUnlimitedMatchingTitle": "무제한 매칭",
+    "explainerUnlimitedMatchingBody": "블라인드 채팅의 하루 무료 매칭 횟수 제한 없이 계속 이용할 수 있어요.",
     "perksTitle": "프리미엄 혜택",
     "perkUnlimitedSwipes": "무제한 스와이프",
     "perkSeeWhoLikedYou": "나를 좋아요한 사람 확인",
@@ -582,6 +586,16 @@
     "incomingRevealRequest": "{{name}}님이 프로필 공개를 원해요",
     "acceptReveal": "수락하고 공개하기",
     "revealPending": "프로필 공개를 요청했어요 — 상대방의 응답을 기다리는 중",
-    "requestReveal": "프로필 공개 요청하기"
+    "requestReveal": "프로필 공개 요청하기",
+    "filtersTitle": "필터",
+    "genderFilterLabel": "성별",
+    "ageFilterLabel": "나이",
+    "distanceFilterLabel": "거리 제한",
+    "dailyLimitRemaining": "오늘 무료 매칭 {{count}}회 남음",
+    "dailyLimitReached": "오늘의 무료 매칭 횟수를 다 썼어요. 무제한 매칭을 구매하면 계속 이용할 수 있어요.",
+    "aiMatchButton": "AI 매칭으로 바로 찾기",
+    "aiMatchTitle": "AI 매칭",
+    "aiMatchNoneFound": "지금 대기 중인 상대가 없어요. 잠시 후 다시 시도해주세요 — 매칭권은 차감되지 않았어요.",
+    "aiMatchNoCredits": "AI 매칭권이 없어요. 상점에서 구매할 수 있어요."
   }
 }

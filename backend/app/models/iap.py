@@ -21,7 +21,7 @@ class PaymentTransaction(Base):
     stripe_event_id: Mapped[str] = mapped_column("StripeEventId", Unicode(255), nullable=False)
     stripe_session_id: Mapped[str] = mapped_column("StripeSessionId", Unicode(255), nullable=False)
     product_id: Mapped[str] = mapped_column("ProductId", Unicode(100), nullable=False)
-    credit_kind: Mapped[str] = mapped_column("CreditKind", Unicode(20), nullable=False)  # 'superlike' | 'boost'
+    credit_kind: Mapped[str] = mapped_column("CreditKind", Unicode(30), nullable=False)  # 'superlike' | 'boost' | 'ai_match' | 'unlimited_matching_days' | 'membership'
     credits_granted: Mapped[int] = mapped_column("CreditsGranted", Integer, nullable=False)
     raw_payload: Mapped[str] = mapped_column("RawPayload", UnicodeText, nullable=False)
     created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
