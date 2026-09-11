@@ -4,7 +4,8 @@
     "matches": "매칭",
     "chat": "채팅",
     "profile": "프로필",
-    "likes": "좋아요"
+    "likes": "좋아요",
+    "blindChat": "블라인드"
   },
   "common": {
     "appName": "수다메이트",
@@ -246,6 +247,8 @@
     "cancelSuccessTitle": "멤버십이 취소됐어요",
     "cancelSuccessBody": "{{date}}까지 프리미엄을 계속 이용할 수 있어요.",
     "noRefundNotice": "이번 결제 주기에 대한 환불은 제공되지 않습니다.",
+    "classicMatchingCardTitle": "매칭 둘러보기",
+    "classicMatchingCardSubtitle": "프로필을 보고 좋아요/패스로 직접 골라보고 싶다면",
     "coupleStoryCardTitle": "커플 스토리",
     "coupleStoryCardSubtitle": "수다메이트에서 만난 커플들의 진짜 이야기를 만나보세요",
     "purchaseSuccessTitle": "결제 완료 🎉",
@@ -467,6 +470,17 @@
     "codeSent": "인증 코드를 보냈어요. 이메일을 확인해주세요.",
     "verifiedSuccess": "인증이 완료됐어요!"
   },
+  "phoneVerification": {
+    "title": "휴대폰 번호 인증",
+    "subtitle": "인증된 회원만 들어올 수 있도록, 가입 전에 휴대폰 번호를 확인할게요.",
+    "countryKorea": "대한민국",
+    "countryUs": "미국",
+    "sendCode": "인증 코드 보내기",
+    "codeSentTo": "{{phone}} 로 인증 코드를 보냈어요",
+    "codePlaceholder": "인증 코드",
+    "confirm": "인증하기",
+    "changeNumber": "번호 다시 입력하기"
+  },
   "premiumFilters": {
     "title": "프리미엄 필터",
     "raceLabel": "인종/민족 필터",
@@ -578,6 +592,8 @@
   "blindChat": {
     "title": "블라인드 채팅",
     "entryButton": "블라인드",
+    "popupTitle": "오늘은 어떤 얘기 나눠볼까요?",
+    "popupSubtitle": "관심 있는 카테고리를 골라보세요",
     "intro": "관심사가 통하는 사람과 익명으로 대화를 시작해보세요. 얼굴과 이름은 서로 동의해야만 공개돼요.",
     "categoryLabel": "관심 있는 카테고리를 선택하세요",
     "start": "매칭 시작하기",

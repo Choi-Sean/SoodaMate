@@ -10,11 +10,14 @@ from app.schemas.verification import (
     FacePresignRequest,
     FaceVerificationStatusOut,
     FaceVerificationSubmitRequest,
+    PhoneVerificationConfirmRequest,
+    PhoneVerificationStartRequest,
     VerificationConfirmRequest,
     VerificationStartRequest,
 )
-from app.services import storage_service, verification_service
+from app.services import sms_verification_service, storage_service, verification_service
 from app.services.email.smtp_sender import email_sender
+from app.services.sms.twilio_verify import sms_verifier
 
 router = APIRouter(prefix="/verification", tags=["verification"])
 
@@ -35,6 +38,24 @@ async def confirm_verification(
     user: User = Depends(get_current_user),
 ) -> None:
     await verification_service.confirm_verification(db, user.id, body.kind, body.code)
+
+
+@router.post("/phone/start", status_code=204)
+async def start_phone_verification(
+    body: PhoneVerificationStartRequest,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> None:
+    await sms_verification_service.start_phone_verification(db, sms_verifier, user.id, body.phone_number)
+
+
+@router.post("/phone/confirm", status_code=204)
+async def confirm_phone_verification(
+    body: PhoneVerificationConfirmRequest,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> None:
+    await sms_verification_service.confirm_phone_verification(db, sms_verifier, user.id, body.phone_number, body.code)
 
 
 @router.post("/face/presign")

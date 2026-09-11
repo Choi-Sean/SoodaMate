@@ -155,6 +155,17 @@ export default function MyProfileScreen({ navigation }: Props) {
         ))}
       </View>
 
+      <Pressable style={styles.coupleStoryCard} onPress={() => navigation.navigate("ClassicSwipe")}>
+        <View style={[styles.coupleStoryIconBubble, { backgroundColor: colors.navy }]}>
+          <Ionicons name="compass" size={18} color="#fff" />
+        </View>
+        <View style={styles.coupleStoryTextWrap}>
+          <Text style={styles.coupleStoryTitle}>{t("profile.classicMatchingCardTitle")}</Text>
+          <Text style={styles.coupleStorySubtitle}>{t("profile.classicMatchingCardSubtitle")}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.accentDark} />
+      </Pressable>
+
       <Pressable style={styles.coupleStoryCard} onPress={() => navigation.navigate("CoupleStoriesFeed")}>
         <View style={styles.coupleStoryIconBubble}>
           <Ionicons name="heart" size={18} color="#fff" />

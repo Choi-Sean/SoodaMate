@@ -8,6 +8,14 @@ export async function confirmVerification(kind: "work" | "school", code: string)
   await apiClient.post("/verification/confirm", { kind, code });
 }
 
+export async function startPhoneVerification(phoneNumber: string): Promise<void> {
+  await apiClient.post("/verification/phone/start", { phone_number: phoneNumber });
+}
+
+export async function confirmPhoneVerification(phoneNumber: string, code: string): Promise<void> {
+  await apiClient.post("/verification/phone/confirm", { phone_number: phoneNumber, code });
+}
+
 export interface FacePresignResult {
   upload_url: string;
   gcs_object_path: string;

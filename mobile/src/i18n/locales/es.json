@@ -4,7 +4,8 @@
     "matches": "Coincidencias",
     "chat": "Chat",
     "profile": "Perfil",
-    "likes": "Me gusta"
+    "likes": "Me gusta",
+    "blindChat": "A ciegas"
   },
   "common": {
     "appName": "SooDaMate",
@@ -246,6 +247,8 @@
     "cancelSuccessTitle": "Membresía cancelada",
     "cancelSuccessBody": "Puedes seguir usando Premium hasta el {{date}}.",
     "noRefundNotice": "No se otorgan reembolsos por el periodo de facturación actual.",
+    "classicMatchingCardTitle": "Explorar coincidencias",
+    "classicMatchingCardSubtitle": "¿Prefieres ver perfiles y elegir con me gusta/pasar?",
     "coupleStoryCardTitle": "Historias de pareja",
     "coupleStoryCardSubtitle": "Descubre historias reales de parejas que se conocieron en SooDaMate",
     "purchaseSuccessTitle": "Compra completada 🎉",
@@ -467,6 +470,17 @@
     "codeSent": "Enviamos un código — revisa tu correo.",
     "verifiedSuccess": "¡Verificación completa!"
   },
+  "phoneVerification": {
+    "title": "Verifica tu número de teléfono",
+    "subtitle": "Para evitar cuentas falsas, verificamos tu número de teléfono antes de registrarte.",
+    "countryKorea": "Corea del Sur",
+    "countryUs": "Estados Unidos",
+    "sendCode": "Enviar código",
+    "codeSentTo": "Enviamos un código a {{phone}}",
+    "codePlaceholder": "Código de verificación",
+    "confirm": "Verificar",
+    "changeNumber": "Cambiar número"
+  },
   "premiumFilters": {
     "title": "Filtros premium",
     "raceLabel": "Filtrar por raza/etnia",
@@ -578,6 +592,8 @@
   "blindChat": {
     "title": "Chat a ciegas",
     "entryButton": "Chat a ciegas",
+    "popupTitle": "¿De qué quieres hablar hoy?",
+    "popupSubtitle": "Elige una categoría que te interese",
     "intro": "Empieza una conversación anónima con alguien que comparte tus intereses. Los nombres y fotos solo se revelan si ambos están de acuerdo.",
     "categoryLabel": "Elige lo que te interesa",
     "start": "Buscar match",

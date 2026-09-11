@@ -41,13 +41,13 @@ const DEFAULT_DISTANCE_KM = 50;
  * waiting, so a few seconds of latency costs nothing, and this avoids
  * building a second realtime channel just for a screen with no matchId yet
  * to scope one to. */
-export default function BlindChatQueueScreen({ navigation }: Props) {
+export default function BlindChatQueueScreen({ navigation, route }: Props) {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const isFocused = useIsFocused();
   const useImperial = i18n.language === "en";
 
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(route.params?.initialCategories ?? []);
   const [gender, setGender] = useState<string | null>(null);
   const [ageRange, setAgeRange] = useState<[number, number]>([DEFAULT_MIN_AGE, DEFAULT_MAX_AGE]);
   const [distanceOn, setDistanceOn] = useState(false);

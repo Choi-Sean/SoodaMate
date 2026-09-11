@@ -16,6 +16,15 @@ class VerificationConfirmRequest(BaseModel):
     code: str = Field(min_length=6, max_length=6)
 
 
+class PhoneVerificationStartRequest(BaseModel):
+    phone_number: str = Field(min_length=8, max_length=20)
+
+
+class PhoneVerificationConfirmRequest(BaseModel):
+    phone_number: str = Field(min_length=8, max_length=20)
+    code: str = Field(min_length=4, max_length=10)
+
+
 class FacePresignRequest(BaseModel):
     content_type: str = Field(pattern="^image/(jpeg|png|webp)$")
     # Doesn't change how/where the object is stored (the path is a random

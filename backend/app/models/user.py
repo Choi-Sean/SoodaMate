@@ -15,6 +15,7 @@ class User(Base):
         # filtered index only enforces uniqueness among non-NULL emails,
         # which is the actual intent (pure-OAuth users may share no email).
         Index("uq_users_email", "Email", unique=True, mssql_where=text("Email IS NOT NULL")),
+        Index("uq_users_phone_number", "PhoneNumber", unique=True, mssql_where=text("PhoneNumber IS NOT NULL")),
     )
 
     id: Mapped[uuid.UUID] = mapped_column("Id", Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -36,6 +37,15 @@ class User(Base):
     preferred_language: Mapped[str] = mapped_column(
         "PreferredLanguage", Unicode(10), nullable=False, default="en", server_default="en"
     )
+    # E.164 (e.g. "+821012345678"). Nullable until Twilio Verify approves a
+    # code (see sms_verification_service.py) — lives on User, not Profile,
+    # because signup now gates on phone verification *before* a Profile row
+    # exists (ProfileSetupScreen is what first creates one). The filtered
+    # unique index below is the real "one phone number = one account"
+    # enforcement; sms_verification_service does a belt-and-suspenders
+    # pre-check too, for a nicer 409 message than a raw IntegrityError.
+    phone_number: Mapped[str | None] = mapped_column("PhoneNumber", Unicode(20), nullable=True)
+    phone_verified_at: Mapped[datetime | None] = mapped_column("PhoneVerifiedAt", DateTime(timezone=True), nullable=True)
     last_active_at: Mapped[datetime] = mapped_column(
         "LastActiveAt", DateTime(timezone=True), server_default=func.now()
     )
@@ -47,6 +57,10 @@ class User(Base):
     auth_providers: Mapped[list["AuthProvider"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+
+    @property
+    def phone_verified(self) -> bool:
+        return self.phone_verified_at is not None
 
 
 class AuthProvider(Base):

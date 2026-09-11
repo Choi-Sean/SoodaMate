@@ -4,6 +4,21 @@ export async function deleteAccount(): Promise<void> {
   await apiClient.delete("/account/me");
 }
 
+export interface Me {
+  id: string;
+  email: string | null;
+  phone_verified: boolean;
+  preferred_language: string;
+}
+
+/** Unlike getMyProfile, this never 404s on a brand-new account that hasn't
+ * completed ProfileSetupScreen yet — RootNavigator calls it first to decide
+ * the phone-verification gate, which now sits before profile setup. */
+export async function getMe(): Promise<Me> {
+  const resp = await apiClient.get<Me>("/account/me");
+  return resp.data;
+}
+
 /** Kept in sync with the client's own i18n language purely so push_service
  * (backend) can send FCM notification text in the language the user reads
  * the app in — it has no effect on in-app text. Best-effort: callers should

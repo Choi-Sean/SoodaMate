@@ -70,6 +70,15 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     smtp_from_address: str = "no-reply@soodamate.example.com"
 
+    # Phone verification (Twilio Verify) — required at signup now that Blind
+    # Chat is the app's primary flow. Empty until the user provisions a
+    # Twilio account; TwilioVerifySmsVerifier.start() 503s honestly until then
+    # (see sms/twilio_verify.py), same "don't pretend it works" convention as
+    # smtp_host above.
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_verify_service_sid: str = ""
+
     # Phase 17 — Stripe (web checkout, not in-app purchase — user explicitly
     # rejected IAP's store commission; boost/superlike credits are bought via
     # the marketing website and synced back to the account by webhook).

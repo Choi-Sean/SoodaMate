@@ -4,7 +4,8 @@
     "matches": "配对",
     "chat": "聊天",
     "profile": "我的",
-    "likes": "喜欢"
+    "likes": "喜欢",
+    "blindChat": "盲聊"
   },
   "common": {
     "appName": "数搭伴侣",
@@ -246,6 +247,8 @@
     "cancelSuccessTitle": "会员已取消",
     "cancelSuccessBody": "你可以继续使用会员权益至 {{date}}。",
     "noRefundNotice": "当前计费周期不予退款。",
+    "classicMatchingCardTitle": "浏览配对",
+    "classicMatchingCardSubtitle": "想自己浏览资料，用喜欢/跳过来选择？",
     "coupleStoryCardTitle": "情侣故事",
     "coupleStoryCardSubtitle": "看看在数搭伴侣上相识相恋的真实情侣故事",
     "purchaseSuccessTitle": "购买完成 🎉",
@@ -467,6 +470,17 @@
     "codeSent": "验证码已发送，请查看邮箱。",
     "verifiedSuccess": "认证成功！"
   },
+  "phoneVerification": {
+    "title": "验证手机号码",
+    "subtitle": "为了防止虚假账号，注册前需要先验证您的手机号码。",
+    "countryKorea": "韩国",
+    "countryUs": "美国",
+    "sendCode": "发送验证码",
+    "codeSentTo": "验证码已发送至 {{phone}}",
+    "codePlaceholder": "验证码",
+    "confirm": "验证",
+    "changeNumber": "更改号码"
+  },
   "premiumFilters": {
     "title": "高级筛选",
     "raceLabel": "按种族/民族筛选",
@@ -578,6 +592,8 @@
   "blindChat": {
     "title": "盲聊",
     "entryButton": "盲聊",
+    "popupTitle": "今天想聊点什么呢？",
+    "popupSubtitle": "选一个你感兴趣的分类",
     "intro": "和兴趣相投的人匿名开始聊天吧。只有双方都同意，姓名和照片才会公开。",
     "categoryLabel": "选择你感兴趣的话题",
     "start": "开始匹配",

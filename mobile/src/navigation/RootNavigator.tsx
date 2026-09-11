@@ -5,12 +5,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import i18n from "../i18n";
 import { useAuthStore } from "../store/authStore";
 import { getMyProfile } from "../api/profiles";
-import { updateLanguagePreference } from "../api/account";
+import { getMe, updateLanguagePreference } from "../api/account";
 import { registerForPushNotifications } from "../services/pushNotifications";
 import { usePurchaseReturnWatch } from "../hooks/usePurchaseReturnWatch";
 import { colors } from "../theme";
 import AuthStack from "./AuthStack";
 import MainTabs from "./MainTabs";
+import PhoneVerificationScreen from "../screens/auth/PhoneVerificationScreen";
 import ProfileSetupScreen from "../screens/auth/ProfileSetupScreen";
 
 export default function RootNavigator() {
@@ -21,14 +22,25 @@ export default function RootNavigator() {
     hydrate();
   }, [hydrate]);
 
-  const profileQuery = useQuery({
-    queryKey: ["myProfile"],
-    queryFn: getMyProfile,
+  // Checked before the profile query below — /account/me works on a bare
+  // signed-up account that has no Profile row yet (unlike /profiles/me,
+  // which 404s), so phone verification can gate signup *before*
+  // ProfileSetupScreen, not just before MainApp.
+  const meQuery = useQuery({
+    queryKey: ["me"],
+    queryFn: getMe,
     enabled: isAuthenticated,
     retry: false,
   });
 
-  if (!hydrated || (isAuthenticated && profileQuery.isLoading)) {
+  const profileQuery = useQuery({
+    queryKey: ["myProfile"],
+    queryFn: getMyProfile,
+    enabled: isAuthenticated && meQuery.data?.phone_verified === true,
+    retry: false,
+  });
+
+  if (!hydrated || (isAuthenticated && meQuery.isLoading)) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator size="large" color={colors.accent} />
@@ -38,6 +50,20 @@ export default function RootNavigator() {
 
   if (!isAuthenticated) {
     return <AuthStack />;
+  }
+
+  if (meQuery.data?.phone_verified !== true) {
+    return (
+      <PhoneVerificationScreen onVerified={() => queryClient.invalidateQueries({ queryKey: ["me"] })} />
+    );
+  }
+
+  if (profileQuery.isLoading) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size="large" color={colors.accent} />
+      </View>
+    );
   }
 
   // No page is reachable until the profile is genuinely complete: a real

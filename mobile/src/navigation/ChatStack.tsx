@@ -11,7 +11,7 @@ export type ChatStackParamList = {
   ChatList: undefined;
   ChatRoom: { matchId: string; otherUserId: string; otherDisplayName: string };
   SubmitCoupleStory: { matchId: string; otherDisplayName: string };
-  BlindChatQueue: undefined;
+  BlindChatQueue: { initialCategories?: string[] } | undefined;
 };
 
 const Stack = createNativeStackNavigator<ChatStackParamList>();

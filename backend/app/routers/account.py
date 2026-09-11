@@ -19,6 +19,27 @@ class CancelSubscriptionOut(BaseModel):
     premium_until: datetime
 
 
+class MeOut(BaseModel):
+    id: str
+    email: str | None
+    phone_verified: bool
+    preferred_language: str
+
+
+@router.get("/me", response_model=MeOut)
+async def get_me(user: User = Depends(get_current_user)) -> MeOut:
+    # Deliberately independent of whether a Profile row exists yet (unlike
+    # GET /profiles/me, which 404s pre-signup-completion) — RootNavigator
+    # calls this first to decide the phone-verification gate, which now sits
+    # *before* ProfileSetupScreen in the signup flow.
+    return MeOut(
+        id=str(user.id),
+        email=user.email,
+        phone_verified=user.phone_verified,
+        preferred_language=user.preferred_language,
+    )
+
+
 class LanguageUpdateRequest(BaseModel):
     # Mirrors mobile/src/i18n's SUPPORTED_LANGUAGES.
     language: str = Field(pattern="^(ko|en|es|zh|ja)$")

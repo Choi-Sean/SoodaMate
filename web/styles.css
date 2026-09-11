@@ -216,6 +216,23 @@ button { font-family: inherit; }
 .phone-action-btn.pass { width: 46px; height: 46px; color: #b9ada2; font-size: 18px; }
 .phone-action-btn.super { width: 40px; height: 40px; color: #3b82f6; font-size: 15px; }
 .phone-action-btn.like { width: 54px; height: 54px; background: var(--accent); color: #fff; font-size: 20px; }
+.phone-card-mask {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 46px;
+  opacity: 0.9;
+}
+.phone-category-chip {
+  background: var(--white);
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 6px 14px rgba(43,33,24,0.14);
+}
 
 .hero-float-card {
   position: absolute;

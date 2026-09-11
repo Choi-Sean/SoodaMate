@@ -4,7 +4,8 @@
     "matches": "Matches",
     "chat": "Chat",
     "profile": "Profile",
-    "likes": "Likes"
+    "likes": "Likes",
+    "blindChat": "Blind"
   },
   "common": {
     "appName": "SooDaMate",
@@ -246,6 +247,8 @@
     "cancelSuccessTitle": "Membership canceled",
     "cancelSuccessBody": "You can keep using Premium until {{date}}.",
     "noRefundNotice": "No refunds are given for the current billing period.",
+    "classicMatchingCardTitle": "Browse Matching",
+    "classicMatchingCardSubtitle": "Want to browse profiles yourself and swipe like/pass?",
     "coupleStoryCardTitle": "Couple Stories",
     "coupleStoryCardSubtitle": "See real stories from couples who met on SooDaMate",
     "purchaseSuccessTitle": "Purchase complete 🎉",
@@ -467,6 +470,17 @@
     "codeSent": "We sent a code — check your email.",
     "verifiedSuccess": "Verification complete!"
   },
+  "phoneVerification": {
+    "title": "Verify Your Phone Number",
+    "subtitle": "To keep out fake accounts, we verify your phone number before you can sign up.",
+    "countryKorea": "South Korea",
+    "countryUs": "United States",
+    "sendCode": "Send Code",
+    "codeSentTo": "We sent a code to {{phone}}",
+    "codePlaceholder": "Verification code",
+    "confirm": "Verify",
+    "changeNumber": "Change number"
+  },
   "premiumFilters": {
     "title": "Premium Filters",
     "raceLabel": "Filter by race/ethnicity",
@@ -578,6 +592,8 @@
   "blindChat": {
     "title": "Blind Chat",
     "entryButton": "Blind Chat",
+    "popupTitle": "What should we talk about today?",
+    "popupSubtitle": "Pick a category you're into",
     "intro": "Start an anonymous chat with someone who shares your interests. Names and photos only go public once both sides agree.",
     "categoryLabel": "Pick what you're into",
     "start": "Find a match",
