@@ -15,6 +15,13 @@ export default function ChatListScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
   const { data: matches, isLoading } = useMatches();
 
+  const blindChatButton = (
+    <Pressable style={styles.blindChatButton} onPress={() => navigation.navigate("BlindChatQueue")}>
+      <Ionicons name="shuffle" size={14} color="#fff" />
+      <Text style={styles.blindChatButtonText}>{t("blindChat.entryButton")}</Text>
+    </Pressable>
+  );
+
   const renderItem = ({ item }: { item: Match }) => {
     const expired = !item.is_active;
     return (
@@ -55,7 +62,7 @@ export default function ChatListScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title={t("chat.title")} />
+      <ScreenHeader title={t("chat.title")} right={blindChatButton} />
       {isLoading ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={colors.accent} />
@@ -73,6 +80,16 @@ export default function ChatListScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
+  blindChatButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: colors.accent,
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+  },
+  blindChatButtonText: { color: "#fff", fontWeight: "700", fontSize: 12.5 },
   centered: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
   emptyText: { color: colors.muted },
   row: { flexDirection: "row", alignItems: "center", padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border, gap: 4 },

@@ -133,6 +133,19 @@ export interface Match {
   can_send_first_message: boolean;
   first_message_deadline: string | null;
   is_active: boolean;
+  // Blind chat — other_display_name/other_photo_url above are already
+  // masked ("S***" / null) by the backend whenever is_blind && !blind_revealed.
+  is_blind: boolean;
+  blind_categories: string[];
+  blind_revealed: boolean;
+  can_request_reveal: boolean;
+  has_incoming_reveal_request: boolean;
+  reveal_requested_by_me: boolean;
+}
+
+export interface BlindChatQueueStatus {
+  status: "idle" | "waiting" | "matched";
+  match_id: string | null;
 }
 
 export interface ChatMessage {

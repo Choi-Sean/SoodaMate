@@ -16,7 +16,8 @@ export interface ChatSocketError {
 export function useChatSocket(
   matchId: string,
   onMessage: (msg: ChatMessage) => void,
-  onError?: (err: ChatSocketError) => void
+  onError?: (err: ChatSocketError) => void,
+  onBlindRevealUpdate?: () => void
 ) {
   const accessToken = useAuthStore((s) => s.accessToken);
   const wsRef = useRef<WebSocket | null>(null);
@@ -29,6 +30,8 @@ export function useChatSocket(
   onMessageRef.current = onMessage;
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
+  const onBlindRevealUpdateRef = useRef(onBlindRevealUpdate);
+  onBlindRevealUpdateRef.current = onBlindRevealUpdate;
 
   useEffect(() => {
     if (!accessToken) return;
@@ -60,6 +63,11 @@ export function useChatSocket(
           });
         } else if (data.type === "error" && data.match_id === matchId) {
           onErrorRef.current?.({ code: data.code, match_id: data.match_id });
+        } else if (
+          (data.type === "blind_reveal_requested" || data.type === "blind_reveal_accepted") &&
+          data.match_id === matchId
+        ) {
+          onBlindRevealUpdateRef.current?.();
         }
       } catch {
         // ignore malformed frames

@@ -12,13 +12,13 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 
 import ChatBubble from "../../components/ChatBubble";
 import { getMessageHistory } from "../../api/messages";
-import { getIcebreaker } from "../../api/matches";
+import { acceptBlindReveal, getIcebreaker, requestBlindReveal } from "../../api/matches";
 import { presignChatImage, uploadToPresignedUrl } from "../../api/uploads";
 import { blockUser, reportUser } from "../../api/safety";
 import { showAlert } from "../../utils/alert";
@@ -33,8 +33,9 @@ type Props = NativeStackScreenProps<ChatStackParamList, "ChatRoom">;
 
 export default function ChatRoomScreen({ route, navigation }: Props) {
   const { t } = useTranslation();
-  const { matchId, otherUserId, otherDisplayName } = route.params;
+  const { matchId, otherUserId, otherDisplayName: otherDisplayNameParam } = route.params;
   const userId = useAuthStore((s) => s.userId);
+  const queryClient = useQueryClient();
   const { data: history, isLoading: historyLoading } = useQuery({
     queryKey: ["messages", matchId],
     queryFn: () => getMessageHistory(matchId),
@@ -49,6 +50,28 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
   const isExpired = match?.is_active === false;
   const mustWaitForPeer = !isExpired && match?.is_message_restricted && !match?.can_send_first_message;
   const composerLocked = isExpired || mustWaitForPeer;
+  // The route param is only a fallback for the first paint before /matches
+  // has loaded — live match data (masked "S***" pre-reveal, real name once
+  // blind_revealed flips) always wins once available.
+  const otherDisplayName = match?.other_display_name ?? otherDisplayNameParam;
+
+  async function handleRequestReveal() {
+    try {
+      await requestBlindReveal(matchId);
+      await queryClient.invalidateQueries({ queryKey: ["matches"] });
+    } catch (e: any) {
+      showAlert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? "");
+    }
+  }
+
+  async function handleAcceptReveal() {
+    try {
+      await acceptBlindReveal(matchId);
+      await queryClient.invalidateQueries({ queryKey: ["matches"] });
+    } catch (e: any) {
+      showAlert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? "");
+    }
+  }
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -72,10 +95,15 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
     [t]
   );
 
+  const handleBlindRevealUpdate = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["matches"] });
+  }, [queryClient]);
+
   const { connected, sendMessage, sendImageMessage, markRead } = useChatSocket(
     matchId,
     handleIncoming,
-    handleSocketError
+    handleSocketError,
+    handleBlindRevealUpdate
   );
 
   useEffect(() => {
@@ -202,6 +230,7 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
 
   useLayoutEffect(() => {
     navigation.setOptions({
+      title: otherDisplayName,
       headerRight: () => (
         <Pressable onPress={openMenu} hitSlop={12} style={styles.menuButton}>
           <Text style={styles.menuButtonText}>⋯</Text>
@@ -255,6 +284,33 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
           <Text style={styles.icebreakerChipLabel}>{t("chat.icebreakerLabel")}</Text>
           <Text style={styles.icebreakerChipText}>{icebreakerText}</Text>
         </Pressable>
+      )}
+      {match?.is_blind && !match.blind_revealed && (
+        <View style={styles.blindBanner}>
+          {match.blind_categories.length > 0 && (
+            <Text style={styles.blindBannerCategories}>
+              {t("blindChat.matchedOn", {
+                categories: match.blind_categories.map((c) => t(`blindChatCategories.${c}`)).join(", "),
+              })}
+            </Text>
+          )}
+          {match.has_incoming_reveal_request ? (
+            <>
+              <Text style={styles.blindBannerText}>{t("blindChat.incomingRevealRequest", { name: otherDisplayName })}</Text>
+              <Pressable style={styles.blindBannerButton} onPress={handleAcceptReveal}>
+                <Text style={styles.blindBannerButtonText}>{t("blindChat.acceptReveal")}</Text>
+              </Pressable>
+            </>
+          ) : match.reveal_requested_by_me ? (
+            <Text style={styles.blindBannerText}>{t("blindChat.revealPending")}</Text>
+          ) : (
+            match.can_request_reveal && (
+              <Pressable style={styles.blindBannerButton} onPress={handleRequestReveal}>
+                <Text style={styles.blindBannerButtonText}>{t("blindChat.requestReveal")}</Text>
+              </Pressable>
+            )
+          )}
+        </View>
       )}
       {isExpired ? (
         <View style={styles.expiredBanner}>
@@ -326,6 +382,19 @@ const styles = StyleSheet.create({
   },
   icebreakerChipLabel: { fontSize: 10.5, fontWeight: "700", color: colors.accentDark, marginBottom: 3, textTransform: "uppercase" },
   icebreakerChipText: { fontSize: 13.5, color: colors.ink, lineHeight: 18 },
+  blindBanner: {
+    marginHorizontal: 12,
+    marginBottom: 8,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: colors.navy,
+    gap: 8,
+    alignItems: "center",
+  },
+  blindBannerCategories: { fontSize: 11.5, color: "rgba(255,255,255,0.75)", textAlign: "center" },
+  blindBannerText: { fontSize: 13, color: "#fff", textAlign: "center", fontWeight: "600" },
+  blindBannerButton: { backgroundColor: colors.accent, borderRadius: 20, paddingVertical: 9, paddingHorizontal: 20 },
+  blindBannerButtonText: { color: "#fff", fontWeight: "700", fontSize: 13.5 },
   inputBar: {
     flexDirection: "row",
     alignItems: "flex-end",

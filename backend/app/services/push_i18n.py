@@ -27,6 +27,12 @@ _STRINGS: dict[str, dict[str, str]] = {
         "couple_story_request_body": "wants to share your couple story — take a look",
         "couple_story_published_title": "Your couple story is live! 💕",
         "couple_story_published_body": "Your story is now visible in the SooDaMate community feed.",
+        "blind_matched_title": "You're paired up! 💬",
+        "blind_matched_body": "Someone with shared interests is ready to chat.",
+        "blind_reveal_requested_title": "They want to reveal profiles",
+        "blind_reveal_requested_body": "Open the chat to accept or keep talking anonymously.",
+        "blind_reveal_accepted_title": "Profiles revealed! 🎉",
+        "blind_reveal_accepted_body": "You can now see each other's profile.",
     },
     "ko": {
         "match_title": "매칭 성사! 🎉",
@@ -44,6 +50,12 @@ _STRINGS: dict[str, dict[str, str]] = {
         "couple_story_request_body": "커플 스토리를 함께 올리고 싶어해요 — 확인해보세요",
         "couple_story_published_title": "커플 스토리가 게시됐어요! 💕",
         "couple_story_published_body": "수다메이트 커뮤니티 피드에 스토리가 공개됐어요.",
+        "blind_matched_title": "상대를 찾았어요! 💬",
+        "blind_matched_body": "관심사가 통하는 분과 대화를 시작할 수 있어요.",
+        "blind_reveal_requested_title": "프로필 공개를 원해요",
+        "blind_reveal_requested_body": "채팅방에서 수락하거나 계속 익명으로 대화해보세요.",
+        "blind_reveal_accepted_title": "프로필이 공개됐어요! 🎉",
+        "blind_reveal_accepted_body": "이제 서로의 프로필을 볼 수 있어요.",
     },
 }
 

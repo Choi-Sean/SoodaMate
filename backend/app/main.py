@@ -6,6 +6,7 @@ from app.routers import (
     account,
     admin,
     auth,
+    blind_chat,
     calls,
     couple_stories,
     devices,
@@ -49,6 +50,7 @@ app.include_router(calls.router)
 app.include_router(admin.router)
 app.include_router(couple_stories.router)
 app.include_router(moments.router)
+app.include_router(blind_chat.router)
 
 
 @app.get("/health")

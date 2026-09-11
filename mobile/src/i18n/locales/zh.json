@@ -560,5 +560,30 @@
     "reportSuccess": "举报成功，我们会尽快审核。",
     "publishedOn": "{{date}} 公开",
     "errorGeneric": "出错了，请稍后再试。"
+  },
+  "blindChatCategories": {
+    "travel": "🌍 旅行",
+    "movies_tv": "🎬 影视",
+    "music": "🎵 音乐",
+    "fitness": "💪 运动健身",
+    "food": "🍜 美食",
+    "gaming": "🎮 游戏",
+    "kpop": "💃 K-POP",
+    "pets": "🐶 宠物",
+    "books": "📚 读书·自我提升",
+    "free_talk": "💬 自由聊天"
+  },
+  "blindChat": {
+    "title": "盲聊",
+    "entryButton": "盲聊",
+    "intro": "和兴趣相投的人匿名开始聊天吧。只有双方都同意，姓名和照片才会公开。",
+    "categoryLabel": "选择你感兴趣的话题",
+    "start": "开始匹配",
+    "waitingTitle": "正在寻找聊天对象...",
+    "matchedOn": "因{{categories}}匹配成功",
+    "incomingRevealRequest": "{{name}}想要公开资料",
+    "acceptReveal": "同意并公开",
+    "revealPending": "已请求公开资料 — 等待对方回应",
+    "requestReveal": "请求公开资料"
   }
 }

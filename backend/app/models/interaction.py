@@ -55,6 +55,33 @@ class Match(Base):
         "LastActivityAt", DateTime(timezone=True), nullable=True
     )
 
+    # Blind chat (category-based random 1:1) — see services/blind_chat_service.py.
+    # False/NULL for every ordinary swipe-created match; a blind match starts
+    # unrestricted (restricted_to_user_id stays NULL — either side can just
+    # start talking, no Bumble-style first-message gate) but the OTHER
+    # person's name/photo stay masked in MatchOut until blind_revealed flips.
+    is_blind: Mapped[bool] = mapped_column("IsBlind", Boolean, default=False, nullable=False)
+    # Comma-separated — the categories both sides' queue selections had in
+    # common at pairing time, shown to explain "why you were matched".
+    blind_categories: Mapped[str | None] = mapped_column("BlindCategories", Unicode(255), nullable=True)
+    blind_revealed: Mapped[bool] = mapped_column("BlindRevealed", Boolean, default=False, nullable=False)
+    # Snapshotted at match-creation time, same convention as
+    # restricted_to_user_id above: for a male/female pair this is the female
+    # user's id (only she may propose revealing profiles — mirrors the
+    # existing first-message rule's reasoning, she stays in control of when
+    # anonymity ends); NULL means either side may propose (same-gender or
+    # "other" pairs — an interim default, see the
+    # soodamate-blind-chat-open-decisions memory note for the follow-up).
+    blind_reveal_eligible_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        "BlindRevealEligibleUserId", ForeignKey("Users.Id"), nullable=True
+    )
+    # Who has an outstanding "reveal profiles" request pending the other
+    # side's accept, if anyone. Left set (not cleared) after an accept —
+    # harmless once blind_revealed is True, and keeps a record of who asked.
+    blind_reveal_requested_by: Mapped[uuid.UUID | None] = mapped_column(
+        "BlindRevealRequestedBy", ForeignKey("Users.Id"), nullable=True
+    )
+
 
 class Block(Base):
     __tablename__ = "Blocks"

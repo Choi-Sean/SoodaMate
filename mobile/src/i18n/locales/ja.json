@@ -560,5 +560,30 @@
     "reportSuccess": "通報しました — 確認いたします。",
     "publishedOn": "{{date}}に公開",
     "errorGeneric": "問題が発生しました。しばらくしてから再度お試しください。"
+  },
+  "blindChatCategories": {
+    "travel": "🌍 旅行",
+    "movies_tv": "🎬 映画・ドラマ",
+    "music": "🎵 音楽",
+    "fitness": "💪 運動・健康",
+    "food": "🍜 グルメ",
+    "gaming": "🎮 ゲーム",
+    "kpop": "💃 K-POP",
+    "pets": "🐶 ペット",
+    "books": "📚 読書・自己啓発",
+    "free_talk": "💬 フリートーク"
+  },
+  "blindChat": {
+    "title": "ブラインドチャット",
+    "entryButton": "ブラインド",
+    "intro": "趣味が合う相手と匿名でチャットを始めましょう。名前と写真はお互いが同意したときだけ公開されます。",
+    "categoryLabel": "興味のあるカテゴリーを選んでください",
+    "start": "マッチングを始める",
+    "waitingTitle": "お相手を探しています...",
+    "matchedOn": "{{categories}}でマッチしました",
+    "incomingRevealRequest": "{{name}}さんがプロフィール公開を希望しています",
+    "acceptReveal": "同意して公開する",
+    "revealPending": "プロフィール公開をリクエストしました — 返信を待っています",
+    "requestReveal": "プロフィール公開をリクエスト"
   }
 }

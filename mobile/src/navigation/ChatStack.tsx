@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import ChatListScreen from "../screens/chat/ChatListScreen";
 import ChatRoomScreen from "../screens/chat/ChatRoomScreen";
+import BlindChatQueueScreen from "../screens/chat/BlindChatQueueScreen";
 import SubmitCoupleStoryScreen from "../screens/profile/SubmitCoupleStoryScreen";
 import { colors } from "../theme";
 
@@ -10,6 +11,7 @@ export type ChatStackParamList = {
   ChatList: undefined;
   ChatRoom: { matchId: string; otherUserId: string; otherDisplayName: string };
   SubmitCoupleStory: { matchId: string; otherDisplayName: string };
+  BlindChatQueue: undefined;
 };
 
 const Stack = createNativeStackNavigator<ChatStackParamList>();
@@ -36,6 +38,11 @@ export default function ChatStack() {
         name="SubmitCoupleStory"
         component={SubmitCoupleStoryScreen}
         options={{ title: t("coupleStory.writeTitle") }}
+      />
+      <Stack.Screen
+        name="BlindChatQueue"
+        component={BlindChatQueueScreen}
+        options={{ title: t("blindChat.title") }}
       />
     </Stack.Navigator>
   );

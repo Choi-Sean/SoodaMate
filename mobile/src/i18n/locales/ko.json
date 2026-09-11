@@ -560,5 +560,30 @@
     "reportSuccess": "신고 완료 — 검토하겠습니다.",
     "publishedOn": "{{date}} 공개",
     "errorGeneric": "문제가 발생했어요. 나중에 다시 시도해주세요."
+  },
+  "blindChatCategories": {
+    "travel": "🌍 여행",
+    "movies_tv": "🎬 영화·드라마",
+    "music": "🎵 음악",
+    "fitness": "💪 운동·건강",
+    "food": "🍜 음식",
+    "gaming": "🎮 게임",
+    "kpop": "💃 K-POP",
+    "pets": "🐶 반려동물",
+    "books": "📚 책·자기계발",
+    "free_talk": "💬 자유주제"
+  },
+  "blindChat": {
+    "title": "블라인드 채팅",
+    "entryButton": "블라인드",
+    "intro": "관심사가 통하는 사람과 익명으로 대화를 시작해보세요. 얼굴과 이름은 서로 동의해야만 공개돼요.",
+    "categoryLabel": "관심 있는 카테고리를 선택하세요",
+    "start": "매칭 시작하기",
+    "waitingTitle": "대화 상대를 찾는 중이에요...",
+    "matchedOn": "{{categories}} 카테고리에서 매칭됐어요",
+    "incomingRevealRequest": "{{name}}님이 프로필 공개를 원해요",
+    "acceptReveal": "수락하고 공개하기",
+    "revealPending": "프로필 공개를 요청했어요 — 상대방의 응답을 기다리는 중",
+    "requestReveal": "프로필 공개 요청하기"
   }
 }

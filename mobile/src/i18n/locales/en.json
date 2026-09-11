@@ -560,5 +560,30 @@
     "reportSuccess": "Reported — we'll take a look.",
     "publishedOn": "Published {{date}}",
     "errorGeneric": "Something went wrong. Please try again later."
+  },
+  "blindChatCategories": {
+    "travel": "🌍 Travel",
+    "movies_tv": "🎬 Movies & TV",
+    "music": "🎵 Music",
+    "fitness": "💪 Fitness",
+    "food": "🍜 Food",
+    "gaming": "🎮 Gaming",
+    "kpop": "💃 K-pop",
+    "pets": "🐶 Pets",
+    "books": "📚 Books & Self-improvement",
+    "free_talk": "💬 Free talk"
+  },
+  "blindChat": {
+    "title": "Blind Chat",
+    "entryButton": "Blind Chat",
+    "intro": "Start an anonymous chat with someone who shares your interests. Names and photos only go public once both sides agree.",
+    "categoryLabel": "Pick what you're into",
+    "start": "Find a match",
+    "waitingTitle": "Looking for someone to chat with...",
+    "matchedOn": "Matched on {{categories}}",
+    "incomingRevealRequest": "{{name}} wants to reveal profiles",
+    "acceptReveal": "Accept & reveal",
+    "revealPending": "You asked to reveal profiles — waiting for a response",
+    "requestReveal": "Ask to reveal profiles"
   }
 }

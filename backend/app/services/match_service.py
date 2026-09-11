@@ -12,6 +12,7 @@ from app.schemas.match import MatchOut, SwipeLimitOut, SwipeResponse
 from app.services import push_service
 from app.services.storage_service import build_public_url
 from app.utils.premium import is_premium
+from app.ws.connection_manager import manager
 
 VALID_ACTIONS = {"like", "pass", "superlike"}
 
@@ -124,6 +125,110 @@ def _is_restricted_and_waiting(match: Match) -> bool:
     return match.restricted_to_user_id is not None and not match.first_message_sent
 
 
+def _mask_display_name(name: str) -> str:
+    """First character (uppercased if it's a Latin letter — a no-op
+    otherwise, e.g. Korean) + "***", always — never the real length, so a
+    blind-chat match's name reveals nothing beyond "starts with this
+    character" until blind_revealed flips."""
+    return f"{name[0].upper()}***" if name else "?***"
+
+
+def _build_match_out(
+    m: Match, viewer_id: uuid.UUID, profile: Profile | None, photo: Photo | None
+) -> MatchOut:
+    other_id = m.user_b_id if m.user_a_id == viewer_id else m.user_a_id
+    restricted = _is_restricted_and_waiting(m)
+    display_name = profile.display_name if profile else ""
+    photo_url = build_public_url(photo.gcs_object_path) if photo else None
+
+    hide_identity = m.is_blind and not m.blind_revealed
+    if hide_identity:
+        display_name = _mask_display_name(display_name)
+        photo_url = None
+
+    return MatchOut(
+        id=m.id,
+        other_user_id=other_id,
+        other_display_name=display_name,
+        other_photo_url=photo_url,
+        matched_at=m.matched_at,
+        is_message_restricted=restricted,
+        can_send_first_message=(not restricted) or (m.restricted_to_user_id == viewer_id),
+        first_message_deadline=m.first_message_deadline,
+        is_active=m.is_active,
+        is_blind=m.is_blind,
+        blind_categories=[c for c in (m.blind_categories or "").split(",") if c],
+        blind_revealed=m.blind_revealed,
+        can_request_reveal=(
+            hide_identity
+            and (m.blind_reveal_eligible_user_id is None or m.blind_reveal_eligible_user_id == viewer_id)
+        ),
+        has_incoming_reveal_request=(
+            hide_identity and m.blind_reveal_requested_by is not None and m.blind_reveal_requested_by != viewer_id
+        ),
+        reveal_requested_by_me=m.blind_reveal_requested_by == viewer_id,
+    )
+
+
+async def request_blind_reveal(db: AsyncSession, match_id: uuid.UUID, user_id: uuid.UUID) -> MatchOut | None:
+    """Returns None only if the match doesn't exist or user_id isn't a
+    participant (-> 404 at the router); raises 400/403 for a valid match in
+    the wrong state, mirroring the pattern used elsewhere in this file."""
+    match = await db.get(Match, match_id)
+    if match is None or user_id not in (match.user_a_id, match.user_b_id):
+        return None
+    if not match.is_blind or match.blind_revealed:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "not an open blind chat")
+    if match.blind_reveal_eligible_user_id is not None and match.blind_reveal_eligible_user_id != user_id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "only the eligible side can request a reveal")
+
+    match.blind_reveal_requested_by = user_id
+    await db.commit()
+
+    peer_id = match.user_b_id if match.user_a_id == user_id else match.user_a_id
+    delivered = await manager.send_to_user(peer_id, {"type": "blind_reveal_requested", "match_id": str(match_id)})
+    if not delivered:
+        await push_service.send_blind_reveal_requested_notification(db, peer_id, match_id)
+    return await get_match_out(db, match_id, user_id)
+
+
+async def accept_blind_reveal(db: AsyncSession, match_id: uuid.UUID, user_id: uuid.UUID) -> MatchOut | None:
+    match = await db.get(Match, match_id)
+    if match is None or user_id not in (match.user_a_id, match.user_b_id):
+        return None
+    if not match.is_blind or match.blind_revealed:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "not an open blind chat")
+    if match.blind_reveal_requested_by is None or match.blind_reveal_requested_by == user_id:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "no pending reveal request from the other side")
+
+    match.blind_revealed = True
+    await db.commit()
+
+    peer_id = match.blind_reveal_requested_by
+    delivered = await manager.send_to_user(peer_id, {"type": "blind_reveal_accepted", "match_id": str(match_id)})
+    if not delivered:
+        await push_service.send_blind_reveal_accepted_notification(db, peer_id, match_id)
+    return await get_match_out(db, match_id, user_id)
+
+
+async def get_match_out(db: AsyncSession, match_id: uuid.UUID, viewer_id: uuid.UUID) -> MatchOut | None:
+    """Single-match equivalent of list_matches, for endpoints that mutate
+    one match (blind-reveal request/accept) and want to hand back its fresh
+    state without the caller re-deriving MatchOut by hand."""
+    m = await db.get(Match, match_id)
+    if m is None or viewer_id not in (m.user_a_id, m.user_b_id):
+        return None
+    other_id = m.user_b_id if m.user_a_id == viewer_id else m.user_a_id
+    profile = await db.get(Profile, other_id)
+    photo = await db.scalar(
+        select(Photo)
+        .where(Photo.user_id == other_id, Photo.media_type == "photo")
+        .order_by(Photo.position)
+        .limit(1)
+    )
+    return _build_match_out(m, viewer_id, profile, photo)
+
+
 async def expire_stale_matches(db: AsyncSession, user_id: uuid.UUID) -> None:
     """Lazy expiry, mirroring chat_service._is_expired's rule: flips
     is_active=False for any of this user's matches where either (a)
@@ -202,18 +307,5 @@ async def list_matches(db: AsyncSession, user_id: uuid.UUID) -> list[MatchOut]:
         other_id = m.user_b_id if m.user_a_id == user_id else m.user_a_id
         profile = profiles_by_user.get(other_id)
         photo = first_photo_by_user.get(other_id)
-        restricted = _is_restricted_and_waiting(m)
-        out.append(
-            MatchOut(
-                id=m.id,
-                other_user_id=other_id,
-                other_display_name=profile.display_name if profile else "",
-                other_photo_url=build_public_url(photo.gcs_object_path) if photo else None,
-                matched_at=m.matched_at,
-                is_message_restricted=restricted,
-                can_send_first_message=(not restricted) or (m.restricted_to_user_id == user_id),
-                first_message_deadline=m.first_message_deadline,
-                is_active=m.is_active,
-            )
-        )
+        out.append(_build_match_out(m, user_id, profile, photo))
     return out

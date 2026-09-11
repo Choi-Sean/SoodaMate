@@ -560,5 +560,30 @@
     "reportSuccess": "Reportado — lo revisaremos.",
     "publishedOn": "Publicada el {{date}}",
     "errorGeneric": "Algo salió mal. Inténtalo más tarde."
+  },
+  "blindChatCategories": {
+    "travel": "🌍 Viajes",
+    "movies_tv": "🎬 Cine y series",
+    "music": "🎵 Música",
+    "fitness": "💪 Fitness",
+    "food": "🍜 Comida",
+    "gaming": "🎮 Videojuegos",
+    "kpop": "💃 K-pop",
+    "pets": "🐶 Mascotas",
+    "books": "📚 Libros y superación personal",
+    "free_talk": "💬 Charla libre"
+  },
+  "blindChat": {
+    "title": "Chat a ciegas",
+    "entryButton": "Chat a ciegas",
+    "intro": "Empieza una conversación anónima con alguien que comparte tus intereses. Los nombres y fotos solo se revelan si ambos están de acuerdo.",
+    "categoryLabel": "Elige lo que te interesa",
+    "start": "Buscar match",
+    "waitingTitle": "Buscando a alguien para chatear...",
+    "matchedOn": "Emparejados por {{categories}}",
+    "incomingRevealRequest": "{{name}} quiere revelar los perfiles",
+    "acceptReveal": "Aceptar y revelar",
+    "revealPending": "Pediste revelar los perfiles — esperando respuesta",
+    "requestReveal": "Pedir revelar perfiles"
   }
 }

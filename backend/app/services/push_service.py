@@ -131,6 +131,39 @@ async def send_couple_story_published_notification(db: AsyncSession, user_id: uu
     )
 
 
+async def send_blind_chat_matched_notification(db: AsyncSession, user_id: uuid.UUID, match_id: uuid.UUID) -> None:
+    lang = await _get_language(db, user_id)
+    await send_to_user(
+        db,
+        user_id,
+        push_i18n.t(lang, "blind_matched_title"),
+        push_i18n.t(lang, "blind_matched_body"),
+        {"type": "blind_chat_matched", "match_id": str(match_id)},
+    )
+
+
+async def send_blind_reveal_requested_notification(db: AsyncSession, user_id: uuid.UUID, match_id: uuid.UUID) -> None:
+    lang = await _get_language(db, user_id)
+    await send_to_user(
+        db,
+        user_id,
+        push_i18n.t(lang, "blind_reveal_requested_title"),
+        push_i18n.t(lang, "blind_reveal_requested_body"),
+        {"type": "blind_reveal_requested", "match_id": str(match_id)},
+    )
+
+
+async def send_blind_reveal_accepted_notification(db: AsyncSession, user_id: uuid.UUID, match_id: uuid.UUID) -> None:
+    lang = await _get_language(db, user_id)
+    await send_to_user(
+        db,
+        user_id,
+        push_i18n.t(lang, "blind_reveal_accepted_title"),
+        push_i18n.t(lang, "blind_reveal_accepted_body"),
+        {"type": "blind_reveal_accepted", "match_id": str(match_id)},
+    )
+
+
 async def send_verification_result_notification(db: AsyncSession, user_id: uuid.UUID, approved: bool) -> None:
     lang = await _get_language(db, user_id)
     key_prefix = "verification_approved" if approved else "verification_rejected"

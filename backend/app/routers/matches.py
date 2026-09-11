@@ -9,7 +9,7 @@ from app.models.profile import Profile
 from app.models.user import User
 from app.schemas.match import IcebreakerOut, MatchOut
 from app.services import chat_service, icebreaker_service
-from app.services.match_service import list_matches
+from app.services.match_service import accept_blind_reveal, list_matches, request_blind_reveal
 
 router = APIRouter(prefix="/matches", tags=["matches"])
 
@@ -40,3 +40,23 @@ async def get_icebreaker(
 
     result = icebreaker_service.get_icebreaker(viewer_profile, peer_profile)
     return IcebreakerOut(**result)
+
+
+@router.post("/{match_id}/blind-reveal/request", response_model=MatchOut)
+async def blind_reveal_request(
+    match_id: uuid.UUID, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
+) -> MatchOut:
+    result = await request_blind_reveal(db, match_id, user.id)
+    if result is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "match not found")
+    return result
+
+
+@router.post("/{match_id}/blind-reveal/accept", response_model=MatchOut)
+async def blind_reveal_accept(
+    match_id: uuid.UUID, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
+) -> MatchOut:
+    result = await accept_blind_reveal(db, match_id, user.id)
+    if result is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "match not found")
+    return result

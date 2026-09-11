@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SwipeRequest(BaseModel):
@@ -25,6 +25,17 @@ class MatchOut(BaseModel):
     can_send_first_message: bool = True
     first_message_deadline: datetime | None = None
     is_active: bool = True
+    # Blind chat (see services/blind_chat_service.py). other_display_name/
+    # other_photo_url above are already masked (a 1-char + "***" name, null
+    # photo) by match_service whenever is_blind and not blind_revealed —
+    # every existing screen that just shows those two fields is safe by
+    # construction and needs no blind-aware branching.
+    is_blind: bool = False
+    blind_categories: list[str] = []
+    blind_revealed: bool = False
+    can_request_reveal: bool = False
+    has_incoming_reveal_request: bool = False
+    reveal_requested_by_me: bool = False
 
 
 class SwipeLimitOut(BaseModel):
@@ -32,6 +43,19 @@ class SwipeLimitOut(BaseModel):
     limit: int
     resets_at: datetime | None = None
     unlimited: bool = False
+
+
+class BlindChatQueueRequest(BaseModel):
+    categories: list[str] = Field(min_length=1, max_length=10)
+
+
+class BlindChatQueueStatusOut(BaseModel):
+    """status is "waiting" (still in the queue), "matched" (paired within
+    the last few minutes — match_id is set), or "idle" (not queued, no
+    recent pairing — e.g. never joined, or canceled)."""
+
+    status: str
+    match_id: uuid.UUID | None = None
 
 
 class IcebreakerOut(BaseModel):
