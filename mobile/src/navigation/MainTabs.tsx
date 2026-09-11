@@ -55,7 +55,7 @@ export default function MainTabs() {
     >
       <Tab.Screen name="Profile" component={ProfileStack} options={{ tabBarLabel: t("tabs.profile") }} />
       <Tab.Screen name="Discover" component={DiscoverScreen} options={{ tabBarLabel: t("tabs.discover") }} />
-      <Tab.Screen name="Swipe" component={SwipeScreen} options={{ tabBarLabel: t("tabs.swipe") }} />
+      <Tab.Screen name="Swipe" component={SwipeScreen} options={{ tabBarLabel: t("tabs.matches") }} />
       <Tab.Screen name="Likes" component={LikesScreen} options={{ tabBarLabel: t("tabs.likes") }} />
       <Tab.Screen name="Chat" component={ChatStack} options={{ tabBarLabel: t("tabs.chat") }} />
     </Tab.Navigator>

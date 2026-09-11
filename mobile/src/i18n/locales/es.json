@@ -1,10 +1,9 @@
 {
   "tabs": {
     "discover": "Descubrir",
-    "matches": "Matches",
+    "matches": "Coincidencias",
     "chat": "Chat",
     "profile": "Perfil",
-    "swipe": "Deslizar",
     "likes": "Me gusta"
   },
   "common": {
