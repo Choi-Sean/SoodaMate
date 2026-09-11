@@ -11,6 +11,7 @@ import MyCoupleStoriesScreen from "../screens/profile/MyCoupleStoriesScreen";
 import SettingsScreen from "../screens/settings/SettingsScreen";
 import DiscoverScreen from "../screens/discover/DiscoverScreen";
 import SwipeScreen from "../screens/swipe/SwipeScreen";
+import LikesScreen from "../screens/likes/LikesScreen";
 import { colors } from "../theme";
 
 export type ProfileStackParamList = {
@@ -22,13 +23,16 @@ export type ProfileStackParamList = {
   CoupleStoriesFeed: undefined;
   MyCoupleStories: undefined;
   Settings: undefined;
-  // Discover/classic swipe matching are no longer bottom tabs (Blind Chat is
-  // the app's primary flow now — see MainTabs) but the underlying
-  // like/pass/superlike/boost system isn't gone, just demoted to a secondary
-  // link from MyProfileScreen, so existing monetization (superlike/boost/
+  // Discover/classic swipe matching and Likes are no longer bottom tabs
+  // (Blind Chat is the app's primary flow now, with just Chat/Profile
+  // flanking its elevated center button — see MainTabs/CustomTabBar; a 3rd
+  // bottom tab would sit dead-center under that button and collide with it)
+  // but none of this functionality is gone, just demoted to secondary links
+  // from MyProfileScreen, so existing monetization (superlike/boost/
   // who-liked-me) keeps working.
   ClassicDiscover: undefined;
   ClassicSwipe: undefined;
+  Likes: undefined;
 };
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -57,6 +61,7 @@ export default function ProfileStack() {
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t("settings.title") }} />
       <Stack.Screen name="ClassicDiscover" component={DiscoverScreen} options={{ title: t("tabs.discover") }} />
       <Stack.Screen name="ClassicSwipe" component={SwipeScreen} options={{ title: t("tabs.matches") }} />
+      <Stack.Screen name="Likes" component={LikesScreen} options={{ title: t("tabs.likes") }} />
     </Stack.Navigator>
   );
 }

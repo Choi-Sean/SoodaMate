@@ -8,21 +8,21 @@ import { colors } from "../theme";
 
 const REAL_TAB_ICONS: Record<string, string> = {
   Chat: "💬",
-  Likes: "❤️",
   Profile: "👤",
 };
 const REAL_TAB_LABEL_KEYS: Record<string, string> = {
   Chat: "tabs.chat",
-  Likes: "tabs.likes",
   Profile: "tabs.profile",
 };
 
-/** Blind Chat is the app's primary flow now (Discover/classic Matching were
- * demoted to a secondary link inside Profile — see ProfileStack), so it gets
- * an Instagram/Tinder-style elevated center button instead of being just
- * another tab. Tapping it doesn't navigate directly — it pops the cute
+/** Blind Chat is the app's primary flow now (Discover/classic Matching/Likes
+ * were demoted to secondary links inside Profile — see ProfileStack), so it
+ * gets an Instagram/Tinder-style elevated center button instead of being
+ * just another tab. Tapping it doesn't navigate directly — it pops the cute
  * category picker (BlindChatCategoryPopup), and picking a category is what
- * navigates, straight into ChatStack's BlindChatQueue screen. */
+ * navigates, straight into ChatStack's BlindChatQueue screen. MainTabs keeps
+ * exactly 2 flanking tabs (Chat, Profile) so this button's center position
+ * never lands on top of a real tab's icon/label/touch target. */
 export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const { t } = useTranslation();
   const [popupVisible, setPopupVisible] = useState(false);
@@ -55,7 +55,9 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
       <Pressable style={styles.centerButton} onPress={() => setPopupVisible(true)}>
         <Text style={styles.centerButtonIcon}>🎭</Text>
       </Pressable>
-      <Text style={styles.centerLabel}>{t("tabs.blindChat")}</Text>
+      <Text style={styles.centerLabel} numberOfLines={1}>
+        {t("tabs.blindChat")}
+      </Text>
 
       <BlindChatCategoryPopup
         visible={popupVisible}

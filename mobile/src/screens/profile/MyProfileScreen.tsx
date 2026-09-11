@@ -166,6 +166,17 @@ export default function MyProfileScreen({ navigation }: Props) {
         <Ionicons name="chevron-forward" size={18} color={colors.accentDark} />
       </Pressable>
 
+      <Pressable style={styles.coupleStoryCard} onPress={() => navigation.navigate("Likes")}>
+        <View style={[styles.coupleStoryIconBubble, { backgroundColor: colors.heart }]}>
+          <Ionicons name="heart" size={18} color="#fff" />
+        </View>
+        <View style={styles.coupleStoryTextWrap}>
+          <Text style={styles.coupleStoryTitle}>{t("profile.likesCardTitle")}</Text>
+          <Text style={styles.coupleStorySubtitle}>{t("profile.likesCardSubtitle")}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.accentDark} />
+      </Pressable>
+
       <Pressable style={styles.coupleStoryCard} onPress={() => navigation.navigate("CoupleStoriesFeed")}>
         <View style={styles.coupleStoryIconBubble}>
           <Ionicons name="heart" size={18} color="#fff" />
