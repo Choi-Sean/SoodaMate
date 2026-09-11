@@ -27,7 +27,13 @@ import { colors } from "../../theme";
 type Props = NativeStackScreenProps<ChatStackParamList, "BlindChatQueue">;
 
 const categoryOptions = BLIND_CHAT_CATEGORY_KEYS as unknown as readonly string[];
-const GENDER_OPTIONS = ["male", "female"] as const;
+// "all" opens the queue to every gender — the backend already treats it as
+// the same "no restriction" value used by Profile.interested_in (see
+// blind_chat_service._compatibility_filters), so no backend change was
+// needed, just exposing the option here. Leaving the chip unselected still
+// falls back to the viewer's own profile interested_in default (opposite
+// gender only, for the common straight case).
+const GENDER_OPTIONS = ["male", "female", "all"] as const;
 const DEFAULT_MIN_AGE = 18;
 const DEFAULT_MAX_AGE = 99;
 const DEFAULT_DISTANCE_KM = 50;
@@ -67,7 +73,7 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
 
   function currentFilters() {
     return {
-      gender: gender as "male" | "female" | null,
+      gender: gender as "male" | "female" | "all" | null,
       min_age: ageRange[0] === DEFAULT_MIN_AGE ? null : ageRange[0],
       max_age: ageRange[1] === DEFAULT_MAX_AGE ? null : ageRange[1],
       max_distance_km: distanceOn ? distanceKm : null,

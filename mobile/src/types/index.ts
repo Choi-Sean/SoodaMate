@@ -149,7 +149,7 @@ export interface BlindChatQueueStatus {
 }
 
 export interface BlindChatFilters {
-  gender?: "male" | "female" | "other" | null;
+  gender?: "male" | "female" | "other" | "all" | null;
   min_age?: number | null;
   max_age?: number | null;
   max_distance_km?: number | null;
