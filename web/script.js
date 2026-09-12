@@ -9,3 +9,21 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
     target.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 });
+
+// Mobile nav dropdown (see styles.css's @media (max-width: 900px) — the nav
+// links move from an inline row into a toggleable panel there, since 5
+// links + the language switcher + logo don't fit inline below that width).
+const navToggle = document.querySelector("[data-nav-toggle]");
+const navLinks = document.querySelector("[data-nav-links]");
+if (navToggle && navLinks) {
+  navToggle.addEventListener("click", () => {
+    const open = navLinks.classList.toggle("open");
+    navToggle.setAttribute("aria-expanded", String(open));
+  });
+  navLinks.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      navLinks.classList.remove("open");
+      navToggle.setAttribute("aria-expanded", "false");
+    });
+  });
+}
