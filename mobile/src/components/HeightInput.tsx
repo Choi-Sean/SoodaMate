@@ -10,6 +10,7 @@ interface Props {
   onChange: (valueCm: number) => void;
   min?: number;
   max?: number;
+  required?: boolean;
 }
 
 function cmToFtIn(cm: number): { ft: number; inch: number } {
@@ -24,7 +25,7 @@ function ftInToCm(ft: number, inch: number): number {
 /** +/- stepper (no native slider — see NumberStepper's own note) with a
  * cm/ft toggle. Always stores/sends centimeters; ft/in is display-only,
  * converted at render and on each step. */
-export default function HeightInput({ valueCm, onChange, min = 130, max = 220 }: Props) {
+export default function HeightInput({ valueCm, onChange, min = 130, max = 220, required }: Props) {
   const { t } = useTranslation();
   const [unit, setUnit] = useState<"cm" | "ft">("cm");
   const { ft, inch } = cmToFtIn(valueCm);
@@ -42,7 +43,10 @@ export default function HeightInput({ valueCm, onChange, min = 130, max = 220 }:
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.label}>{t("profileSetup.heightCm")}</Text>
+        <Text style={styles.label}>
+          {t("profileSetup.heightCm")}
+          {required && <Text style={styles.requiredStar}> *</Text>}
+        </Text>
         <View style={styles.unitToggle}>
           <Pressable style={[styles.unitButton, unit === "cm" && styles.unitButtonActive]} onPress={() => setUnit("cm")}>
             <Text style={unit === "cm" ? styles.unitTextActive : styles.unitText}>cm</Text>
@@ -70,6 +74,7 @@ const styles = StyleSheet.create({
   container: { paddingVertical: 10 },
   headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
   label: { fontSize: 15, color: colors.ink },
+  requiredStar: { color: colors.danger },
   unitToggle: { flexDirection: "row", borderWidth: 1, borderColor: colors.border, borderRadius: 8, overflow: "hidden" },
   unitButton: { paddingVertical: 4, paddingHorizontal: 10 },
   unitButtonActive: { backgroundColor: colors.accent },

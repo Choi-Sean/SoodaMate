@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, Switch, Text, View, StyleSheet } from "react-native";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ActivityIndicator, Pressable, Text, View, StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 
 import { deleteAccount } from "../../api/account";
-import { getMyProfile, setIncognito } from "../../api/profiles";
 import { useAuthStore } from "../../store/authStore";
 import { env } from "../../config/env";
 import { SUPPORTED_LANGUAGES, setLanguage, type SupportedLanguage } from "../../i18n";
@@ -27,22 +25,7 @@ const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
 export default function SettingsScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
   const logout = useAuthStore((s) => s.logout);
-  const queryClient = useQueryClient();
-  const { data: profile } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
   const [deleting, setDeleting] = useState(false);
-  const [togglingIncognito, setTogglingIncognito] = useState(false);
-
-  async function handleToggleIncognito(value: boolean) {
-    setTogglingIncognito(true);
-    try {
-      await setIncognito(value);
-      await queryClient.invalidateQueries({ queryKey: ["myProfile"] });
-    } catch (e: any) {
-      showAlert(t("common.somethingWentWrong"));
-    } finally {
-      setTogglingIncognito(false);
-    }
-  }
 
   function confirmDeleteAccount() {
     showAlert(t("settings.deleteConfirmTitle"), t("settings.deleteConfirmBody"), [
@@ -80,20 +63,11 @@ export default function SettingsScreen({ navigation }: Props) {
         ))}
       </View>
 
-      <View style={styles.switchRow}>
-        <Text style={styles.rowText}>{t("settings.incognito")}</Text>
-        <Switch
-          value={profile?.is_incognito ?? false}
-          onValueChange={handleToggleIncognito}
-          disabled={togglingIncognito}
-          trackColor={{ true: colors.navy }}
-        />
-      </View>
-      <Text style={styles.rowHint}>{t("settings.incognitoDesc")}</Text>
+      {/* Incognito toggle and Travel Mode entry removed per product decision —
+          neither fits the Blind Chat concept for now. The underlying
+          is_incognito field/API and TravelModeScreen/route are left intact
+          so this is a one-line revert if that changes. */}
 
-      <Pressable style={styles.row} onPress={() => navigation.navigate("TravelMode")}>
-        <Text style={styles.rowText}>{t("settings.travelMode")}</Text>
-      </Pressable>
       <Pressable style={styles.row} onPress={() => navigation.navigate("Verification")}>
         <Text style={styles.rowText}>{t("settings.verification")}</Text>
       </Pressable>
@@ -125,16 +99,6 @@ const styles = StyleSheet.create({
   langChipText: { color: colors.ink, fontSize: 13 },
   langChipTextActive: { color: "#fff", fontSize: 13, fontWeight: "600" },
   row: { padding: 18, borderBottomWidth: 1, borderBottomColor: colors.border },
-  switchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  rowHint: { fontSize: 12, color: colors.muted, paddingHorizontal: 18, paddingTop: 8, paddingBottom: 14 },
   rowText: { fontSize: 16, color: colors.ink },
   dangerText: { fontSize: 16, color: colors.danger },
 });

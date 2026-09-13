@@ -1,4 +1,3 @@
-import re
 import uuid
 from datetime import datetime, timezone
 
@@ -7,25 +6,15 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.phone import normalize_e164
 from app.core.sms_verifier_base import SmsVerifier
 from app.models.user import User
-
-# E.164: '+' then 8-15 digits. The client is responsible for turning a
-# local-format number into this via a country picker — this is just a sanity
-# gate before we hand it to Twilio, not a full validation.
-E164_PATTERN = re.compile(r"^\+[1-9]\d{7,14}$")
-
-
-def _normalize(phone_number: str) -> str:
-    if not E164_PATTERN.match(phone_number):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "phone_number must be in E.164 format, e.g. +821012345678")
-    return phone_number
 
 
 async def start_phone_verification(
     db: AsyncSession, verifier: SmsVerifier, user_id: uuid.UUID, phone_number: str
 ) -> None:
-    phone_number = _normalize(phone_number)
+    phone_number = normalize_e164(phone_number)
 
     taken = await db.scalar(
         select(User).where(
@@ -43,7 +32,7 @@ async def start_phone_verification(
 async def confirm_phone_verification(
     db: AsyncSession, verifier: SmsVerifier, user_id: uuid.UUID, phone_number: str, code: str
 ) -> None:
-    phone_number = _normalize(phone_number)
+    phone_number = normalize_e164(phone_number)
 
     approved = await verifier.check(phone_number, code)
     if not approved:

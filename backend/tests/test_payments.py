@@ -34,8 +34,23 @@ async def test_products_listed(client):
     resp = await client.get("/payments/products")
     assert resp.status_code == 200
     ids = [p["product_id"] for p in resp.json()]
-    assert "superlike_pack_5" in ids
-    assert "boost_1" in ids
+    assert "ai_match_pack_1" in ids
+    assert "unlimited_matching_week" in ids
+    assert "membership_monthly" in ids
+
+
+@pytest.mark.asyncio
+async def test_classic_matching_products_hidden_from_listing(client):
+    # Superlike/Boost are Classic Matching monetization — that flow's only
+    # entry point (MyProfileScreen's link card) was hidden per product
+    # decision, so the shop no longer advertises credits with nowhere left
+    # to spend them. Still fully purchasable directly (see the webhook test
+    # below) — only listing is filtered.
+    resp = await client.get("/payments/products")
+    ids = [p["product_id"] for p in resp.json()]
+    assert "superlike_pack_5" not in ids
+    assert "superlike_pack_20" not in ids
+    assert "boost_1" not in ids
 
 
 @pytest.mark.asyncio

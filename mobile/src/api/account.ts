@@ -28,6 +28,13 @@ export async function updateLanguagePreference(language: string): Promise<void> 
   await apiClient.put("/account/language", { language });
 }
 
+/** Collected once at signup (ProfileSetupScreen) for marketing outreach only
+ * — phone number is the sole login credential now, so this is never
+ * verified. The backend still enforces uniqueness and 409s on a collision. */
+export async function updateEmail(email: string): Promise<void> {
+  await apiClient.put("/account/email", { email });
+}
+
 export interface CancelSubscriptionResult {
   premium_until: string;
 }

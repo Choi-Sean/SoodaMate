@@ -18,7 +18,6 @@ export function calculateProfileCompleteness(profile: Profile): number {
     !!profile.education,
     !!profile.hometown,
     !!profile.smoking,
-    !!profile.cannabis,
     !!profile.exercise_frequency,
     !!profile.relationship_goal,
     !!profile.wants_kids,

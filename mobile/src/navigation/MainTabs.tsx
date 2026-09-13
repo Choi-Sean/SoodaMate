@@ -19,7 +19,11 @@ const Tab = createBottomTabNavigator<MainTabsParamList>();
 // than bottom tabs; none of that underlying functionality is gone.
 export default function MainTabs() {
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={(props) => <CustomTabBar {...props} />}>
+    <Tab.Navigator
+      initialRouteName="Profile"
+      screenOptions={{ headerShown: false }}
+      tabBar={(props) => <CustomTabBar {...props} />}
+    >
       <Tab.Screen name="Chat" component={ChatStack} />
       <Tab.Screen name="Profile" component={ProfileStack} />
     </Tab.Navigator>

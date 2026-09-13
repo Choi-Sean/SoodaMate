@@ -20,7 +20,6 @@ import CityAutocomplete from "../../components/CityAutocomplete";
 import { calculateProfileCompleteness } from "../../utils/profileCompleteness";
 import { calculateAge, formatDate } from "../../utils/age";
 import {
-  CANNABIS_KEYS,
   EXERCISE_FREQUENCY_KEYS,
   HAS_KIDS_KEYS,
   POLITICAL_VIEW_KEYS,
@@ -77,7 +76,6 @@ export default function EditProfileScreen({ navigation }: Props) {
   const [education, setEducation] = useState<string | null>(null);
   const [hometown, setHometown] = useState("");
   const [smoking, setSmoking] = useState<string | null>(null);
-  const [cannabis, setCannabis] = useState<string | null>(null);
   const [exerciseFrequency, setExerciseFrequency] = useState<string | null>(null);
   const [relationshipGoal, setRelationshipGoal] = useState<string | null>(null);
   const [wantsKids, setWantsKids] = useState<string | null>(null);
@@ -109,7 +107,6 @@ export default function EditProfileScreen({ navigation }: Props) {
     setEducation(profile.education);
     setHometown(profile.hometown ?? "");
     setSmoking(profile.smoking);
-    setCannabis(profile.cannabis);
     setExerciseFrequency(profile.exercise_frequency);
     setRelationshipGoal(profile.relationship_goal);
     setWantsKids(profile.wants_kids);
@@ -174,7 +171,11 @@ export default function EditProfileScreen({ navigation }: Props) {
         education,
         hometown: hometown.trim() || null,
         smoking,
-        cannabis,
+        // cannabis field hidden per product decision — no longer collected
+        // or shown (see MyProfileScreen/ProfileInfoSections). Omitting it
+        // here nulls out any pre-existing value on save (updateMyProfile is
+        // a full-replace PUT), which is intended.
+        cannabis: null,
         exercise_frequency: exerciseFrequency,
         relationship_goal: relationshipGoal,
         wants_kids: wantsKids,
@@ -431,14 +432,6 @@ export default function EditProfileScreen({ navigation }: Props) {
           translatePrefix="profileSetup.smokingOption"
           value={smoking}
           onChange={setSmoking}
-        />
-
-        <ChipSelect
-          label={t("profileSetup.cannabis")}
-          options={CANNABIS_KEYS}
-          translatePrefix="profileSetup.cannabisOption"
-          value={cannabis}
-          onChange={setCannabis}
         />
 
         <ChipSelect

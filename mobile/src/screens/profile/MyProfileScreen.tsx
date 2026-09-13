@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Image, Pressable, RefreshControl, ScrollView, Text, View, StyleSheet } from "react-native";
+import { Image, Platform, Pressable, RefreshControl, ScrollView, Text, View, StyleSheet } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,11 +11,21 @@ import VerifiedBadge from "../../components/VerifiedBadge";
 import ScreenHeader from "../../components/ScreenHeader";
 import { showAlert } from "../../utils/alert";
 import { openShop } from "../../utils/openShop";
+import { openExternalUrl } from "../../utils/openExternalUrl";
 import { calculateProfileCompleteness } from "../../utils/profileCompleteness";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
 import { colors } from "../../theme";
 
 type Props = NativeStackScreenProps<ProfileStackParamList, "MyProfile">;
+
+// Cross-promo for SooDaList, a sibling app from the same team (SooDaMate is
+// itself part of the "수다리스트" app family — see the marketing site's
+// footer). Platform.OS is fixed for the life of the app, so this is safe to
+// resolve once at module scope rather than per-render.
+const SOODALIST_STORE_URL = Platform.select({
+  ios: "https://apps.apple.com/us/app/soodalist/id6801300176",
+  default: "https://play.google.com/store/apps/details?id=com.soodalist.app",
+});
 
 function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -123,15 +133,17 @@ export default function MyProfileScreen({ navigation }: Props) {
         <View style={styles.cardGrid}>
           <View style={styles.featureCard}>
             <View style={[styles.featureIconBubble, { backgroundColor: colors.navy }]}>
-              <Ionicons name="star" size={18} color="#fff" />
+              <Ionicons name="sparkles" size={18} color="#fff" />
             </View>
-            <Text style={styles.featureCardText}>{t("profile.superlikeCredits", { count: profile.superlike_credits })}</Text>
+            <Text style={styles.featureCardText}>{t("profile.aiMatchCredits", { count: profile.ai_match_credits })}</Text>
           </View>
           <View style={styles.featureCard}>
             <View style={[styles.featureIconBubble, { backgroundColor: colors.accentDark }]}>
-              <Ionicons name="flash" size={18} color="#fff" />
+              <Ionicons name="infinite" size={18} color="#fff" />
             </View>
-            <Text style={styles.featureCardText}>{t("profile.boostCredits", { count: profile.boost_credits })}</Text>
+            <Text style={styles.featureCardText}>
+              {t(profile.is_unlimited_matching_active ? "profile.unlimitedMatchingOn" : "profile.unlimitedMatchingOff")}
+            </Text>
           </View>
         </View>
       )}
@@ -139,11 +151,9 @@ export default function MyProfileScreen({ navigation }: Props) {
       <View style={styles.explainerCard}>
         <Text style={styles.explainerTitle}>{t("profile.explainerTitle")}</Text>
         {[
-          { label: t("profile.explainerPremiumTitle"), body: t("profile.explainerPremiumBody") },
-          { label: t("profile.explainerSuperlikeTitle"), body: t("profile.explainerSuperlikeBody") },
-          { label: t("profile.explainerBoostTitle"), body: t("profile.explainerBoostBody") },
           { label: t("profile.explainerAiMatchTitle"), body: t("profile.explainerAiMatchBody") },
           { label: t("profile.explainerUnlimitedMatchingTitle"), body: t("profile.explainerUnlimitedMatchingBody") },
+          { label: t("profile.explainerPremiumTitle"), body: t("profile.explainerPremiumBody") },
         ].map((row, i) => (
           <View key={i} style={styles.explainerRow}>
             <View style={styles.explainerDot} />
@@ -155,27 +165,11 @@ export default function MyProfileScreen({ navigation }: Props) {
         ))}
       </View>
 
-      <Pressable style={styles.coupleStoryCard} onPress={() => navigation.navigate("ClassicSwipe")}>
-        <View style={[styles.coupleStoryIconBubble, { backgroundColor: colors.navy }]}>
-          <Ionicons name="compass" size={18} color="#fff" />
-        </View>
-        <View style={styles.coupleStoryTextWrap}>
-          <Text style={styles.coupleStoryTitle}>{t("profile.classicMatchingCardTitle")}</Text>
-          <Text style={styles.coupleStorySubtitle}>{t("profile.classicMatchingCardSubtitle")}</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.accentDark} />
-      </Pressable>
-
-      <Pressable style={styles.coupleStoryCard} onPress={() => navigation.navigate("Likes")}>
-        <View style={[styles.coupleStoryIconBubble, { backgroundColor: colors.heart }]}>
-          <Ionicons name="heart" size={18} color="#fff" />
-        </View>
-        <View style={styles.coupleStoryTextWrap}>
-          <Text style={styles.coupleStoryTitle}>{t("profile.likesCardTitle")}</Text>
-          <Text style={styles.coupleStorySubtitle}>{t("profile.likesCardSubtitle")}</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.accentDark} />
-      </Pressable>
+      {/* Classic Matching ("매칭 둘러보기") and Likes ("나를 좋아요한 사람") link
+          cards removed per product decision — swipe-based matching doesn't
+          fit the Blind Chat concept, so both entry points are hidden for now.
+          The underlying ClassicDiscover/ClassicSwipe/Likes routes and screens
+          are untouched in ProfileStack, just unreachable from here. */}
 
       <Pressable style={styles.coupleStoryCard} onPress={() => navigation.navigate("CoupleStoriesFeed")}>
         <View style={styles.coupleStoryIconBubble}>
@@ -232,11 +226,7 @@ export default function MyProfileScreen({ navigation }: Props) {
 
       <View style={styles.perksCard}>
         <Text style={styles.perksTitle}>{t("profile.perksTitle")}</Text>
-        {[
-          { icon: "infinite" as const, label: t("profile.perkUnlimitedSwipes") },
-          { icon: "eye" as const, label: t("profile.perkSeeWhoLikedYou") },
-          { icon: "options" as const, label: t("profile.perkAdvancedFilters") },
-        ].map((perk, i) => (
+        {[{ icon: "chatbubbles" as const, label: t("profile.perkUnlimitedBlindChat") }].map((perk, i) => (
           <View key={i} style={styles.perkRow}>
             <View style={styles.perkIconBubble}>
               <Ionicons name={perk.icon} size={15} color={colors.accentDark} />
@@ -246,6 +236,15 @@ export default function MyProfileScreen({ navigation }: Props) {
           </View>
         ))}
       </View>
+
+      <Pressable style={styles.soodaListCard} onPress={() => openExternalUrl(SOODALIST_STORE_URL)}>
+        <Image source={require("../../../assets/soodalist-logo.png")} style={styles.soodaListLogo} resizeMode="contain" />
+        <View style={styles.coupleStoryTextWrap}>
+          <Text style={styles.coupleStoryTitle}>{t("profile.soodaListPromoTitle")}</Text>
+          <Text style={styles.coupleStorySubtitle}>{t("profile.soodaListPromoBody")}</Text>
+        </View>
+        <Text style={styles.soodaListCta}>{t("profile.soodaListPromoCta")}</Text>
+      </Pressable>
       </View>
     </ScrollView>
   );
@@ -435,4 +434,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   perkText: { flex: 1, fontSize: 13.5, color: colors.ink, fontWeight: "500" },
+  soodaListCard: {
+    marginTop: 16,
+    backgroundColor: colors.white,
+    borderRadius: 18,
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  soodaListLogo: { width: 44, height: 44 },
+  soodaListCta: { fontSize: 12.5, fontWeight: "700", color: colors.accentDark },
 });

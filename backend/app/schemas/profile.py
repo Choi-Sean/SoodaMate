@@ -96,6 +96,8 @@ class ProfileOut(BaseModel):
     superlike_credits: int = 0
     boost_credits: int = 0
     boost_active_until: datetime | None = None
+    ai_match_credits: int = 0
+    unlimited_matching_until: datetime | None = None
     is_incognito: bool = False
     travel_lat: float | None = None
     travel_lng: float | None = None
@@ -164,6 +166,25 @@ class ProfileOut(BaseModel):
     @property
     def is_premium_member(self) -> bool:
         return is_premium(self.premium_until)
+
+    # Mirrors blind_chat_service.is_unlimited_matching_active exactly (same
+    # premium-or-topup-still-running check) — duplicated here rather than
+    # imported since that function takes the ORM Profile, not this schema,
+    # and the check itself is only two lines.
+    @computed_field
+    @property
+    def is_unlimited_matching_active(self) -> bool:
+        if self.is_premium_member:
+            return True
+        until = self.unlimited_matching_until
+        if until is None:
+            return False
+        # MSSQL sometimes hands back a naive datetime despite the column
+        # being DateTime(timezone=True) — same normalization as
+        # blind_chat_service.is_unlimited_matching_active.
+        if until.tzinfo is None:
+            until = until.replace(tzinfo=timezone.utc)
+        return until > datetime.now(timezone.utc)
 
     @computed_field
     @property

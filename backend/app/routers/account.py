@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import delete, or_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -38,6 +39,29 @@ async def get_me(user: User = Depends(get_current_user)) -> MeOut:
         phone_verified=user.phone_verified,
         preferred_language=user.preferred_language,
     )
+
+
+class EmailUpdateRequest(BaseModel):
+    email: EmailStr
+
+
+@router.put("/email", status_code=204)
+async def update_email(
+    body: EmailUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> None:
+    # Collected for marketing outreach only, not as a login credential — phone
+    # number is the sole auth identifier now (see auth_service.login_or_signup_with_phone),
+    # so this is deliberately never verified. Still unique at the DB level
+    # (uq_users_email), so a value already claimed by another account 409s
+    # instead of silently reassigning it.
+    user.email = body.email
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status.HTTP_409_CONFLICT, "email already in use")
 
 
 class LanguageUpdateRequest(BaseModel):

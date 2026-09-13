@@ -13,6 +13,7 @@ interface Props {
   lat: number | null;
   lng: number | null;
   onChange: (lat: number, lng: number) => void;
+  required?: boolean;
 }
 
 interface Place {
@@ -73,7 +74,7 @@ function placeLabel(place: Place): string {
   return [place.city, place.region, place.country].filter(Boolean).join(", ");
 }
 
-export default function LocationPicker({ lat, lng, onChange }: Props) {
+export default function LocationPicker({ lat, lng, onChange, required }: Props) {
   const { t } = useTranslation();
   const [detecting, setDetecting] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
@@ -170,7 +171,10 @@ export default function LocationPicker({ lat, lng, onChange }: Props) {
 
   return (
     <View>
-      <Text style={styles.label}>{t("location.title")}</Text>
+      <Text style={styles.label}>
+        {t("location.title")}
+        {required && <Text style={styles.requiredStar}> *</Text>}
+      </Text>
 
       {resolvingCurrent && <ActivityIndicator size="small" color={colors.accent} style={styles.resolvingSpinner} />}
       {!resolvingCurrent && currentPlace && <Text style={styles.currentValue}>{placeLabel(currentPlace)}</Text>}
@@ -252,6 +256,7 @@ export default function LocationPicker({ lat, lng, onChange }: Props) {
 
 const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: "600", marginTop: 12, marginBottom: 8, color: colors.muted },
+  requiredStar: { color: colors.danger },
   currentValue: { color: colors.ink, marginBottom: 8, fontWeight: "500" },
   resolvingSpinner: { alignSelf: "flex-start", marginBottom: 8 },
   detectButton: {

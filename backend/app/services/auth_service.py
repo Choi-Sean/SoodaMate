@@ -1,11 +1,15 @@
 import uuid
+from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth_provider_base import ExternalIdentity
+from app.core.phone import normalize_e164
 from app.core.security import create_token, decode_token, hash_password, verify_password
+from app.core.sms_verifier_base import SmsVerifier
 from app.models.user import AuthProvider, User
 from app.schemas.auth import TokenResponse
 
@@ -88,6 +92,58 @@ async def login_or_signup_with_provider(
     await db.commit()
 
     return issue_tokens(user.id)
+
+
+async def start_phone_auth(verifier: SmsVerifier, phone_number: str) -> None:
+    """Unauthenticated — unlike sms_verification_service.start_phone_verification
+    (which attaches a phone to an already-logged-in account), this *is* the
+    login/signup entry point, so there's no existing user to check against
+    yet. Twilio Verify's own per-number rate limiting is the abuse guard."""
+    phone_number = normalize_e164(phone_number)
+    await verifier.start(phone_number)
+
+
+async def login_or_signup_with_phone(
+    db: AsyncSession, verifier: SmsVerifier, phone_number: str, code: str
+) -> tuple[TokenResponse, bool]:
+    """Phone is the primary credential now (see PhoneAuthScreen) — confirming
+    the code logs an existing account in or creates a new one, mirroring
+    login_or_signup_with_provider's find-or-create shape for Google/Apple.
+    Returns (tokens, is_new_user)."""
+    phone_number = normalize_e164(phone_number)
+
+    approved = await verifier.check(phone_number, code)
+    if not approved:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "incorrect or expired code")
+
+    user = await db.scalar(
+        select(User).where(User.phone_number == phone_number, User.phone_verified_at.is_not(None))
+    )
+    if user is not None:
+        if user.is_banned or not user.is_active:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "account disabled")
+        return issue_tokens(user.id), False
+
+    user = User(phone_number=phone_number, phone_verified_at=datetime.now(timezone.utc))
+    db.add(user)
+    await db.flush()
+    db.add(AuthProvider(user_id=user.id, provider="phone", provider_user_id=None))
+    try:
+        await db.commit()
+    except IntegrityError:
+        # Race: two confirms for the same number landed concurrently (e.g. a
+        # double-tap on "confirm"). The filtered unique index on
+        # Users.PhoneNumber is the real guarantee — fall back to whichever
+        # row actually won instead of erroring the second request out.
+        await db.rollback()
+        winner = await db.scalar(
+            select(User).where(User.phone_number == phone_number, User.phone_verified_at.is_not(None))
+        )
+        if winner is None:
+            raise
+        return issue_tokens(winner.id), False
+
+    return issue_tokens(user.id), True
 
 
 async def refresh_access_token(db: AsyncSession, refresh_token: str) -> TokenResponse:

@@ -15,27 +15,20 @@ from app.utils.upsert import try_insert
 # Product catalog lives in code, not Stripe Dashboard "Prices" — inline
 # price_data on the Checkout Session means no pre-created Stripe product/price
 # IDs are needed as an external prerequisite, only the Stripe secret key is.
+#
+# Ordered blind-chat-first (Blind Chat is the app's primary flow — see
+# soodamate-blind-chat-apple-policy-risk memory) since dict insertion order
+# is what list_products() renders, top to bottom. Classic Matching's
+# superlike/boost entries are marked "listed": False (see list_products())
+# rather than deleted — MyProfileScreen's Classic Matching link card was
+# hidden per product decision (swipe-based matching doesn't fit the Blind
+# Chat concept), so these products have no in-app screen left to use them
+# on; kept in the catalog (not removed) so nothing breaks for anyone who
+# already bought credits, and so this is a one-line revert if that decision
+# changes.
 PRODUCTS: dict[str, dict] = {
-    "superlike_pack_5": {
-        "name": "슈퍼좋아요 5개",
-        "credit_kind": "superlike",
-        "credits": 5,
-        "price_usd_cents": 499,
-    },
-    "superlike_pack_20": {
-        "name": "슈퍼좋아요 20개",
-        "credit_kind": "superlike",
-        "credits": 20,
-        "price_usd_cents": 1499,
-    },
-    "boost_1": {
-        "name": "부스트 1회",
-        "credit_kind": "boost",
-        "credits": 1,
-        "price_usd_cents": 399,
-    },
     # Blind chat monetization (see services/blind_chat_service.py). AI match
-    # credits are consumable, same shape as superlike/boost above.
+    # credits are consumable, same shape as superlike/boost below.
     "ai_match_pack_1": {
         "name": "AI 매칭권 1회",
         "credit_kind": "ai_match",
@@ -66,7 +59,10 @@ PRODUCTS: dict[str, dict] = {
     },
     # Real recurring Stripe Subscriptions (mode="subscription" below), not
     # one-time top-ups — create_checkout_session/handle_webhook_event branch
-    # on credit_kind == "membership" to use the subscription path.
+    # on credit_kind == "membership" to use the subscription path. Also
+    # grants unlimited blind-chat matching for free (see
+    # blind_chat_service.is_unlimited_matching_active), on top of the
+    # Classic Matching perks below.
     "membership_monthly": {
         "name": "프리미엄 멤버십 (월간)",
         "credit_kind": "membership",
@@ -81,6 +77,30 @@ PRODUCTS: dict[str, dict] = {
         "interval": "year",
         # ~2 months free vs. paying monthly — the usual yearly-plan discount.
         "price_usd_cents": 9999,
+    },
+    # Classic Matching (swipe-based Discover) monetization — hidden from the
+    # shop (see list_products()) since the only screen that used these
+    # credits is no longer linked from anywhere in the app.
+    "superlike_pack_5": {
+        "name": "슈퍼좋아요 5개",
+        "credit_kind": "superlike",
+        "credits": 5,
+        "price_usd_cents": 499,
+        "listed": False,
+    },
+    "superlike_pack_20": {
+        "name": "슈퍼좋아요 20개",
+        "credit_kind": "superlike",
+        "credits": 20,
+        "price_usd_cents": 1499,
+        "listed": False,
+    },
+    "boost_1": {
+        "name": "부스트 1회",
+        "credit_kind": "boost",
+        "credits": 1,
+        "price_usd_cents": 399,
+        "listed": False,
     },
 }
 
@@ -166,7 +186,10 @@ def _get_stripe():
 
 
 def list_products() -> list[dict]:
-    return [{"product_id": pid, **info} for pid, info in PRODUCTS.items()]
+    # "listed": False products (see PRODUCTS' Classic Matching entries)
+    # stay fully purchasable via create_checkout_session/the webhook — only
+    # hidden from what the shop actually shows.
+    return [{"product_id": pid, **info} for pid, info in PRODUCTS.items() if info.get("listed", True)]
 
 
 async def create_checkout_session(user_id: uuid.UUID, product_id: str, language: str = "en") -> str:

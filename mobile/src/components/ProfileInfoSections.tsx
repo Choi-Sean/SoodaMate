@@ -100,8 +100,6 @@ export default function ProfileInfoSections({ candidate }: { candidate: Candidat
     about.push({ icon: "flag-outline", label: t(`profileSetup.politicalViewOption.${candidate.political_view}`, { defaultValue: candidate.political_view }) });
   if (candidate.smoking)
     about.push({ icon: "flame-outline", label: t(`profileSetup.smokingOption.${candidate.smoking}`, { defaultValue: candidate.smoking }) });
-  if (candidate.cannabis)
-    about.push({ icon: "leaf-outline", label: t(`profileSetup.cannabisOption.${candidate.cannabis}`, { defaultValue: candidate.cannabis }) });
   if (candidate.exercise_frequency)
     about.push({ icon: "barbell-outline", label: t(`profileSetup.exerciseFrequencyOption.${candidate.exercise_frequency}`, { defaultValue: candidate.exercise_frequency }) });
 

@@ -14,5 +14,6 @@ export const BLIND_CHAT_CATEGORY_KEYS = [
   "kpop",
   "pets",
   "books",
+  "language_exchange",
   "free_talk",
 ] as const;

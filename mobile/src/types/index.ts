@@ -48,6 +48,9 @@ export interface Profile {
   superlike_credits: number;
   boost_credits: number;
   boost_active_until: string | null;
+  ai_match_credits: number;
+  unlimited_matching_until: string | null;
+  is_unlimited_matching_active: boolean;
   is_incognito: boolean;
   travel_lat: number | null;
   travel_lng: number | null;

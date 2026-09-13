@@ -35,8 +35,9 @@ const categoryOptions = BLIND_CHAT_CATEGORY_KEYS as unknown as readonly string[]
 // gender only, for the common straight case).
 const GENDER_OPTIONS = ["male", "female", "all"] as const;
 const DEFAULT_MIN_AGE = 18;
-const DEFAULT_MAX_AGE = 99;
+const DEFAULT_MAX_AGE = 60;
 const DEFAULT_DISTANCE_KM = 50;
+const MAX_DISTANCE_KM = 500;
 
 /** Picks categories (+ optional gender/age/distance filters) -> POSTs
  * /blind-chat/queue. A "matched" response (either right away, from this
@@ -216,10 +217,14 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
           <SingleSlider
             label=""
             min={1}
-            max={500}
+            max={MAX_DISTANCE_KM}
             value={distanceKm}
             formatValue={(v) =>
-              useImperial ? t("filters.distanceUpToMi", { mi: formatDistanceKm(v) }) : t("filters.distanceUpToKm", { km: v })
+              v >= MAX_DISTANCE_KM
+                ? t("filters.distanceNoLimit")
+                : useImperial
+                  ? t("filters.distanceUpToMi", { mi: formatDistanceKm(v) })
+                  : t("filters.distanceUpToKm", { km: v })
             }
             onChange={setDistanceKm}
           />
