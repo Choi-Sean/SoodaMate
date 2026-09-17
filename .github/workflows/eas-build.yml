@@ -1,0 +1,74 @@
+name: EAS Build & Submit
+
+# Manual by default — an EAS build consumes real build minutes/credits on
+# the Expo account and (for iOS) submits straight to App Store Connect, so
+# this deliberately doesn't fire on every push. Trigger it from the
+# Actions tab ("Run workflow") whenever you actually want a new build out.
+#
+# To also trigger automatically on a version tag (e.g. `git tag v1.2.0 &&
+# git push --tags`), uncomment the `push` block below.
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Platform to build"
+        required: true
+        default: "all"
+        type: choice
+        options: [all, ios, android]
+  # push:
+  #   tags:
+  #     - "v*"
+
+defaults:
+  run:
+    working-directory: mobile
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # mobile/secrets/ is gitignored on purpose (real API keys shouldn't
+      # live in the repo) — this recreates just the one file EAS submit
+      # needs, from a GitHub Actions secret, for the duration of the job.
+      - name: Restore App Store Connect API key
+        if: github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'all' || github.event_name == 'push'
+        run: |
+          mkdir -p secrets
+          printf '%s' "${{ secrets.ASC_API_KEY_P8 }}" > secrets/AuthKey_55M944LNN4.p8
+
+      # --auto-submit works today: eas.json already has the App Store
+      # Connect API key path wired up (submit.production.ios), which is
+      # enough for a fully non-interactive submit (no Apple ID/2FA prompt).
+      - name: Build & submit iOS
+        if: github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'all' || github.event_name == 'push'
+        run: eas build --platform ios --profile production --non-interactive --auto-submit
+
+      # Build-only for now — auto-submitting to Google Play needs a service
+      # account JSON key from Play Console (Setup > API access), which
+      # isn't created yet. Once you have it:
+      #   1. Add it as a GitHub Actions secret, e.g. PLAY_SERVICE_ACCOUNT_JSON
+      #   2. Add a "Restore Play service account key" step here, same shape
+      #      as the ASC one above, writing to e.g. secrets/play-service-account.json
+      #   3. Add `"android": {"serviceAccountKeyPath": "./secrets/play-service-account.json", "track": "internal"}`
+      #      under submit.production in mobile/eas.json
+      #   4. Add --auto-submit to the command below
+      - name: Build Android
+        if: github.event.inputs.platform == 'android' || github.event.inputs.platform == 'all' || github.event_name == 'push'
+        run: eas build --platform android --profile production --non-interactive
