@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import i18n from "../i18n";
@@ -8,19 +7,38 @@ import { getMyProfile } from "../api/profiles";
 import { getMe, updateLanguagePreference } from "../api/account";
 import { registerForPushNotifications } from "../services/pushNotifications";
 import { usePurchaseReturnWatch } from "../hooks/usePurchaseReturnWatch";
-import { colors } from "../theme";
+import AnimatedSplash from "../components/AnimatedSplash";
 import AuthStack from "./AuthStack";
 import MainTabs from "./MainTabs";
 import PhoneVerificationScreen from "../screens/auth/PhoneVerificationScreen";
 import ProfileSetupScreen from "../screens/auth/ProfileSetupScreen";
 
+// Evaluated once, at module load — essentially "app launch" (App.tsx's own
+// i18n-init splash, shown before this component ever mounts, is already
+// covered: however long that took is still counted, since elapsed time is
+// measured from here, not from this component's own mount). Keeps the
+// branded splash on screen for a consistent minimum stretch rather than a
+// flash-then-flicker-to-a-spinner when auth/profile resolve fast, while
+// never waiting LONGER than the real readiness check needs to.
+const APP_LAUNCHED_AT = Date.now();
+const MIN_SPLASH_MS = 1500;
+
 export default function RootNavigator() {
   const { hydrated, isAuthenticated, hydrate } = useAuthStore();
   const queryClient = useQueryClient();
+  const [minSplashElapsed, setMinSplashElapsed] = useState(() => Date.now() - APP_LAUNCHED_AT >= MIN_SPLASH_MS);
 
   useEffect(() => {
     hydrate();
   }, [hydrate]);
+
+  useEffect(() => {
+    if (minSplashElapsed) return;
+    const remaining = MIN_SPLASH_MS - (Date.now() - APP_LAUNCHED_AT);
+    const timer = setTimeout(() => setMinSplashElapsed(true), Math.max(0, remaining));
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Checked before the profile query below — /account/me works on a bare
   // signed-up account that has no Profile row yet (unlike /profiles/me,
@@ -40,12 +58,8 @@ export default function RootNavigator() {
     retry: false,
   });
 
-  if (!hydrated || (isAuthenticated && meQuery.isLoading)) {
-    return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
+  if (!minSplashElapsed || !hydrated || (isAuthenticated && meQuery.isLoading)) {
+    return <AnimatedSplash />;
   }
 
   if (!isAuthenticated) {
@@ -59,11 +73,7 @@ export default function RootNavigator() {
   }
 
   if (profileQuery.isLoading) {
-    return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
+    return <AnimatedSplash />;
   }
 
   // No page is reachable until the profile is genuinely complete: a real

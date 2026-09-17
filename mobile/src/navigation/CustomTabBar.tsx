@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View, StyleSheet } from "react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
@@ -29,6 +30,7 @@ const REAL_TAB_LABEL_KEYS: Record<string, string> = {
  * never lands on top of a real tab's icon/label/touch target. */
 export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [popupVisible, setPopupVisible] = useState(false);
   // Cached alongside every other screen's ["myProfile"] query — this never
   // triggers its own network request in the common case.
@@ -60,7 +62,7 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   }
 
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 10) }]}>
       <View style={styles.bar}>
         {state.routes.map((route, index) => {
           const focused = state.index === index;
@@ -113,8 +115,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -2 },
     elevation: 8,
   },
-  bar: { flexDirection: "row", height: 62, paddingTop: 6 },
-  tabButton: { flex: 1, alignItems: "center", justifyContent: "center", gap: 2 },
+  bar: { flexDirection: "row", height: 68, paddingTop: 10 },
+  tabButton: { flex: 1, alignItems: "center", justifyContent: "center", gap: 5 },
   iconBubble: { width: 34, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center", position: "relative" },
   badgeDot: {
     position: "absolute",
