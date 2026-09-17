@@ -46,11 +46,17 @@ function getAllCities(): CityEntry[] {
  * so it degrades gracefully for small towns not in the dataset. */
 export default function CityAutocomplete({ label, placeholder, value, onChange }: Props) {
   const [focused, setFocused] = useState(false);
-  const allCities = useMemo(() => getAllCities(), []);
 
+  // getAllCities() itself is only expensive on its first call ever (see its
+  // own comment) and caches after that — but calling it here, unconditionally
+  // on every mount, was blocking the JS thread on Edit Profile's *first*
+  // render whether or not Hometown was ever touched. Deferred inside this
+  // useMemo, behind the same query.length < 2 guard `suggestions` already
+  // had, so it only ever runs once the user actually starts typing.
   const suggestions = useMemo(() => {
     const query = value.trim().toLowerCase();
     if (query.length < 2) return [];
+    const allCities = getAllCities();
     const matches: CityEntry[] = [];
     for (const city of allCities) {
       if (city.searchText.startsWith(query)) {
@@ -59,7 +65,7 @@ export default function CityAutocomplete({ label, placeholder, value, onChange }
       }
     }
     return matches;
-  }, [value, allCities]);
+  }, [value]);
 
   return (
     <View>
