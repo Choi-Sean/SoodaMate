@@ -45,6 +45,7 @@
     "invalidEmail": "Introduce una dirección de correo electrónico válida",
     "emailInUse": "Esta dirección de correo ya está en uso",
     "photoLabel": "Foto de perfil",
+    "photoHint": "Puedes seleccionar hasta {{max}} fotos",
     "birthDate": "Fecha de nacimiento",
     "year": "Año",
     "month": "Mes",
@@ -62,6 +63,9 @@
     "validationMissing": "Ingresa tu nombre real y tu fecha de nacimiento",
     "needPhoto": "Añade al menos una foto",
     "needLocation": "Configura tu ubicación",
+    "categoriesRequired": "Selecciona al menos una categoría de conversación que te interese",
+    "preferredCategoriesLabel": "Categorías de conversación que te interesan",
+    "preferredCategoriesHint": "Elige los temas de los que te gustaría hablar en Blind Chat. Puedes cambiarlos luego en Editar perfil.",
     "raceEthnicity": "Raza/etnia (opcional)",
     "religion": "Religión (opcional)",
     "race": {
@@ -259,6 +263,12 @@
     "soodaListPromoTitle": "Descubre también SooDaList",
     "soodaListPromoBody": "Otra app del mismo equipo detrás de SooDaMate",
     "soodaListPromoCta": "Ver en la App Store",
+    "verificationBannerUnsubmitted": "Se requiere verificación de identidad para activar tu cuenta",
+    "verificationBannerPending": "Tu verificación de identidad está en revisión",
+    "verificationBannerRejected": "Tu verificación de identidad fue rechazada — ver el motivo",
+    "completenessBannerIncomplete": "Termina de completar tu perfil ({{percent}}% actual, se necesita {{min}}%+)",
+    "verificationApprovedTitle": "Verificación completa 🎉",
+    "verificationApprovedBody": "Tu cuenta ya está activa. ¡Comienza el Chat a Ciegas!",
     "purchaseSuccessTitle": "Compra completada 🎉",
     "purchaseSuperlikeSuccess": "Se añadieron {{count}} Super Likes.",
     "purchaseBoostSuccess": "Se añadieron {{count}} Boosts.",
@@ -321,7 +331,7 @@
   },
   "faceVerification": {
     "title": "Verificación facial",
-    "subtitle": "Tómate una selfie rápida para obtener una insignia verificada en tu perfil. Cada envío es revisado por una persona real.",
+    "subtitle": "La verificación de identidad es obligatoria para una comunidad más segura. Envía una selfie y una foto de tu identificación — una persona real revisa cada envío, y tu cuenta se activa cuando se aprueba.",
     "verifiedBanner": "Rostro verificado",
     "pendingBanner": "Tu selfie está en revisión — normalmente no tarda mucho.",
     "rejectedBanner": "Tu último envío no fue aprobado. Intenta de nuevo con una selfie clara y bien iluminada.",
@@ -341,8 +351,8 @@
     "takeIdPhoto": "Añadir foto de tu identificación",
     "submit": "Enviar para revisión",
     "resubmit": "Volver a enviar",
-    "cardTitle": "Verifícate",
-    "cardSubtitle": "Añade una insignia verificada con una selfie rápida"
+    "cardTitle": "Completa la verificación de identidad",
+    "cardSubtitle": "Es necesaria para activar tu cuenta y empezar el Chat a Ciegas"
   },
   "interests": {
     "hiking": "🥾 Senderismo",
@@ -426,7 +436,17 @@
     "deleteFailed": "No se pudo eliminar la cuenta",
     "tryAgainLater": "Inténtalo más tarde",
     "travelMode": "Modo viaje",
-    "verification": "Verificación laboral/escolar"
+    "verification": "Verificación laboral/escolar",
+    "contactUs": "Contacto / sugerencias",
+    "inquiryHint": "Envíanos una pregunta o sugerencia y nuestro equipo te responderá tras revisarla.",
+    "inquirySubjectLabel": "Asunto",
+    "inquirySubjectPlaceholder": "Escribe un asunto",
+    "inquiryMessageLabel": "Mensaje",
+    "inquiryMessagePlaceholder": "Cuéntanos más",
+    "inquirySubmit": "Enviar",
+    "inquiryMissingFields": "Completa el asunto y el mensaje",
+    "inquirySentTitle": "Tu mensaje fue enviado",
+    "inquirySentBody": "Lo revisaremos y te responderemos pronto."
   },
   "travel": {
     "title": "Modo viaje",
@@ -490,7 +510,10 @@
   "phoneAuth": {
     "subtitle": "Solo tu número de teléfono, nada más",
     "codeSubtitle": "Ingresa el código que te enviamos por SMS",
-    "invalidNumber": "Ingresa un número de teléfono válido"
+    "invalidNumber": "Ingresa un número de teléfono válido",
+    "codeExpiresIn": "El código vence en {{time}}",
+    "codeExpired": "Tu código ha vencido. Solicita uno nuevo.",
+    "resendCode": "Reenviar código"
   },
   "premiumFilters": {
     "title": "Filtros premium",
@@ -625,6 +648,12 @@
     "aiMatchButton": "Buscar con Match con IA",
     "aiMatchTitle": "Match con IA",
     "aiMatchNoneFound": "Nadie está esperando ahora mismo — inténtalo de nuevo en un rato. No se usó tu crédito.",
-    "aiMatchNoCredits": "Te quedaste sin créditos de Match con IA. Puedes comprar más en la tienda."
+    "aiMatchNoCredits": "Te quedaste sin créditos de Match con IA. Puedes comprar más en la tienda.",
+    "verificationRequiredTitle": "Verificación de identidad requerida",
+    "verificationRequiredBody": "Completa la verificación de identidad (selfie + identificación con foto) antes de iniciar el Chat a Ciegas.",
+    "verificationRequiredCta": "Verificar ahora",
+    "profileIncompleteTitle": "Termina de completar tu perfil",
+    "profileIncompleteBody": "Tu perfil debe estar al menos 70% completo antes de poder iniciar el Chat a Ciegas.",
+    "profileIncompleteCta": "Completar mi perfil"
   }
 }

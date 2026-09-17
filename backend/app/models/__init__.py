@@ -1,9 +1,11 @@
 from app.models.call import CallSession
 from app.models.device import PushToken
 from app.models.iap import PaymentTransaction
+from app.models.inquiry import ContactInquiry
 from app.models.interaction import Block, Match, Report, Swipe
 from app.models.message import Message
 from app.models.profile import Photo, Profile
+from app.models.promotion import Promotion
 from app.models.user import AuthProvider, User
 from app.models.verification import Verification
 
@@ -21,4 +23,6 @@ __all__ = [
     "CallSession",
     "Verification",
     "PaymentTransaction",
+    "ContactInquiry",
+    "Promotion",
 ]

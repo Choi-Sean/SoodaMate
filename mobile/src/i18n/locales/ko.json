@@ -45,6 +45,7 @@
     "invalidEmail": "올바른 이메일 주소를 입력해주세요",
     "emailInUse": "이미 사용 중인 이메일 주소예요",
     "photoLabel": "프로필 사진",
+    "photoHint": "최대 {{max}}장까지 선택할 수 있어요",
     "birthDate": "생년월일",
     "year": "년도",
     "month": "월",
@@ -62,6 +63,9 @@
     "validationMissing": "이름(실명)과 생년월일을 입력해주세요",
     "needPhoto": "사진을 최소 1장 추가해주세요",
     "needLocation": "위치 정보를 설정해주세요",
+    "categoriesRequired": "관심 있는 대화 카테고리를 1개 이상 선택해주세요",
+    "preferredCategoriesLabel": "관심 있는 대화 카테고리",
+    "preferredCategoriesHint": "블라인드 챗에서 어떤 주제로 대화하고 싶은지 선택해주세요. 나중에 프로필 수정에서 바꿀 수 있어요.",
     "raceEthnicity": "인종/민족 (선택)",
     "religion": "종교 (선택)",
     "race": {
@@ -259,6 +263,12 @@
     "soodaListPromoTitle": "수다리스트도 만나보세요",
     "soodaListPromoBody": "같은 팀이 만든 또 다른 앱, 수다리스트도 확인해보세요",
     "soodaListPromoCta": "앱스토어에서 보기",
+    "verificationBannerUnsubmitted": "계정 활성화를 위해 본인인증이 필요해요",
+    "verificationBannerPending": "본인인증을 검토 중이에요",
+    "verificationBannerRejected": "본인인증이 거절됐어요 — 사유 확인하기",
+    "completenessBannerIncomplete": "프로필을 더 채워주세요 (현재 {{percent}}%, {{min}}% 이상 필요해요)",
+    "verificationApprovedTitle": "본인인증 완료 🎉",
+    "verificationApprovedBody": "이제 계정이 활성화됐어요. 블라인드 채팅을 시작해보세요!",
     "purchaseSuccessTitle": "결제 완료 🎉",
     "purchaseSuperlikeSuccess": "슈퍼좋아요 {{count}}개가 추가됐어요.",
     "purchaseBoostSuccess": "부스트 {{count}}회가 추가됐어요.",
@@ -321,7 +331,7 @@
   },
   "faceVerification": {
     "title": "얼굴 인증",
-    "subtitle": "셀카 한 장이면 프로필에 인증 뱃지가 표시돼요. 모든 제출은 실제 관리자가 직접 검토해요.",
+    "subtitle": "안전한 만남을 위해 본인인증이 꼭 필요해요. 셀카와 신분증 사진을 제출하면 관리자가 직접 검토한 뒤 서비스를 이용하실 수 있어요.",
     "verifiedBanner": "얼굴 인증 완료",
     "pendingBanner": "제출한 셀카를 검토 중이에요 — 보통 오래 걸리지 않아요.",
     "rejectedBanner": "지난 제출이 승인되지 않았어요. 밝고 선명한 셀카로 다시 시도해주세요.",
@@ -341,8 +351,8 @@
     "takeIdPhoto": "신분증 사진 추가하기",
     "submit": "검토 요청하기",
     "resubmit": "다시 제출하기",
-    "cardTitle": "인증 뱃지 받기",
-    "cardSubtitle": "셀카 한 장으로 간단하게 인증 뱃지를 받아보세요"
+    "cardTitle": "본인인증 완료하기",
+    "cardSubtitle": "본인인증을 완료해야 블라인드 채팅을 시작할 수 있어요"
   },
   "interests": {
     "hiking": "🥾 등산",
@@ -426,7 +436,17 @@
     "deleteFailed": "계정을 삭제하지 못했어요",
     "tryAgainLater": "나중에 다시 시도해주세요",
     "travelMode": "여행 모드",
-    "verification": "재직/학교 인증"
+    "verification": "재직/학교 인증",
+    "contactUs": "문의 / 건의하기",
+    "inquiryHint": "궁금한 점이나 건의사항을 남겨주시면 운영팀이 확인 후 처리해드려요.",
+    "inquirySubjectLabel": "제목",
+    "inquirySubjectPlaceholder": "제목을 입력해주세요",
+    "inquiryMessageLabel": "내용",
+    "inquiryMessagePlaceholder": "내용을 자세히 적어주세요",
+    "inquirySubmit": "보내기",
+    "inquiryMissingFields": "제목과 내용을 모두 입력해주세요",
+    "inquirySentTitle": "문의가 접수되었어요",
+    "inquirySentBody": "빠른 시일 내에 확인 후 처리하겠습니다."
   },
   "travel": {
     "title": "여행 모드",
@@ -490,7 +510,10 @@
   "phoneAuth": {
     "subtitle": "전화번호만으로 간편하게 시작해요",
     "codeSubtitle": "문자로 받은 인증 코드를 입력해주세요",
-    "invalidNumber": "올바른 전화번호를 입력해주세요"
+    "invalidNumber": "올바른 전화번호를 입력해주세요",
+    "codeExpiresIn": "인증번호 유효시간: {{time}}",
+    "codeExpired": "인증번호가 만료됐어요. 다시 받아주세요.",
+    "resendCode": "인증번호 재전송"
   },
   "premiumFilters": {
     "title": "프리미엄 필터",
@@ -625,6 +648,12 @@
     "aiMatchButton": "AI 매칭으로 바로 찾기",
     "aiMatchTitle": "AI 매칭",
     "aiMatchNoneFound": "지금 대기 중인 상대가 없어요. 잠시 후 다시 시도해주세요 — 매칭권은 차감되지 않았어요.",
-    "aiMatchNoCredits": "AI 매칭권이 없어요. 상점에서 구매할 수 있어요."
+    "aiMatchNoCredits": "AI 매칭권이 없어요. 상점에서 구매할 수 있어요.",
+    "verificationRequiredTitle": "본인인증이 필요해요",
+    "verificationRequiredBody": "블라인드 채팅을 시작하려면 먼저 셀카와 신분증으로 본인인증을 완료해주세요.",
+    "verificationRequiredCta": "본인인증하러 가기",
+    "profileIncompleteTitle": "프로필을 더 채워주세요",
+    "profileIncompleteBody": "블라인드 채팅을 시작하려면 프로필을 70% 이상 완성해주세요.",
+    "profileIncompleteCta": "프로필 채우러 가기"
   }
 }

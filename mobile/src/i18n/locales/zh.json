@@ -45,6 +45,7 @@
     "invalidEmail": "请输入有效的邮箱地址",
     "emailInUse": "该邮箱地址已被使用",
     "photoLabel": "个人资料照片",
+    "photoHint": "最多可选择 {{max}} 张照片",
     "birthDate": "出生日期",
     "year": "年",
     "month": "月",
@@ -62,6 +63,9 @@
     "validationMissing": "请输入真实姓名和出生日期",
     "needPhoto": "请至少添加一张照片",
     "needLocation": "请设置你的位置",
+    "categoriesRequired": "请至少选择一个你感兴趣的聊天分类",
+    "preferredCategoriesLabel": "感兴趣的聊天分类",
+    "preferredCategoriesHint": "选择你想在盲聊中聊的话题，之后可以在编辑资料中修改。",
     "raceEthnicity": "种族/民族（可选）",
     "religion": "宗教信仰（可选）",
     "race": {
@@ -259,6 +263,12 @@
     "soodaListPromoTitle": "也来看看 SooDaList",
     "soodaListPromoBody": "同一团队打造的另一款应用",
     "soodaListPromoCta": "在应用商店查看",
+    "verificationBannerUnsubmitted": "需要完成身份认证才能激活账户",
+    "verificationBannerPending": "您的身份认证正在审核中",
+    "verificationBannerRejected": "您的身份认证被拒绝 — 查看原因",
+    "completenessBannerIncomplete": "请完善个人主页（当前{{percent}}%，需达到{{min}}%以上）",
+    "verificationApprovedTitle": "认证通过 🎉",
+    "verificationApprovedBody": "您的账户现已激活。快去开始盲聊吧！",
     "purchaseSuccessTitle": "购买完成 🎉",
     "purchaseSuperlikeSuccess": "已添加 {{count}} 个超级喜欢。",
     "purchaseBoostSuccess": "已添加 {{count}} 次曝光加速。",
@@ -321,7 +331,7 @@
   },
   "faceVerification": {
     "title": "人脸认证",
-    "subtitle": "拍一张自拍即可获得资料认证徽章，每份提交都会有真人审核。",
+    "subtitle": "为了更安全的社区，必须完成身份认证。请提交自拍和身份证件照片——每份提交都由真人审核，审核通过后账户才会激活。",
     "verifiedBanner": "人脸认证已通过",
     "pendingBanner": "你的自拍正在审核中 — 通常不会太久。",
     "rejectedBanner": "你上次的提交未通过审核，请用清晰、光线充足的自拍重新尝试。",
@@ -341,8 +351,8 @@
     "takeIdPhoto": "添加证件照片",
     "submit": "提交审核",
     "resubmit": "重新提交",
-    "cardTitle": "获取认证徽章",
-    "cardSubtitle": "拍一张自拍即可快速获得认证徽章"
+    "cardTitle": "完成身份认证",
+    "cardSubtitle": "需完成身份认证才能激活账户并开始盲聊"
   },
   "interests": {
     "hiking": "🥾 徒步",
@@ -426,7 +436,17 @@
     "deleteFailed": "账户删除失败",
     "tryAgainLater": "请稍后再试",
     "travelMode": "旅行模式",
-    "verification": "职场/学校认证"
+    "verification": "职场/学校认证",
+    "contactUs": "联系我们 / 建议",
+    "inquiryHint": "发送问题或建议，我们的团队会审核后回复。",
+    "inquirySubjectLabel": "主题",
+    "inquirySubjectPlaceholder": "请输入主题",
+    "inquiryMessageLabel": "内容",
+    "inquiryMessagePlaceholder": "请详细说明",
+    "inquirySubmit": "发送",
+    "inquiryMissingFields": "请填写主题和内容",
+    "inquirySentTitle": "您的留言已发送",
+    "inquirySentBody": "我们会尽快审核并回复。"
   },
   "travel": {
     "title": "旅行模式",
@@ -490,7 +510,10 @@
   "phoneAuth": {
     "subtitle": "只需手机号码，简单快捷",
     "codeSubtitle": "请输入收到的短信验证码",
-    "invalidNumber": "请输入正确的手机号码"
+    "invalidNumber": "请输入正确的手机号码",
+    "codeExpiresIn": "验证码有效时间：{{time}}",
+    "codeExpired": "验证码已过期，请重新获取。",
+    "resendCode": "重新发送验证码"
   },
   "premiumFilters": {
     "title": "高级筛选",
@@ -625,6 +648,12 @@
     "aiMatchButton": "用AI匹配立即寻找",
     "aiMatchTitle": "AI匹配",
     "aiMatchNoneFound": "目前没有等待中的对象，请稍后再试 — 匹配权未被扣除。",
-    "aiMatchNoCredits": "AI匹配权已用完，可在商店购买。"
+    "aiMatchNoCredits": "AI匹配权已用完，可在商店购买。",
+    "verificationRequiredTitle": "需要身份认证",
+    "verificationRequiredBody": "开始盲聊前，请先完成身份认证（自拍+身份证件照片）。",
+    "verificationRequiredCta": "立即认证",
+    "profileIncompleteTitle": "请完善你的个人主页",
+    "profileIncompleteBody": "开始盲聊前，个人主页完成度需达到70%以上。",
+    "profileIncompleteCta": "去完善主页"
   }
 }

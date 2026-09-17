@@ -29,3 +29,16 @@ export function calculateProfileCompleteness(profile: Profile): number {
   const filled = checks.filter(Boolean).length;
   return Math.round((filled / checks.length) * 100);
 }
+
+// An account only goes "active" (can use Blind Chat — see CustomTabBar,
+// BlindChatQueueScreen, MyProfileScreen) once ID+selfie verification is
+// approved *and* the profile itself is filled in enough to be worth
+// matching on. face_verified is already one of the checks above, so a
+// verified account is never more than one unfilled field away from this
+// bar — the two conditions rarely disagree in practice, but are still
+// checked independently since they mean different things.
+export const MIN_COMPLETENESS_FOR_ACTIVE = 70;
+
+export function isAccountActive(profile: Profile): boolean {
+  return profile.face_verified && calculateProfileCompleteness(profile) >= MIN_COMPLETENESS_FOR_ACTIVE;
+}

@@ -24,3 +24,17 @@ export function openShop(queryClient: QueryClient): void {
   }
   openExternalUrl(`${env.marketingSiteUrl}/shop.html?token=${encodeURIComponent(token)}`);
 }
+
+/** Same shop page, but scrolled to and highlighting one product — used by a
+ * "promo" push notification tap (navigationRef.ts). No queryClient/purchase-
+ * watch snapshot here (unlike openShop() above): this fires from outside
+ * the component tree, before any screen with a queryClient is necessarily
+ * mounted. If the viewer isn't logged in, `token` is just empty and
+ * shop.html's own authError message covers it — same as opening the shop
+ * any other way while logged out. */
+export function openShopForProduct(productId: string): void {
+  const token = useAuthStore.getState().accessToken ?? "";
+  openExternalUrl(
+    `${env.marketingSiteUrl}/shop.html?token=${encodeURIComponent(token)}&highlight=${encodeURIComponent(productId)}`
+  );
+}

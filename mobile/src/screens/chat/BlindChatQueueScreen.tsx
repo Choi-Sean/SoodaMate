@@ -14,12 +14,14 @@ import {
   requestAiMatch,
 } from "../../api/blindChat";
 import { getMatches } from "../../api/matches";
+import { getMyProfile } from "../../api/profiles";
 import { BLIND_CHAT_CATEGORY_KEYS } from "../../constants/blindChatCategories";
 import ChipSelect from "../../components/ChipSelect";
 import MultiChipSelect from "../../components/MultiChipSelect";
 import RangeSlider from "../../components/RangeSlider";
 import SingleSlider from "../../components/SingleSlider";
 import { showAlert } from "../../utils/alert";
+import { calculateProfileCompleteness, MIN_COMPLETENESS_FOR_ACTIVE } from "../../utils/profileCompleteness";
 import { formatDistanceKm } from "../../utils/units";
 import type { ChatStackParamList } from "../../navigation/ChatStack";
 import { colors } from "../../theme";
@@ -63,7 +65,22 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
   const [starting, setStarting] = useState(false);
   const [aiMatching, setAiMatching] = useState(false);
 
+  const { data: profile } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
   const { data: limit } = useQuery({ queryKey: ["blindChatLimit"], queryFn: getBlindChatLimit });
+
+  // Preselect the categories chosen at signup (or last saved on Edit
+  // Profile) so a returning user doesn't have to re-pick every time — but
+  // only when nothing more specific was passed in (the popup's own
+  // one-category tap, via route.params.initialCategories) and the user
+  // hasn't already touched the picker on this screen.
+  useEffect(() => {
+    if (route.params?.initialCategories) return;
+    if (selected.length > 0) return;
+    if (profile?.preferred_categories && profile.preferred_categories.length > 0) {
+      setSelected(profile.preferred_categories);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile]);
 
   const { data: status } = useQuery({
     queryKey: ["blindChatQueue"],
@@ -104,8 +121,37 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
     return e?.response?.data?.detail ?? e?.message ?? "";
   }
 
+  // Defense-in-depth — CustomTabBar's center button already blocks getting
+  // here at all when unverified, but this screen is also reachable directly
+  // (e.g. a deep link), so the actual "interact with other profiles" calls
+  // below re-check rather than trusting how the screen was reached.
+  function requireVerified(): boolean {
+    if (profile == null) return true;
+    if (!profile.face_verified) {
+      showAlert(t("blindChat.verificationRequiredTitle"), t("blindChat.verificationRequiredBody"), [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("blindChat.verificationRequiredCta"),
+          onPress: () => navigation.getParent()?.navigate("Profile", { screen: "FaceVerification" } as never),
+        },
+      ]);
+      return false;
+    }
+    if (calculateProfileCompleteness(profile) < MIN_COMPLETENESS_FOR_ACTIVE) {
+      showAlert(t("blindChat.profileIncompleteTitle"), t("blindChat.profileIncompleteBody"), [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("blindChat.profileIncompleteCta"),
+          onPress: () => navigation.getParent()?.navigate("Profile", { screen: "EditProfile" } as never),
+        },
+      ]);
+      return false;
+    }
+    return true;
+  }
+
   async function handleStart() {
-    if (selected.length === 0) return;
+    if (selected.length === 0 || !requireVerified()) return;
     setStarting(true);
     try {
       const result = await joinBlindChatQueue(selected, currentFilters());
@@ -122,7 +168,7 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
   }
 
   async function handleAiMatch() {
-    if (selected.length === 0) return;
+    if (selected.length === 0 || !requireVerified()) return;
     // ai_match_credits are checked server-side (402 -> a "buy credits"
     // prompt below) — this screen doesn't fetch the payments balance just
     // to gate the button locally.

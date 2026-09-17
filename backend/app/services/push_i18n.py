@@ -33,6 +33,8 @@ _STRINGS: dict[str, dict[str, str]] = {
         "blind_reveal_requested_body": "Open the chat to accept or keep talking anonymously.",
         "blind_reveal_accepted_title": "Profiles revealed! 🎉",
         "blind_reveal_accepted_body": "You can now see each other's profile.",
+        "promo_title": "🎉 {discount}% off {product}!",
+        "promo_body": "Limited-time discount — tap to grab it before it's gone.",
     },
     "ko": {
         "match_title": "매칭 성사! 🎉",
@@ -56,10 +58,13 @@ _STRINGS: dict[str, dict[str, str]] = {
         "blind_reveal_requested_body": "채팅방에서 수락하거나 계속 익명으로 대화해보세요.",
         "blind_reveal_accepted_title": "프로필이 공개됐어요! 🎉",
         "blind_reveal_accepted_body": "이제 서로의 프로필을 볼 수 있어요.",
+        "promo_title": "🎉 {product} {discount}% 할인!",
+        "promo_body": "지금 한정 할인 중이에요 — 놓치지 마세요.",
     },
 }
 
 
-def t(lang: str | None, key: str) -> str:
+def t(lang: str | None, key: str, **kwargs: object) -> str:
     resolved = lang if lang in _STRINGS else "en"
-    return _STRINGS[resolved].get(key, _STRINGS["en"][key])
+    template = _STRINGS[resolved].get(key, _STRINGS["en"][key])
+    return template.format(**kwargs) if kwargs else template

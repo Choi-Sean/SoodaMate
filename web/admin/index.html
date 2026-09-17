@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard — SooDaMate</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/assets/favicon.png" type="image/png" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    body { background: var(--cream); }
+    .admin-shell { max-width: 1120px; margin: 0 auto; padding: 32px 24px 96px; }
+    .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .admin-header h1 { font-size: 22px; font-weight: 900; color: var(--navy); }
+    .admin-header a { font-size: 13px; color: var(--muted); text-decoration: none; }
+    .logout-btn { border: 1px solid var(--border); background: var(--white); border-radius: 999px; padding: 6px 14px; font-size: 12.5px; font-weight: 700; color: var(--muted); cursor: pointer; }
+
+    #loginBox { max-width: 360px; margin: 80px auto; }
+    #loginBox input {
+      width: 100%; box-sizing: border-box; padding: 12px 14px; margin-bottom: 10px;
+      border: 1px solid var(--border); border-radius: 10px; font-size: 15px;
+    }
+    #loginBox button {
+      width: 100%; background: var(--navy); color: #fff; font-weight: 700; font-size: 15px;
+      border: none; border-radius: 10px; padding: 12px; cursor: pointer;
+    }
+    #loginError { color: #B3261E; font-size: 13px; margin-top: 8px; display: none; }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab-btn {
+      position: relative;
+      border: 1px solid var(--border); background: var(--white); border-radius: 999px;
+      padding: 8px 18px; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer;
+    }
+    .tab-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .tab-dot {
+      position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; border-radius: 50%;
+      background: var(--heart); border: 2px solid var(--cream);
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .stat-card { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; }
+    .stat-card .label { font-size: 11.5px; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
+    .stat-card .value { font-size: 22px; font-weight: 900; color: var(--navy); }
+    .stat-card .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .chart-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin-bottom: 24px; }
+    .chart-card h3 { font-size: 14px; font-weight: 800; color: var(--navy); margin-bottom: 12px; }
+    .chart-card canvas { max-height: 260px; }
+
+    .filter-row { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+    .filter-chip {
+      border: 1px solid var(--border); background: var(--white); border-radius: 999px;
+      padding: 6px 14px; font-size: 12.5px; font-weight: 700; color: var(--muted); cursor: pointer;
+    }
+    .filter-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    table.data-table { width: 100%; border-collapse: collapse; background: var(--white); border-radius: 14px; overflow: hidden; border: 1px solid var(--border); }
+    table.data-table th { text-align: left; font-size: 11.5px; color: var(--muted); text-transform: uppercase; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    table.data-table td { padding: 12px 14px; font-size: 13.5px; color: var(--ink); border-bottom: 1px solid var(--border); }
+    table.data-table tr.data-row { cursor: pointer; }
+    table.data-table tr.data-row:hover { background: var(--cream); }
+    .pill { display: inline-block; font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 2px 9px; }
+    .pill-open, .pill-new { background: #FBEAE9; color: #B3261E; }
+    .pill-warned, .pill-read { background: #FDF2E1; color: var(--accent-dark); }
+    .pill-banned { background: #2b2118; color: #fff; }
+    .pill-dismissed, .pill-resolved { background: var(--sage-soft); color: #1E7A34; }
+    .empty { color: var(--muted); padding: 40px 0; text-align: center; }
+
+    .detail-backdrop { position: fixed; inset: 0; background: rgba(11,41,68,0.55); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 50; }
+    .detail-backdrop.open { display: flex; }
+    .detail-card { background: var(--white); border-radius: 18px; max-width: 640px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 22px; }
+    .detail-card h2 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+    .detail-card .meta { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+    .detail-card textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: 10px; padding: 10px; font-size: 13px; font-family: inherit; min-height: 60px; margin-top: 10px; }
+    .detail-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .detail-actions button { flex: 1; border: none; border-radius: 10px; padding: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .btn-warn { background: var(--accent); color: #fff; }
+    .btn-ban { background: #B3261E; color: #fff; }
+    .btn-dismiss, .btn-close { background: var(--cream-deep); color: var(--muted); }
+    .btn-resolve { background: var(--sage); color: #fff; }
+
+    .promo-form { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .promo-form select, .promo-form input {
+      border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; font-family: inherit;
+    }
+    .promo-form select { flex: 2; min-width: 200px; }
+    .promo-form input { width: 110px; }
+    .promo-start-btn { background: var(--heart); color: #fff; border: none; border-radius: 10px; padding: 10px 18px; font-weight: 700; font-size: 13.5px; cursor: pointer; }
+    .promo-hint { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+    .promo-deactivate-btn { border: 1px solid var(--border); background: var(--white); border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; }
+    .thread { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; max-height: 320px; overflow-y: auto; padding: 10px; background: var(--cream); border-radius: 12px; }
+    .msg { max-width: 78%; padding: 8px 12px; border-radius: 12px; font-size: 13px; background: var(--white); border: 1px solid var(--border); }
+    .msg .who { font-size: 10.5px; font-weight: 700; color: var(--muted); margin-bottom: 2px; }
+    .msg img { max-width: 160px; border-radius: 8px; display: block; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div id="loginBox">
+    <h1 style="font-size:20px;font-weight:900;color:var(--navy);margin-bottom:16px;">Admin sign in</h1>
+    <input id="loginEmail" type="email" placeholder="Email" autocomplete="username" />
+    <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
+    <button id="loginBtn">Sign in</button>
+    <p id="loginError">Sign-in failed or this account isn't an admin.</p>
+  </div>
+
+  <div class="admin-shell" id="mainView" style="display:none">
+    <div class="admin-header">
+      <h1>SooDaMate Admin</h1>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <a href="/verify.html">본인인증 심사 →</a>
+        <button class="logout-btn" id="logoutBtn">로그아웃</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-panel="dashboard">대시보드</button>
+      <button class="tab-btn" data-panel="reports">신고 관리<span class="tab-dot" id="reportsDot" style="display:none"></span></button>
+      <button class="tab-btn" data-panel="inquiries">문의함<span class="tab-dot" id="inquiriesDot" style="display:none"></span></button>
+      <button class="tab-btn" data-panel="promotions">프로모션</button>
+    </div>
+
+    <div class="panel active" id="panel-dashboard">
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="chart-card">
+        <h3>최근 30일 신규 가입자</h3>
+        <canvas id="signupChart"></canvas>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-reports">
+      <div class="filter-row" id="reportFilters">
+        <button class="filter-chip active" data-status="open">열림</button>
+        <button class="filter-chip" data-status="warned">경고됨</button>
+        <button class="filter-chip" data-status="banned">정지됨</button>
+        <button class="filter-chip" data-status="dismissed">기각됨</button>
+        <button class="filter-chip" data-status="all">전체</button>
+      </div>
+      <table class="data-table" id="reportsTable">
+        <thead><tr><th>신고자</th><th>대상</th><th>사유</th><th>일시</th><th>상태</th></tr></thead>
+        <tbody id="reportsBody"></tbody>
+      </table>
+      <p class="empty" id="reportsEmpty" style="display:none">해당 상태의 신고가 없어요.</p>
+    </div>
+
+    <div class="panel" id="panel-inquiries">
+      <div class="filter-row" id="inquiryFilters">
+        <button class="filter-chip active" data-status="new">신규</button>
+        <button class="filter-chip" data-status="read">읽음</button>
+        <button class="filter-chip" data-status="resolved">처리완료</button>
+        <button class="filter-chip" data-status="all">전체</button>
+      </div>
+      <table class="data-table" id="inquiriesTable">
+        <thead><tr><th>작성자</th><th>제목</th><th>일시</th><th>상태</th></tr></thead>
+        <tbody id="inquiriesBody"></tbody>
+      </table>
+      <p class="empty" id="inquiriesEmpty" style="display:none">해당 상태의 문의가 없어요.</p>
+    </div>
+
+    <div class="panel" id="panel-promotions">
+      <div class="promo-form">
+        <select id="promoProduct"></select>
+        <input id="promoDiscount" type="number" min="1" max="95" placeholder="할인율 %" />
+        <button class="promo-start-btn" id="promoStartBtn">할인 시작 (푸시 발송)</button>
+      </div>
+      <p class="promo-hint">할인을 시작하면 등록된 모든 사용자에게 즉시 푸시 알림이 발송돼요. 탭하면 결제 페이지로 바로 이동합니다.</p>
+      <table class="data-table" id="promotionsTable">
+        <thead><tr><th>상품</th><th>할인율</th><th>상태</th><th>시작일</th><th></th></tr></thead>
+        <tbody id="promotionsBody"></tbody>
+      </table>
+      <p class="empty" id="promotionsEmpty" style="display:none">등록된 프로모션이 없어요.</p>
+    </div>
+  </div>
+
+  <div class="detail-backdrop" id="reportDetailBackdrop">
+    <div class="detail-card">
+      <h2 id="reportDetailTitle"></h2>
+      <p class="meta" id="reportDetailMeta"></p>
+      <p id="reportDetailText"></p>
+      <div class="thread" id="reportThread"></div>
+      <div class="detail-actions">
+        <button class="btn-warn" data-action="warn">경고</button>
+        <button class="btn-ban" data-action="ban">영구정지</button>
+        <button class="btn-dismiss" data-action="dismiss">기각</button>
+        <button class="btn-close" data-action="close">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-backdrop" id="inquiryDetailBackdrop">
+    <div class="detail-card">
+      <h2 id="inquiryDetailTitle"></h2>
+      <p class="meta" id="inquiryDetailMeta"></p>
+      <p id="inquiryDetailText" style="white-space:pre-wrap;"></p>
+      <textarea id="inquiryAdminNote" placeholder="처리 메모 (선택)"></textarea>
+      <div class="detail-actions">
+        <button class="btn-resolve" data-action="resolve">해결 처리</button>
+        <button class="btn-close" data-action="close">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL =
+      window.SUDA_API_BASE_URL ||
+      (location.hostname === "localhost" || location.hostname === "127.0.0.1"
+        ? "http://localhost:8001"
+        : "https://soodamate-production.up.railway.app");
+
+    // Shared with verify.html — same-origin sessionStorage means signing in
+    // on either admin page carries over to the other in the same tab.
+    let token = sessionStorage.getItem("sooda_admin_token");
+
+    const loginBox = document.getElementById("loginBox");
+    const mainView = document.getElementById("mainView");
+    const loginError = document.getElementById("loginError");
+
+    function showMain() {
+      loginBox.style.display = "none";
+      mainView.style.display = "block";
+      loadDashboard();
+      loadReports();
+      loadInquiries();
+      loadPromotions();
+    }
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      loginError.style.display = "none";
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+      try {
+        const resp = await fetch(`${API_BASE_URL}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        if (!resp.ok) throw new Error("login failed");
+        const data = await resp.json();
+        const check = await fetch(`${API_BASE_URL}/admin/stats`, {
+          headers: { Authorization: `Bearer ${data.access_token}` },
+        });
+        if (!check.ok) throw new Error("not an admin");
+        token = data.access_token;
+        sessionStorage.setItem("sooda_admin_token", token);
+        showMain();
+      } catch (e) {
+        loginError.style.display = "block";
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      sessionStorage.removeItem("sooda_admin_token");
+      location.reload();
+    });
+
+    function authedFetch(path, options) {
+      return fetch(`${API_BASE_URL}${path}`, {
+        ...options,
+        headers: { Authorization: `Bearer ${token}`, ...(options && options.headers) },
+      }).then((resp) => {
+        if (resp.status === 401 || resp.status === 403) {
+          sessionStorage.removeItem("sooda_admin_token");
+          location.reload();
+          throw new Error("unauthorized");
+        }
+        return resp;
+      });
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str == null ? "" : str;
+      return div.innerHTML;
+    }
+
+    function fmtDate(iso) {
+      return new Date(iso).toLocaleString("ko-KR");
+    }
+
+    // --- Tabs -----------------------------------------------------------
+
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(`panel-${btn.dataset.panel}`).classList.add("active");
+      });
+    });
+
+    // --- Dashboard --------------------------------------------------------
+
+    let signupChart = null;
+
+    async function loadDashboard() {
+      const resp = await authedFetch("/admin/stats");
+      if (!resp.ok) return;
+      const s = await resp.json();
+
+      document.getElementById("reportsDot").style.display = s.open_reports > 0 ? "block" : "none";
+      document.getElementById("inquiriesDot").style.display = s.new_inquiries > 0 ? "block" : "none";
+
+      const tiles = [
+        { label: "전체 유저", value: s.total_users },
+        { label: "오늘 신규가입", value: s.new_users_today },
+        { label: "7일 신규가입", value: s.new_users_7d },
+        { label: "30일 신규가입", value: s.new_users_30d },
+        { label: "오픈 신고", value: s.open_reports, sub: `전체 ${s.total_reports}건` },
+        { label: "정지된 유저", value: s.banned_users },
+        { label: "대기중 본인인증", value: s.pending_face_verifications },
+        { label: "신규 문의", value: s.new_inquiries },
+        { label: "활성 매칭", value: s.active_matches, sub: `전체 ${s.total_matches}건` },
+        { label: "오늘 메시지", value: s.messages_today, sub: `전체 ${s.total_messages}건` },
+        { label: "프리미엄 유저", value: s.premium_users },
+        { label: "30일 매출", value: `$${(s.total_revenue_cents_30d / 100).toFixed(2)}` },
+      ];
+      document.getElementById("statGrid").innerHTML = tiles
+        .map(
+          (t) => `<div class="stat-card"><div class="label">${t.label}</div><div class="value">${t.value}</div>${
+            t.sub ? `<div class="sub">${t.sub}</div>` : ""
+          }</div>`
+        )
+        .join("");
+
+      if (window.Chart) {
+        const ctx = document.getElementById("signupChart").getContext("2d");
+        const labels = s.signups_by_day.map((d) => d.day.slice(5));
+        const counts = s.signups_by_day.map((d) => d.count);
+        if (signupChart) signupChart.destroy();
+        signupChart = new Chart(ctx, {
+          type: "bar",
+          data: { labels, datasets: [{ label: "신규 가입", data: counts, backgroundColor: "#e2914d" }] },
+          options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
+        });
+      }
+    }
+
+    // --- Reports ------------------------------------------------------
+
+    let reportStatus = "open";
+    let currentReport = null;
+
+    document.querySelectorAll("#reportFilters .filter-chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#reportFilters .filter-chip").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        reportStatus = btn.dataset.status;
+        loadReports();
+      });
+    });
+
+    async function loadReports() {
+      const resp = await authedFetch(`/admin/reports?status=${reportStatus}`);
+      if (!resp.ok) return;
+      const items = await resp.json();
+      const body = document.getElementById("reportsBody");
+      document.getElementById("reportsEmpty").style.display = items.length === 0 ? "block" : "none";
+      body.innerHTML = items
+        .map(
+          (r) => `<tr class="data-row" data-id="${r.id}">
+            <td>${escapeHtml(r.reporter_name || "(?)")}</td>
+            <td>${escapeHtml(r.reported_name || "(?)")}</td>
+            <td>${escapeHtml(r.reason)}</td>
+            <td>${fmtDate(r.created_at)}</td>
+            <td><span class="pill pill-${r.status}">${r.status}</span></td>
+          </tr>`
+        )
+        .join("");
+      body.querySelectorAll("tr").forEach((row) => {
+        row.addEventListener("click", () => openReportDetail(items.find((i) => i.id === row.dataset.id)));
+      });
+    }
+
+    async function openReportDetail(report) {
+      currentReport = report;
+      document.getElementById("reportDetailTitle").textContent = `${report.reporter_name || "?"} → ${report.reported_name || "?"}`;
+      document.getElementById("reportDetailMeta").textContent = `${report.reason} · ${fmtDate(report.created_at)} · ${report.status}`;
+      document.getElementById("reportDetailText").textContent = report.detail || "(추가 설명 없음)";
+      const thread = document.getElementById("reportThread");
+      thread.innerHTML = "불러오는 중...";
+      document.getElementById("reportDetailBackdrop").classList.add("open");
+
+      const resp = await authedFetch(`/admin/reports/${report.id}/conversation`);
+      const messages = resp.ok ? await resp.json() : [];
+      thread.innerHTML = messages.length
+        ? messages
+            .map(
+              (m) => `<div class="msg"><div class="who">${escapeHtml(m.sender_name || "?")} · ${fmtDate(m.sent_at)}</div>${
+                m.message_type === "image" && m.image_url
+                  ? `<img src="${m.image_url}" alt="" onerror="this.style.display='none'" />`
+                  : escapeHtml(m.content)
+              }</div>`
+            )
+            .join("")
+        : `<p class="empty">두 사람 사이에 대화 기록이 없어요.</p>`;
+    }
+
+    document.querySelectorAll("#reportDetailBackdrop [data-action]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const action = btn.dataset.action;
+        if (action === "close") {
+          document.getElementById("reportDetailBackdrop").classList.remove("open");
+          return;
+        }
+        if (!currentReport) return;
+        if (action === "ban" && !confirm("정말 이 사용자를 영구 정지할까요?")) return;
+        await authedFetch(`/admin/reports/${currentReport.id}/action`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action }),
+        });
+        document.getElementById("reportDetailBackdrop").classList.remove("open");
+        loadReports();
+        loadDashboard();
+      });
+    });
+
+    // --- Inquiries ------------------------------------------------------
+
+    let inquiryStatus = "new";
+    let currentInquiry = null;
+
+    document.querySelectorAll("#inquiryFilters .filter-chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#inquiryFilters .filter-chip").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        inquiryStatus = btn.dataset.status;
+        loadInquiries();
+      });
+    });
+
+    async function loadInquiries() {
+      const resp = await authedFetch(`/admin/inquiries?status=${inquiryStatus}`);
+      if (!resp.ok) return;
+      const items = await resp.json();
+      const body = document.getElementById("inquiriesBody");
+      document.getElementById("inquiriesEmpty").style.display = items.length === 0 ? "block" : "none";
+      body.innerHTML = items
+        .map(
+          (i) => `<tr class="data-row" data-id="${i.id}">
+            <td>${escapeHtml(i.user_name || "(?)")}</td>
+            <td>${escapeHtml(i.subject)}</td>
+            <td>${fmtDate(i.created_at)}</td>
+            <td><span class="pill pill-${i.status}">${i.status}</span></td>
+          </tr>`
+        )
+        .join("");
+      body.querySelectorAll("tr").forEach((row) => {
+        row.addEventListener("click", () => openInquiryDetail(items.find((x) => x.id === row.dataset.id)));
+      });
+    }
+
+    async function openInquiryDetail(inquiry) {
+      currentInquiry = inquiry;
+      document.getElementById("inquiryDetailTitle").textContent = `${inquiry.user_name || "?"} — ${inquiry.subject}`;
+      document.getElementById("inquiryDetailMeta").textContent = `${fmtDate(inquiry.created_at)} · ${inquiry.status}`;
+      document.getElementById("inquiryDetailText").textContent = inquiry.message;
+      document.getElementById("inquiryAdminNote").value = inquiry.admin_note || "";
+      document.getElementById("inquiryDetailBackdrop").classList.add("open");
+
+      if (inquiry.status === "new") {
+        await authedFetch(`/admin/inquiries/${inquiry.id}/read`, { method: "POST" });
+        loadInquiries();
+        loadDashboard();
+      }
+    }
+
+    document.querySelectorAll("#inquiryDetailBackdrop [data-action]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const action = btn.dataset.action;
+        if (action === "close") {
+          document.getElementById("inquiryDetailBackdrop").classList.remove("open");
+          return;
+        }
+        if (!currentInquiry) return;
+        const note = document.getElementById("inquiryAdminNote").value.trim();
+        await authedFetch(`/admin/inquiries/${currentInquiry.id}/resolve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ admin_note: note || null }),
+        });
+        document.getElementById("inquiryDetailBackdrop").classList.remove("open");
+        loadInquiries();
+        loadDashboard();
+      });
+    });
+
+    // --- Promotions -----------------------------------------------------
+
+    let promoProducts = [];
+
+    async function loadPromotions() {
+      if (promoProducts.length === 0) {
+        const productsResp = await authedFetch("/payments/products");
+        if (productsResp.ok) {
+          promoProducts = await productsResp.json();
+          document.getElementById("promoProduct").innerHTML = promoProducts
+            .map((p) => `<option value="${p.product_id}">${escapeHtml(p.name)} — $${(p.price_usd_cents / 100).toFixed(2)}</option>`)
+            .join("");
+        }
+      }
+
+      const resp = await authedFetch("/admin/promotions");
+      if (!resp.ok) return;
+      const items = await resp.json();
+      const body = document.getElementById("promotionsBody");
+      document.getElementById("promotionsEmpty").style.display = items.length === 0 ? "block" : "none";
+      body.innerHTML = items
+        .map(
+          (p) => `<tr>
+            <td>${escapeHtml(p.product_name || p.product_id)}</td>
+            <td>-${p.discount_percent}%</td>
+            <td><span class="pill ${p.is_active ? "pill-open" : "pill-resolved"}">${p.is_active ? "진행중" : "종료"}</span></td>
+            <td>${fmtDate(p.created_at)}</td>
+            <td>${p.is_active ? `<button class="promo-deactivate-btn" data-id="${p.id}">중지</button>` : ""}</td>
+          </tr>`
+        )
+        .join("");
+      body.querySelectorAll(".promo-deactivate-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          btn.disabled = true;
+          await authedFetch(`/admin/promotions/${btn.dataset.id}/deactivate`, { method: "POST" });
+          loadPromotions();
+        });
+      });
+    }
+
+    document.getElementById("promoStartBtn").addEventListener("click", async () => {
+      const productId = document.getElementById("promoProduct").value;
+      const discount = parseInt(document.getElementById("promoDiscount").value, 10);
+      if (!productId || !discount || discount < 1 || discount > 95) {
+        alert("상품과 1~95 사이의 할인율을 입력해주세요.");
+        return;
+      }
+      if (!confirm(`${productId} 상품을 ${discount}% 할인하고 전체 사용자에게 푸시 알림을 보낼까요?`)) return;
+      const btn = document.getElementById("promoStartBtn");
+      btn.disabled = true;
+      try {
+        const resp = await authedFetch("/admin/promotions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: productId, discount_percent: discount }),
+        });
+        if (!resp.ok) throw new Error("failed");
+        document.getElementById("promoDiscount").value = "";
+        loadPromotions();
+      } catch (e) {
+        alert("프로모션 생성에 실패했어요.");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // Run last, after every `let`/const state variable above has been
+    // declared — showMain() -> loadReports()/loadInquiries()/loadPromotions()
+    // reference reportStatus/inquiryStatus/promoProducts etc, which are
+    // still in their temporal dead zone if this runs any earlier (it did,
+    // originally, right after `token` was read — broke every reload with an
+    // existing sessionStorage session, though never the *first* login since
+    // that path only calls showMain() from an async click handler that
+    // fires well after the whole script has finished executing once).
+    if (token) showMain();
+  </script>
+</body>
+</html>

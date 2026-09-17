@@ -164,6 +164,33 @@ async def send_blind_reveal_accepted_notification(db: AsyncSession, user_id: uui
     )
 
 
+async def send_promo_broadcast_notification(db: AsyncSession, product_id: str, discount_percent: int) -> None:
+    """Sent to every device with a registered token when an admin activates
+    a Promotion (routers/admin.py) — not scoped to a single user like every
+    other send_*_notification above, since a discount is store-wide. Loops
+    per-user (not a single FCM multicast) so each person still gets the
+    title/body AND the product name itself in their own preferred_language
+    (push_i18n only hand-translates en/ko — see its own docstring — so
+    anyone else falls back to English, same as every other push)."""
+    from app.services.payment_service import PRODUCTS, _localized_product_name
+
+    product = PRODUCTS.get(product_id)
+    if product is None:
+        return
+
+    user_ids = (await db.execute(select(PushToken.user_id).distinct())).scalars().all()
+    for user_id in user_ids:
+        lang = await _get_language(db, user_id)
+        product_name = _localized_product_name(product_id, product, lang if lang in ("ko", "en") else "en")
+        await send_to_user(
+            db,
+            user_id,
+            push_i18n.t(lang, "promo_title", product=product_name, discount=discount_percent),
+            push_i18n.t(lang, "promo_body"),
+            {"type": "promo", "product_id": product_id, "discount_percent": discount_percent},
+        )
+
+
 async def send_verification_result_notification(db: AsyncSession, user_id: uuid.UUID, approved: bool) -> None:
     lang = await _get_language(db, user_id)
     key_prefix = "verification_approved" if approved else "verification_rejected"

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ActivityIndicator, Image, Pressable, ScrollView, Switch, Text, TextInput, View, StyleSheet } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
 import { updateEmail } from "../../api/account";
@@ -26,6 +27,7 @@ import {
 import { EDUCATION_KEYS } from "../../constants/educationLevels";
 import { INTEREST_KEYS, LANGUAGE_KEYS } from "../../constants/interestsAndLanguages";
 import { K_CONTENT_KEYS } from "../../constants/kContentTags";
+import { BLIND_CHAT_CATEGORY_KEYS } from "../../constants/blindChatCategories";
 import type { Gender, InterestedIn } from "../../types";
 import { colors } from "../../theme";
 
@@ -33,6 +35,7 @@ const GENDERS: Gender[] = ["male", "female", "other"];
 const INTERESTS: InterestedIn[] = ["male", "female", "all"];
 const MAX_INTERESTS = 5;
 const MAX_K_CONTENT_TAGS = 6;
+const MAX_PHOTOS = 6;
 
 // Format check only — this email is collected for marketing outreach, never
 // verified, so we just need to reject obvious typos before hitting the API.
@@ -59,6 +62,20 @@ const DAY_OPTIONS: DropdownOption[] = Array.from({ length: 31 }, (_, i) => {
   return { key: day, label: day };
 });
 
+// Which fields currently have a validation problem — drives the red
+// highlight on each field in addition to the text error list, since a long
+// form makes "which of these six things is wrong" hard to spot from text
+// alone.
+interface FieldErrors {
+  photo?: boolean;
+  name?: boolean;
+  email?: boolean;
+  birthDate?: boolean;
+  bio?: boolean;
+  location?: boolean;
+  categories?: boolean;
+}
+
 interface Props {
   onComplete: () => void;
 }
@@ -73,7 +90,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   const [gender, setGender] = useState<Gender>("male");
   const [interestedIn, setInterestedIn] = useState<InterestedIn>("female");
   const [openToLanguageExchange, setOpenToLanguageExchange] = useState(false);
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [photoUris, setPhotoUris] = useState<string[]>([]);
   const [locationLat, setLocationLat] = useState<number | null>(null);
   const [locationLng, setLocationLng] = useState<number | null>(null);
 
@@ -96,51 +113,103 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   const [interests, setInterests] = useState<string[]>([]);
   const [kContentTags, setKContentTags] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
+  const [preferredCategories, setPreferredCategories] = useState<string[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   // Derived, never stored directly — always rebuilt from the three dropdowns
   // so there's a single source of truth (same convention as the phone-number
   // formatting on PhoneAuthScreen).
   const birthDate = birthYear && birthMonth && birthDay ? `${birthYear}-${birthMonth}-${birthDay}` : "";
 
-  async function pickPhoto() {
+  function clearFieldError(field: keyof FieldErrors) {
+    setFieldErrors((prev) => (prev[field] ? { ...prev, [field]: false } : prev));
+  }
+
+  async function pickPhotos() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
       setErrors([t("profileSetup.photoPermission")]);
       return;
     }
+    const remaining = MAX_PHOTOS - photoUris.length;
+    if (remaining <= 0) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
-      allowsEditing: true,
-      aspect: [3, 4],
+      allowsMultipleSelection: true,
+      selectionLimit: remaining,
     });
-    if (!result.canceled && result.assets[0]) {
-      setPhotoUri(result.assets[0].uri);
+    if (!result.canceled && result.assets.length > 0) {
+      setPhotoUris((prev) => [...prev, ...result.assets.map((a) => a.uri)].slice(0, MAX_PHOTOS));
+      clearFieldError("photo");
     }
   }
 
-  function getValidationErrors(): string[] {
-    const list: string[] = [];
-    if (!photoUri) list.push(t("profileSetup.needPhoto"));
-    if (!name.trim()) list.push(t("profileSetup.nameRequired"));
-    if (!isValidEmail(email)) list.push(t("profileSetup.invalidEmail"));
-    if (!birthDate) list.push(t("profileSetup.birthDateRequired"));
-    if (!bio.trim()) list.push(t("profileSetup.bioRequired"));
-    if (locationLat == null || locationLng == null) list.push(t("profileSetup.needLocation"));
-    return list;
+  function removePhoto(uri: string) {
+    setPhotoUris((prev) => prev.filter((u) => u !== uri));
+  }
+
+  // No upload call to make yet at this point (photos aren't presigned/
+  // confirmed until handleSubmit) — just swap the two entries in local
+  // state, same left/right-arrow convention as ProfilePhotosGrid's
+  // post-signup reorder, minus the network round-trip.
+  function movePhoto(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= photoUris.length) return;
+    setPhotoUris((prev) => {
+      const next = prev.slice();
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  }
+
+  function validate(): { messages: string[]; fields: FieldErrors } {
+    const messages: string[] = [];
+    const fields: FieldErrors = {};
+    if (photoUris.length === 0) {
+      messages.push(t("profileSetup.needPhoto"));
+      fields.photo = true;
+    }
+    if (!name.trim()) {
+      messages.push(t("profileSetup.nameRequired"));
+      fields.name = true;
+    }
+    if (!isValidEmail(email)) {
+      messages.push(t("profileSetup.invalidEmail"));
+      fields.email = true;
+    }
+    if (!birthDate) {
+      messages.push(t("profileSetup.birthDateRequired"));
+      fields.birthDate = true;
+    }
+    if (!bio.trim()) {
+      messages.push(t("profileSetup.bioRequired"));
+      fields.bio = true;
+    }
+    if (locationLat == null || locationLng == null) {
+      messages.push(t("profileSetup.needLocation"));
+      fields.location = true;
+    }
+    if (preferredCategories.length === 0) {
+      messages.push(t("profileSetup.categoriesRequired"));
+      fields.categories = true;
+    }
+    return { messages, fields };
   }
 
   async function handleSubmit() {
-    const validationErrors = getValidationErrors();
-    if (validationErrors.length > 0) {
-      setErrors(validationErrors);
+    const { messages, fields } = validate();
+    if (messages.length > 0) {
+      setErrors(messages);
+      setFieldErrors(fields);
       return;
     }
 
     setErrors([]);
+    setFieldErrors({});
     setLoading(true);
     try {
       await updateEmail(email.trim());
@@ -173,12 +242,17 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         interests,
         k_content_tags: kContentTags,
         languages,
+        preferred_categories: preferredCategories,
       });
 
       const contentType = "image/jpeg";
-      const { upload_url, gcs_object_path } = await presignUpload(contentType, 0);
-      await uploadToPresignedUrl(upload_url, photoUri!, contentType);
-      await confirmPhoto(gcs_object_path, 0);
+      await Promise.all(
+        photoUris.map(async (uri, position) => {
+          const { upload_url, gcs_object_path } = await presignUpload(contentType, position);
+          await uploadToPresignedUrl(upload_url, uri, contentType);
+          await confirmPhoto(gcs_object_path, position);
+        })
+      );
 
       onComplete();
     } catch (e: any) {
@@ -201,6 +275,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   const interestOptions = INTEREST_KEYS as unknown as readonly string[];
   const languageOptions = LANGUAGE_KEYS as unknown as readonly string[];
   const kContentOptions = K_CONTENT_KEYS as unknown as readonly string[];
+  const categoryOptions = BLIND_CHAT_CATEGORY_KEYS as unknown as readonly string[];
 
   const errorBox = errors.length > 0 && (
     <View style={styles.errorBox}>
@@ -228,23 +303,66 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
           {t("profileSetup.photoLabel")}
           <Text style={styles.requiredStar}> *</Text>
         </Text>
-        <Pressable style={styles.photoPicker} onPress={pickPhoto}>
-          {photoUri ? (
-            <Image source={{ uri: photoUri }} style={styles.photo} />
-          ) : (
-            <Text style={styles.photoPickerText}>{t("profileSetup.addPhoto")}</Text>
+        <Text style={styles.photoHint}>{t("profileSetup.photoHint", { max: MAX_PHOTOS })}</Text>
+        <View style={[styles.photoGrid, fieldErrors.photo && styles.photoGridError]}>
+          {photoUris.map((uri, index) => (
+            <View key={uri} style={styles.photoTileWrap}>
+              <View style={styles.photoTile}>
+                <Image source={{ uri }} style={styles.photoTileImage} />
+                <Pressable style={styles.photoRemoveBadge} onPress={() => removePhoto(uri)}>
+                  <Text style={styles.photoRemoveBadgeText}>✕</Text>
+                </Pressable>
+                {index === 0 && (
+                  <View style={styles.photoPrimaryBadge}>
+                    <Text style={styles.photoPrimaryBadgeText}>{t("photos.primary")}</Text>
+                  </View>
+                )}
+              </View>
+              {photoUris.length > 1 && (
+                <View style={styles.moveRow}>
+                  <Pressable
+                    style={styles.moveButton}
+                    onPress={() => movePhoto(index, -1)}
+                    disabled={index === 0}
+                    hitSlop={4}
+                  >
+                    <Ionicons name="chevron-back" size={14} color={index === 0 ? colors.border : colors.navy} />
+                  </Pressable>
+                  <Pressable
+                    style={styles.moveButton}
+                    onPress={() => movePhoto(index, 1)}
+                    disabled={index === photoUris.length - 1}
+                    hitSlop={4}
+                  >
+                    <Ionicons
+                      name="chevron-forward"
+                      size={14}
+                      color={index === photoUris.length - 1 ? colors.border : colors.navy}
+                    />
+                  </Pressable>
+                </View>
+              )}
+            </View>
+          ))}
+          {photoUris.length < MAX_PHOTOS && (
+            <Pressable style={[styles.photoTile, styles.photoAddTile]} onPress={pickPhotos}>
+              <Text style={styles.photoAddTileText}>+</Text>
+            </Pressable>
           )}
-        </Pressable>
+        </View>
 
         <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>
           {t("editProfile.name")}
           <Text style={styles.requiredStar}> *</Text>
         </Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, fieldErrors.name && styles.inputError]}
           placeholder={t("editProfile.displayNamePlaceholder")}
           value={name}
-          onChangeText={setName}
+          onChangeText={(v) => {
+            setName(v);
+            clearFieldError("name");
+          }}
         />
         <Text style={styles.nameLockNote}>{t("editProfile.nameLockNote")}</Text>
 
@@ -253,10 +371,13 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
           <Text style={styles.requiredStar}> *</Text>
         </Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, fieldErrors.email && styles.inputError]}
           placeholder={t("profileSetup.emailPlaceholder")}
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(v) => {
+            setEmail(v);
+            clearFieldError("email");
+          }}
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType="email-address"
@@ -270,7 +391,12 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
             <Pressable
               key={g}
               style={[styles.chip, gender === g && styles.chipSelected]}
-              onPress={() => setGender(g)}
+              onPress={() => {
+                setGender(g);
+                // A sensible starting point for "interested in" — not a
+                // lock, the user can still tap a different chip below.
+                setInterestedIn(g === "male" ? "female" : g === "female" ? "male" : "all");
+              }}
             >
               <Text style={gender === g ? styles.chipTextSelected : styles.chipText}>{t(`profileSetup.${g}`)}</Text>
             </Pressable>
@@ -288,7 +414,11 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
               placeholder={t("profileSetup.year")}
               options={YEAR_OPTIONS}
               value={birthYear}
-              onChange={setBirthYear}
+              onChange={(v) => {
+                setBirthYear(v);
+                clearFieldError("birthDate");
+              }}
+              error={fieldErrors.birthDate}
             />
           </View>
           <View style={styles.dateDropdown}>
@@ -297,7 +427,11 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
               placeholder={t("profileSetup.month")}
               options={MONTH_OPTIONS}
               value={birthMonth}
-              onChange={setBirthMonth}
+              onChange={(v) => {
+                setBirthMonth(v);
+                clearFieldError("birthDate");
+              }}
+              error={fieldErrors.birthDate}
             />
           </View>
           <View style={styles.dateDropdown}>
@@ -306,7 +440,11 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
               placeholder={t("profileSetup.day")}
               options={DAY_OPTIONS}
               value={birthDay}
-              onChange={setBirthDay}
+              onChange={(v) => {
+                setBirthDay(v);
+                clearFieldError("birthDate");
+              }}
+              error={fieldErrors.birthDate}
             />
           </View>
         </View>
@@ -326,10 +464,13 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
           <Text style={styles.requiredStar}> *</Text>
         </Text>
         <TextInput
-          style={[styles.input, styles.multiline]}
+          style={[styles.input, styles.multiline, fieldErrors.bio && styles.inputError]}
           placeholder={t("editProfile.bioPlaceholder")}
           value={bio}
-          onChangeText={setBio}
+          onChangeText={(v) => {
+            setBio(v);
+            clearFieldError("bio");
+          }}
           multiline
         />
         <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>{t("editProfile.bio2")}</Text>
@@ -365,6 +506,25 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
           ))}
         </View>
 
+        <View style={styles.fieldGap}>
+          <Text style={styles.fieldLabel}>
+            {t("profileSetup.preferredCategoriesLabel")}
+            <Text style={styles.requiredStar}> *</Text>
+          </Text>
+          <Text style={styles.photoHint}>{t("profileSetup.preferredCategoriesHint")}</Text>
+          <MultiChipSelect
+            label=""
+            options={categoryOptions}
+            translatePrefix="blindChatCategories"
+            values={preferredCategories}
+            onChange={(vals) => {
+              setPreferredCategories(vals);
+              clearFieldError("categories");
+            }}
+            error={fieldErrors.categories}
+          />
+        </View>
+
         <View style={[styles.switchRow, styles.fieldGap]}>
           <View style={styles.switchTextWrap}>
             <Text style={styles.switchLabel}>{t("editProfile.languageExchangeLabel")}</Text>
@@ -376,11 +536,13 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         <View style={styles.fieldGap}>
           <LocationPicker
             required
+            error={fieldErrors.location}
             lat={locationLat}
             lng={locationLng}
             onChange={(lat, lng) => {
               setLocationLat(lat);
               setLocationLng(lng);
+              clearFieldError("location");
             }}
           />
         </View>
@@ -518,6 +680,8 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   );
 }
 
+const PHOTO_TILE_SIZE = 96;
+
 const styles = StyleSheet.create({
   container: { padding: 24, backgroundColor: colors.white, flexGrow: 1 },
   title: { fontSize: 24, fontWeight: "700", marginBottom: 4, marginTop: 24, color: colors.navy },
@@ -533,6 +697,60 @@ const styles = StyleSheet.create({
   errorBox: { marginBottom: 12, marginTop: 12 },
   errorText: { color: colors.danger, lineHeight: 20 },
   requiredStar: { color: colors.danger },
+  photoHint: { fontSize: 12, color: colors.muted, marginBottom: 10 },
+  photoGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "transparent",
+    padding: 2,
+  },
+  photoGridError: { borderColor: colors.danger },
+  photoTileWrap: { alignItems: "center" },
+  moveRow: { flexDirection: "row", gap: 4, marginTop: 4 },
+  moveButton: {
+    width: 22,
+    height: 18,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  photoTile: {
+    width: PHOTO_TILE_SIZE,
+    height: PHOTO_TILE_SIZE,
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: colors.creamDeep,
+  },
+  photoTileImage: { width: "100%", height: "100%" },
+  photoAddTile: { alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.border, borderStyle: "dashed" },
+  photoAddTileText: { fontSize: 30, color: colors.muted },
+  photoRemoveBadge: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "rgba(11,59,99,0.7)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  photoRemoveBadgeText: { color: "#fff", fontSize: 11 },
+  photoPrimaryBadge: {
+    position: "absolute",
+    bottom: 4,
+    left: 4,
+    backgroundColor: "rgba(226,145,77,0.9)",
+    borderRadius: 6,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+  },
+  photoPrimaryBadgeText: { color: "#fff", fontSize: 9, fontWeight: "700" },
   photoPicker: {
     width: 140,
     height: 180,
@@ -547,7 +765,7 @@ const styles = StyleSheet.create({
   photoPickerText: { color: colors.muted },
   fieldLabel: { fontSize: 14, fontWeight: "600", marginBottom: 8, color: colors.muted },
   fieldLabelSpaced: { marginTop: 16 },
-  nameLockNote: { fontSize: 12.5, color: colors.muted, marginTop: -4, marginBottom: 4, lineHeight: 18 },
+  nameLockNote: { fontSize: 12.5, color: colors.muted, marginTop: 6, lineHeight: 18 },
   ageHint: { fontSize: 12.5, color: colors.accentDark, fontWeight: "600", marginTop: 4 },
   multiline: { minHeight: 70, textAlignVertical: "top" },
   input: {
@@ -557,6 +775,7 @@ const styles = StyleSheet.create({
     padding: 14,
     fontSize: 16,
   },
+  inputError: { borderColor: colors.danger },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   dateRow: { flexDirection: "row", gap: 8 },
   dateDropdown: { flex: 1 },

@@ -164,6 +164,15 @@ class Profile(Base):
     has_kids: Mapped[str | None] = mapped_column("HasKids", Unicode(30), nullable=True)
     interests: Mapped[str | None] = mapped_column("Interests", Unicode(500), nullable=True)
     languages: Mapped[str | None] = mapped_column("Languages", Unicode(255), nullable=True)
+    # Comma-separated subset of BLIND_CHAT_CATEGORY_KEYS (mobile/src/constants/
+    # blindChatCategories.ts) — unlike interests/languages above, this is
+    # required at signup (ProfileSetupScreen.validate()) since it's what lets
+    # BlindChatCategoryPopup/BlindChatQueueScreen preselect categories for a
+    # returning user instead of asking again every time they start a chat.
+    # Nullable here (not server-enforced) for the same reason birth_date/bio/
+    # location aren't either — client-side requiredness only, matching the
+    # rest of ProfileSetupScreen's fields.
+    preferred_categories: Mapped[str | None] = mapped_column("PreferredCategories", Unicode(255), nullable=True)
     # K-content taste tags (K-drama/K-pop/webtoon/K-movie favorites) — same
     # comma-separated storage convention as interests/languages above, own
     # curated key list (mobile/src/constants/kContentTags.ts) rather than

@@ -70,6 +70,10 @@ class ProfileUpdate(BaseModel):
     interests: list[str] = Field(default_factory=list)
     languages: list[str] = Field(default_factory=list)
     k_content_tags: list[str] = Field(default_factory=list)
+    # Subset of BLIND_CHAT_CATEGORY_KEYS — required at signup client-side
+    # (see ProfileUpdate's own docstring convention above), same
+    # comma-separated storage as interests/languages.
+    preferred_categories: list[str] = Field(default_factory=list)
 
 
 class ProfileOut(BaseModel):
@@ -139,6 +143,7 @@ class ProfileOut(BaseModel):
     languages: list[str] = []
     k_content_tags: list[str] = []
     k_content_filter: list[str] = []
+    preferred_categories: list[str] = []
     updated_at: datetime
     photos: list[PhotoOut] = []
     moments: list[MomentOut] = []
@@ -152,6 +157,7 @@ class ProfileOut(BaseModel):
         "interests_filter",
         "k_content_tags",
         "k_content_filter",
+        "preferred_categories",
         mode="before",
     )
     @classmethod

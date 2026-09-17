@@ -87,6 +87,12 @@ export default function RootNavigator() {
     );
   }
 
+  // ID + selfie verification (FaceVerificationScreen) is required to become
+  // "active" (interact with other profiles via Blind Chat), but isn't a
+  // hard app-wide gate — the user can still browse/edit their own profile
+  // while unverified. See CustomTabBar (blocks entering Blind Chat) and
+  // MyProfileScreen (status banner + tab badge) for where this is actually
+  // enforced/surfaced.
   return <MainApp />;
 }
 

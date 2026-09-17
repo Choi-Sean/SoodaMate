@@ -11,6 +11,7 @@ from app.routers import (
     couple_stories,
     devices,
     discovery,
+    inquiries,
     interactions,
     matches,
     messages,
@@ -51,6 +52,7 @@ app.include_router(admin.router)
 app.include_router(couple_stories.router)
 app.include_router(moments.router)
 app.include_router(blind_chat.router)
+app.include_router(inquiries.router)
 
 
 @app.get("/health")

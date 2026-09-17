@@ -32,6 +32,7 @@ import {
 import { EDUCATION_KEYS } from "../../constants/educationLevels";
 import { INTEREST_KEYS, LANGUAGE_KEYS } from "../../constants/interestsAndLanguages";
 import { K_CONTENT_KEYS } from "../../constants/kContentTags";
+import { BLIND_CHAT_CATEGORY_KEYS } from "../../constants/blindChatCategories";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
 import type { Gender, InterestedIn } from "../../types";
 import { colors } from "../../theme";
@@ -83,6 +84,7 @@ export default function EditProfileScreen({ navigation }: Props) {
   const [interests, setInterests] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
   const [kContentTags, setKContentTags] = useState<string[]>([]);
+  const [preferredCategories, setPreferredCategories] = useState<string[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -122,6 +124,9 @@ export default function EditProfileScreen({ navigation }: Props) {
     setInterests(profile.interests.filter((key) => (INTEREST_KEYS as readonly string[]).includes(key)));
     setLanguages(profile.languages.filter((key) => (LANGUAGE_KEYS as readonly string[]).includes(key)));
     setKContentTags(profile.k_content_tags.filter((key) => (K_CONTENT_KEYS as readonly string[]).includes(key)));
+    setPreferredCategories(
+      profile.preferred_categories.filter((key) => (BLIND_CHAT_CATEGORY_KEYS as readonly string[]).includes(key))
+    );
   }, [profile]);
 
   async function refreshProfile() {
@@ -183,6 +188,7 @@ export default function EditProfileScreen({ navigation }: Props) {
         interests,
         k_content_tags: kContentTags,
         languages,
+        preferred_categories: preferredCategories,
         // Not editable on this screen anymore (age/distance now live only
         // in the Swipe tab's Filters modal) — round-tripped unchanged so
         // this full-replace PUT doesn't reset them to schema defaults.
@@ -275,7 +281,12 @@ export default function EditProfileScreen({ navigation }: Props) {
               <Pressable
                 key={g}
                 style={[styles.chip, gender === g && styles.chipSelected]}
-                onPress={() => setGender(g)}
+                onPress={() => {
+                  setGender(g);
+                  // A sensible starting point for "interested in" — not a
+                  // lock, still freely changeable in the section below.
+                  setInterestedIn(g === "male" ? "female" : g === "female" ? "male" : "all");
+                }}
               >
                 <Text style={gender === g ? styles.chipTextSelected : styles.chipText}>{t(`profileSetup.${g}`)}</Text>
               </Pressable>
@@ -345,6 +356,18 @@ export default function EditProfileScreen({ navigation }: Props) {
               <Text style={interestedIn === g ? styles.chipTextSelected : styles.chipText}>{t(`profileSetup.${g}`)}</Text>
             </Pressable>
           ))}
+        </View>
+
+        <View style={styles.fieldGap}>
+          <Text style={styles.fieldLabel}>{t("profileSetup.preferredCategoriesLabel")}</Text>
+          <Text style={styles.switchHint}>{t("profileSetup.preferredCategoriesHint")}</Text>
+          <MultiChipSelect
+            label=""
+            options={BLIND_CHAT_CATEGORY_KEYS as unknown as readonly string[]}
+            translatePrefix="blindChatCategories"
+            values={preferredCategories}
+            onChange={setPreferredCategories}
+          />
         </View>
 
         <View style={[styles.switchRow, styles.fieldGap]}>

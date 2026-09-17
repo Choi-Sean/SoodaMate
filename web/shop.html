@@ -35,6 +35,13 @@
     }
     .product-card .buy-btn:hover { background: var(--accent-dark); }
     .product-card .buy-btn:disabled { opacity: 0.5; cursor: default; }
+    .product-card.highlighted { border-color: var(--heart); box-shadow: 0 0 0 2px var(--heart); }
+    .discount-badge {
+      display: inline-block; background: var(--heart); color: #fff; font-size: 11px; font-weight: 800;
+      border-radius: 999px; padding: 2px 9px; margin-left: 6px; vertical-align: middle;
+    }
+    .price-original { color: var(--muted); text-decoration: line-through; margin-right: 6px; }
+    .price-discounted { color: var(--heart); font-weight: 800; }
     .shop-notice { margin-top: 28px; font-size: 13px; color: var(--muted); text-align: center; }
     .shop-error { color: #B3261E; text-align: center; margin-bottom: 16px; display: none; }
   </style>
@@ -108,6 +115,11 @@
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token") || sessionStorage.getItem("sooda_token");
     if (token) sessionStorage.setItem("sooda_token", token);
+    // Set when a "promo" push notification deep-links here (see mobile's
+    // openShopForProduct) — highlights and scrolls to that one product card
+    // so the discount that was just advertised is easy to find among the
+    // others, without hiding the rest of the shop.
+    const highlightProductId = params.get("highlight");
 
     const authErrorEl = document.getElementById("authError");
     const listEl = document.getElementById("productList");
@@ -128,6 +140,7 @@
 
     let products = [];
     let loadFailed = false;
+    let scrolledToHighlight = false;
 
     function renderProducts() {
       const hasMembership = products.some((p) => p.credit_kind === "membership");
@@ -143,12 +156,16 @@
           // from `translations`, so check for that entry directly instead.
           const name = translations[`shop.product.${p.product_id}.name`] ? tr(`shop.product.${p.product_id}.name`) : p.name;
           const desc = translations[`shop.product.${p.product_id}.desc`] ? tr(`shop.product.${p.product_id}.desc`) : "";
+          const priceHtml = p.discount_percent
+            ? `<span class="price-original">$${(p.price_usd_cents / 100).toFixed(2)}</span><span class="price-discounted">$${(p.discounted_price_usd_cents / 100).toFixed(2)}</span><span class="discount-badge">-${p.discount_percent}%</span>`
+            : `$${(p.price_usd_cents / 100).toFixed(2)}`;
+          const highlighted = highlightProductId && p.product_id === highlightProductId;
           return `
-        <div class="product-card">
+        <div class="product-card${highlighted ? " highlighted" : ""}" data-product-id="${p.product_id}">
           <div class="info">
             <h3>${name}</h3>
             <p class="desc">${desc}</p>
-            <p>$${(p.price_usd_cents / 100).toFixed(2)}${cycleLabel ? ` · ${cycleLabel}` : ""}</p>
+            <p>${priceHtml}${cycleLabel ? ` · ${cycleLabel}` : ""}</p>
           </div>
           <button class="buy-btn" data-product-id="${p.product_id}" ${token ? "" : "disabled"}>${tr("shop.buyLabel")}</button>
         </div>`;
@@ -158,6 +175,14 @@
       listEl.querySelectorAll(".buy-btn").forEach((btn) => {
         btn.addEventListener("click", () => startCheckout(btn.getAttribute("data-product-id"), btn));
       });
+
+      if (highlightProductId && !scrolledToHighlight) {
+        const card = listEl.querySelector(`.product-card[data-product-id="${highlightProductId}"]`);
+        if (card) {
+          card.scrollIntoView({ behavior: "smooth", block: "center" });
+          scrolledToHighlight = true;
+        }
+      }
 
       // Only membership products are a recurring subscription with a
       // cancellation/refund policy worth stating - a one-time superlike/

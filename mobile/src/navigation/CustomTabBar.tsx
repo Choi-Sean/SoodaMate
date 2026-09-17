@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { Pressable, Text, View, StyleSheet } from "react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import BlindChatCategoryPopup from "../components/BlindChatCategoryPopup";
+import { getMyProfile } from "../api/profiles";
+import { showAlert } from "../utils/alert";
+import { calculateProfileCompleteness, isAccountActive, MIN_COMPLETENESS_FOR_ACTIVE } from "../utils/profileCompleteness";
 import { colors } from "../theme";
 
 const REAL_TAB_ICONS: Record<string, string> = {
@@ -26,6 +30,34 @@ const REAL_TAB_LABEL_KEYS: Record<string, string> = {
 export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const { t } = useTranslation();
   const [popupVisible, setPopupVisible] = useState(false);
+  // Cached alongside every other screen's ["myProfile"] query — this never
+  // triggers its own network request in the common case.
+  const { data: profile } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
+  const needsActivation = profile != null && !isAccountActive(profile);
+
+  function handleCenterPress() {
+    if (profile != null && !profile.face_verified) {
+      showAlert(t("blindChat.verificationRequiredTitle"), t("blindChat.verificationRequiredBody"), [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("blindChat.verificationRequiredCta"),
+          onPress: () => navigation.navigate("Profile", { screen: "FaceVerification" } as never),
+        },
+      ]);
+      return;
+    }
+    if (profile != null && calculateProfileCompleteness(profile) < MIN_COMPLETENESS_FOR_ACTIVE) {
+      showAlert(t("blindChat.profileIncompleteTitle"), t("blindChat.profileIncompleteBody"), [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("blindChat.profileIncompleteCta"),
+          onPress: () => navigation.navigate("Profile", { screen: "EditProfile" } as never),
+        },
+      ]);
+      return;
+    }
+    setPopupVisible(true);
+  }
 
   return (
     <View style={styles.wrap}>
@@ -43,6 +75,7 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
             >
               <View style={[styles.iconBubble, focused && styles.iconBubbleActive]}>
                 <Text style={{ fontSize: 18 }}>{REAL_TAB_ICONS[route.name]}</Text>
+                {route.name === "Profile" && needsActivation && <View style={styles.badgeDot} />}
               </View>
               <Text style={[styles.label, focused && styles.labelActive]} numberOfLines={1}>
                 {t(REAL_TAB_LABEL_KEYS[route.name])}
@@ -52,7 +85,7 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
         })}
       </View>
 
-      <Pressable style={styles.centerButton} onPress={() => setPopupVisible(true)}>
+      <Pressable style={styles.centerButton} onPress={handleCenterPress}>
         <Text style={styles.centerButtonIcon}>🎭</Text>
       </Pressable>
       <Text style={styles.centerLabel} numberOfLines={1}>
@@ -82,7 +115,18 @@ const styles = StyleSheet.create({
   },
   bar: { flexDirection: "row", height: 62, paddingTop: 6 },
   tabButton: { flex: 1, alignItems: "center", justifyContent: "center", gap: 2 },
-  iconBubble: { width: 34, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" },
+  iconBubble: { width: 34, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center", position: "relative" },
+  badgeDot: {
+    position: "absolute",
+    top: -1,
+    right: 3,
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    backgroundColor: colors.danger,
+    borderWidth: 1.5,
+    borderColor: colors.white,
+  },
   iconBubbleActive: { backgroundColor: colors.creamDeep },
   label: { fontSize: 11, fontWeight: "700", color: colors.muted },
   labelActive: { color: colors.accentDark },

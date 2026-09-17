@@ -17,6 +17,10 @@ export default function FaceVerificationScreen() {
   const { data: status, refetch } = useQuery({
     queryKey: ["faceVerificationStatus"],
     queryFn: getFaceVerificationStatus,
+    // Verification now gates account access (see RootNavigator), so a
+    // pending submission is polled rather than requiring the user to
+    // relaunch the app to find out an admin reviewed it.
+    refetchInterval: (query) => (query.state.data?.status === "pending" ? 10000 : false),
   });
 
   const [selfieUri, setSelfieUri] = useState<string | null>(null);
@@ -28,6 +32,14 @@ export default function FaceVerificationScreen() {
     refetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (status?.status === "approved") {
+      // Flips RootNavigator's gate (checks profile.face_verified) open
+      // without requiring the user to relaunch the app.
+      queryClient.invalidateQueries({ queryKey: ["myProfile"] });
+    }
+  }, [status?.status, queryClient]);
 
   async function pickSelfie() {
     const permission = await ImagePicker.requestCameraPermissionsAsync();

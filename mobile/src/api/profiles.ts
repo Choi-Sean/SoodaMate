@@ -32,6 +32,7 @@ export interface ProfileUpdateInput {
   interests?: string[];
   languages?: string[];
   k_content_tags?: string[];
+  preferred_categories?: string[];
 }
 
 export async function getMyProfile(): Promise<Profile> {

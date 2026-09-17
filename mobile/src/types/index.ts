@@ -88,6 +88,7 @@ export interface Profile {
   languages: string[];
   k_content_tags: string[];
   k_content_filter: string[];
+  preferred_categories: string[];
   updated_at: string;
   photos: Photo[];
   moments: Moment[];

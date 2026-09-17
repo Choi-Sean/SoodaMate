@@ -13,13 +13,16 @@ interface Props {
    * for Interests so a profile reads as a few standout things, not a wall
    * of tags. Premium filters leave this unset (no cap). */
   max?: number;
+  /** Red border, same convention as SelectDropdown/LocationPicker's own
+   * `error` prop — used for ProfileSetupScreen's required categories field. */
+  error?: boolean;
 }
 
 /** Multi-select variant of ChipSelect, used for premium filters (you can
  * filter to more than one religion, more than one race/ethnicity, etc.) —
  * ChipSelect itself stays single-select since that's still correct for a
  * profile's own fields (you only have one religion). */
-export default function MultiChipSelect({ label, options, translatePrefix, values, onChange, max }: Props) {
+export default function MultiChipSelect({ label, options, translatePrefix, values, onChange, max, error }: Props) {
   const { t } = useTranslation();
   const atMax = max != null && values.length >= max;
 
@@ -33,11 +36,13 @@ export default function MultiChipSelect({ label, options, translatePrefix, value
 
   return (
     <View>
-      <Text style={styles.label}>
-        {label}
-        {max != null ? ` (${values.length}/${max})` : ""}
-      </Text>
-      <View style={styles.row}>
+      {label !== "" && (
+        <Text style={styles.label}>
+          {label}
+          {max != null ? ` (${values.length}/${max})` : ""}
+        </Text>
+      )}
+      <View style={[styles.row, error && styles.rowError]}>
         {options.map((key) => {
           const selected = values.includes(key);
           const disabled = !selected && atMax;
@@ -61,7 +66,8 @@ export default function MultiChipSelect({ label, options, translatePrefix, value
 
 const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: "600", marginTop: 12, marginBottom: 8, color: colors.muted },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  row: { flexDirection: "row", flexWrap: "wrap", gap: 8, borderRadius: 12, borderWidth: 2, borderColor: "transparent", padding: 2 },
+  rowError: { borderColor: colors.danger },
   chip: { borderWidth: 1, borderColor: colors.border, borderRadius: 20, paddingVertical: 8, paddingHorizontal: 16 },
   chipSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
   chipDisabled: { opacity: 0.4 },

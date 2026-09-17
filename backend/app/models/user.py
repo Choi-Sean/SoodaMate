@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Unicode, Uuid, func, text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, Unicode, Uuid, func, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -23,6 +23,13 @@ class User(Base):
     password_hash: Mapped[str | None] = mapped_column("PasswordHash", Unicode(255), nullable=True)
     is_active: Mapped[bool] = mapped_column("IsActive", Boolean, default=True, nullable=False)
     is_banned: Mapped[bool] = mapped_column("IsBanned", Boolean, default=False, nullable=False)
+    # Admin moderation counter (see routers/admin.py's report-action
+    # endpoint) — a "warn" action increments this; nothing currently
+    # auto-bans at a threshold, that call is left to the admin reviewing
+    # the report queue.
+    warning_count: Mapped[int] = mapped_column(
+        "WarningCount", Integer, default=0, nullable=False, server_default="0"
+    )
     # Gates the /admin/* face-verification review endpoints. No self-serve
     # signup path sets this — it's flipped directly in the DB for the
     # app owner's own account (see docs/ARCHITECTURE.md admin notes).

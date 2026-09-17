@@ -45,6 +45,7 @@
     "invalidEmail": "Please enter a valid email address",
     "emailInUse": "This email address is already in use",
     "photoLabel": "Profile photo",
+    "photoHint": "You can select up to {{max}} photos",
     "birthDate": "Birth date",
     "year": "Year",
     "month": "Month",
@@ -62,6 +63,9 @@
     "validationMissing": "Enter your real name and birth date",
     "needPhoto": "Add at least one photo",
     "needLocation": "Set your location",
+    "categoriesRequired": "Please select at least one conversation category you're interested in",
+    "preferredCategoriesLabel": "Conversation categories you're interested in",
+    "preferredCategoriesHint": "Pick the topics you'd like to talk about in Blind Chat. You can change these later in Edit Profile.",
     "raceEthnicity": "Race/ethnicity (optional)",
     "religion": "Religion (optional)",
     "race": {
@@ -259,6 +263,12 @@
     "soodaListPromoTitle": "Check out SooDaList too",
     "soodaListPromoBody": "Another app from the same team behind SooDaMate",
     "soodaListPromoCta": "View in App Store",
+    "verificationBannerUnsubmitted": "Identity verification is required to activate your account",
+    "verificationBannerPending": "Your identity verification is being reviewed",
+    "verificationBannerRejected": "Your identity verification was rejected — see why",
+    "completenessBannerIncomplete": "Finish filling out your profile ({{percent}}% now, {{min}}%+ needed)",
+    "verificationApprovedTitle": "Verification complete 🎉",
+    "verificationApprovedBody": "Your account is now active. Start Blind Chat!",
     "purchaseSuccessTitle": "Purchase complete 🎉",
     "purchaseSuperlikeSuccess": "{{count}} Super Likes have been added.",
     "purchaseBoostSuccess": "{{count}} Boosts have been added.",
@@ -321,7 +331,7 @@
   },
   "faceVerification": {
     "title": "Face verification",
-    "subtitle": "Take a quick selfie to get a verified badge on your profile. A real person reviews every submission.",
+    "subtitle": "Identity verification is required for a safer community. Submit a selfie and a photo ID — a real person reviews every submission, and your account activates once it's approved.",
     "verifiedBanner": "Face verified",
     "pendingBanner": "Your selfie is being reviewed — this usually doesn't take long.",
     "rejectedBanner": "Your last submission wasn't approved. Try again with a clear, well-lit selfie.",
@@ -341,8 +351,8 @@
     "takeIdPhoto": "Add a photo of your ID",
     "submit": "Submit for review",
     "resubmit": "Resubmit",
-    "cardTitle": "Get verified",
-    "cardSubtitle": "Add a verified badge with a quick selfie check"
+    "cardTitle": "Complete identity verification",
+    "cardSubtitle": "Required to activate your account and start Blind Chat"
   },
   "interests": {
     "hiking": "🥾 Hiking",
@@ -426,7 +436,17 @@
     "deleteFailed": "Couldn't delete account",
     "tryAgainLater": "Try again later",
     "travelMode": "Travel mode",
-    "verification": "Work/school verification"
+    "verification": "Work/school verification",
+    "contactUs": "Contact / feedback",
+    "inquiryHint": "Send us a question or suggestion and our team will follow up after reviewing it.",
+    "inquirySubjectLabel": "Subject",
+    "inquirySubjectPlaceholder": "Enter a subject",
+    "inquiryMessageLabel": "Message",
+    "inquiryMessagePlaceholder": "Tell us more",
+    "inquirySubmit": "Send",
+    "inquiryMissingFields": "Please fill in both the subject and message",
+    "inquirySentTitle": "Your message was sent",
+    "inquirySentBody": "We'll review it and get back to you soon."
   },
   "travel": {
     "title": "Travel mode",
@@ -490,7 +510,10 @@
   "phoneAuth": {
     "subtitle": "Just your phone number — nothing else needed",
     "codeSubtitle": "Enter the code we texted you",
-    "invalidNumber": "Please enter a valid phone number"
+    "invalidNumber": "Please enter a valid phone number",
+    "codeExpiresIn": "Code expires in {{time}}",
+    "codeExpired": "Your code has expired. Please request a new one.",
+    "resendCode": "Resend code"
   },
   "premiumFilters": {
     "title": "Premium Filters",
@@ -625,6 +648,12 @@
     "aiMatchButton": "Find with AI Matching",
     "aiMatchTitle": "AI Matching",
     "aiMatchNoneFound": "No one's waiting right now — try again in a bit. Your credit wasn't used.",
-    "aiMatchNoCredits": "You're out of AI Match credits. You can buy more in the shop."
+    "aiMatchNoCredits": "You're out of AI Match credits. You can buy more in the shop.",
+    "verificationRequiredTitle": "Identity verification required",
+    "verificationRequiredBody": "Complete identity verification (selfie + photo ID) before starting Blind Chat.",
+    "verificationRequiredCta": "Verify now",
+    "profileIncompleteTitle": "Finish filling out your profile",
+    "profileIncompleteBody": "Your profile needs to be at least 70% complete before you can start Blind Chat.",
+    "profileIncompleteCta": "Complete my profile"
   }
 }

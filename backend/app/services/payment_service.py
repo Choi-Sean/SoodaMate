@@ -4,11 +4,13 @@ from datetime import datetime, timedelta, timezone
 
 import stripe
 from fastapi import HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.models.iap import PaymentTransaction
 from app.models.profile import Profile
+from app.models.promotion import Promotion
 from app.utils.premium import is_premium
 from app.utils.upsert import try_insert
 
@@ -185,22 +187,67 @@ def _get_stripe():
     return stripe
 
 
-def list_products() -> list[dict]:
+async def get_active_discounts(db: AsyncSession) -> dict[str, int]:
+    """{product_id: discount_percent} for every currently-active Promotion
+    (routers/admin.py) — at most one active row per product_id in practice
+    (enforced when a promotion is created), but this takes the newest if
+    that's ever violated."""
+    rows = (
+        await db.execute(
+            select(Promotion.product_id, Promotion.discount_percent)
+            .where(Promotion.is_active)
+            .order_by(Promotion.created_at.desc())
+        )
+    ).all()
+    discounts: dict[str, int] = {}
+    for product_id, discount_percent in rows:
+        discounts.setdefault(product_id, discount_percent)
+    return discounts
+
+
+def _discounted_cents(price_usd_cents: int, discount_percent: int | None) -> int:
+    if not discount_percent:
+        return price_usd_cents
+    return round(price_usd_cents * (100 - discount_percent) / 100)
+
+
+def list_products(discounts: dict[str, int] | None = None) -> list[dict]:
     # "listed": False products (see PRODUCTS' Classic Matching entries)
     # stay fully purchasable via create_checkout_session/the webhook — only
     # hidden from what the shop actually shows.
-    return [{"product_id": pid, **info} for pid, info in PRODUCTS.items() if info.get("listed", True)]
+    discounts = discounts or {}
+    out = []
+    for pid, info in PRODUCTS.items():
+        if not info.get("listed", True):
+            continue
+        discount_percent = discounts.get(pid)
+        out.append(
+            {
+                "product_id": pid,
+                **info,
+                "discount_percent": discount_percent,
+                "discounted_price_usd_cents": _discounted_cents(info["price_usd_cents"], discount_percent)
+                if discount_percent
+                else None,
+            }
+        )
+    return out
 
 
-async def create_checkout_session(user_id: uuid.UUID, product_id: str, language: str = "en") -> str:
+async def create_checkout_session(
+    db: AsyncSession, user_id: uuid.UUID, product_id: str, language: str = "en"
+) -> str:
     product = PRODUCTS.get(product_id)
     if product is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "unknown product_id")
 
+    discounts = await get_active_discounts(db)
+    unit_amount = _discounted_cents(product["price_usd_cents"], discounts.get(product_id))
+
     is_subscription = product["credit_kind"] == "membership"
     price_data: dict = {
         "currency": "usd",
-        "unit_amount": product["price_usd_cents"],
+        "unit_amount": unit_amount,
         "product_data": {
             "name": _localized_product_name(product_id, product, language),
             "tax_code": _SAAS_PERSONAL_USE_TAX_CODE,

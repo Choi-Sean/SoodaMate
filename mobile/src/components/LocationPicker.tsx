@@ -14,6 +14,7 @@ interface Props {
   lng: number | null;
   onChange: (lat: number, lng: number) => void;
   required?: boolean;
+  error?: boolean;
 }
 
 interface Place {
@@ -74,7 +75,7 @@ function placeLabel(place: Place): string {
   return [place.city, place.region, place.country].filter(Boolean).join(", ");
 }
 
-export default function LocationPicker({ lat, lng, onChange, required }: Props) {
+export default function LocationPicker({ lat, lng, onChange, required, error }: Props) {
   const { t } = useTranslation();
   const [detecting, setDetecting] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
@@ -182,7 +183,7 @@ export default function LocationPicker({ lat, lng, onChange, required }: Props) 
         <Text style={styles.currentValue}>{t("location.currentValueUnknown")}</Text>
       )}
 
-      <Pressable style={styles.detectButton} onPress={handleAutoDetect} disabled={detecting}>
+      <Pressable style={[styles.detectButton, error && styles.detectButtonError]} onPress={handleAutoDetect} disabled={detecting}>
         {detecting ? (
           <ActivityIndicator color={colors.white} />
         ) : (
@@ -265,7 +266,10 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: "center",
     marginBottom: 10,
+    borderWidth: 2,
+    borderColor: "transparent",
   },
+  detectButtonError: { borderColor: colors.danger },
   detectButtonText: { color: colors.white, fontSize: 15, fontWeight: "600" },
   manualToggle: { color: colors.accentDark, fontWeight: "500", marginBottom: 8 },
   manualSection: { marginBottom: 12 },

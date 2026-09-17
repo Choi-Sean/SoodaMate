@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Pressable, ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -7,6 +7,13 @@ import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../theme";
 
 type Country = "KR" | "US";
+
+// Twilio Verify's default code lifetime — not configurable from this repo
+// (it's a Verify Service setting in the Twilio console), so this is a
+// display-only countdown that assumes the default hasn't been changed
+// there. Worst case if it ever is: the countdown is just cosmetically off,
+// since the real expiry is still enforced server-side by Twilio itself.
+const CODE_TTL_SECONDS = 10 * 60;
 
 // Scoped to the app's two launch markets (see LocationPicker's own KR/US
 // scoping) — not a general international picker.
@@ -60,11 +67,24 @@ export default function PhoneAuthScreen() {
   const [sending, setSending] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Bumped every time a code is (re)sent, to restart the countdown below.
+  const [codeSentAt, setCodeSentAt] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState(CODE_TTL_SECONDS);
   const login = useAuthStore((s) => s.login);
 
   const digits = localNumber.replace(/\D/g, "");
   const e164 = toE164(country, localNumber);
   const numberValid = isValidLocalNumber(country, digits);
+  const codeExpired = secondsLeft <= 0;
+
+  useEffect(() => {
+    if (step !== "code") return;
+    setSecondsLeft(CODE_TTL_SECONDS);
+    const interval = setInterval(() => {
+      setSecondsLeft((s) => (s > 0 ? s - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [step, codeSentAt]);
 
   function handleChangeCountry(next: Country) {
     setCountry(next);
@@ -102,6 +122,20 @@ export default function PhoneAuthScreen() {
       setError(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));
     } finally {
       setConfirming(false);
+    }
+  }
+
+  async function handleResend() {
+    setError(null);
+    setSending(true);
+    try {
+      await authApi.startPhoneAuth(e164);
+      setCode("");
+      setCodeSentAt((n) => n + 1);
+    } catch (e: any) {
+      setError(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));
+    } finally {
+      setSending(false);
     }
   }
 
@@ -154,6 +188,13 @@ export default function PhoneAuthScreen() {
       ) : (
         <>
           <Text style={styles.codeSentTo}>{t("phoneVerification.codeSentTo", { phone: e164 })}</Text>
+          <Text style={[styles.expiryText, codeExpired && styles.expiryTextExpired]}>
+            {codeExpired
+              ? t("phoneAuth.codeExpired")
+              : t("phoneAuth.codeExpiresIn", {
+                  time: `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`,
+                })}
+          </Text>
           <TextInput
             style={styles.input}
             placeholder={t("phoneVerification.codePlaceholder")}
@@ -164,8 +205,15 @@ export default function PhoneAuthScreen() {
             maxLength={6}
             autoFocus
           />
-          <Pressable style={styles.primaryButton} onPress={handleConfirm} disabled={confirming || code.trim().length < 4}>
+          <Pressable
+            style={styles.primaryButton}
+            onPress={handleConfirm}
+            disabled={confirming || code.trim().length < 4 || codeExpired}
+          >
             {confirming ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>{t("phoneVerification.confirm")}</Text>}
+          </Pressable>
+          <Pressable style={styles.linkButton} onPress={handleResend} disabled={sending}>
+            <Text style={styles.linkButtonText}>{t("phoneAuth.resendCode")}</Text>
           </Pressable>
           <Pressable style={styles.linkButton} onPress={() => setStep("phone")}>
             <Text style={styles.linkButtonText}>{t("phoneVerification.changeNumber")}</Text>
@@ -198,7 +246,9 @@ const styles = StyleSheet.create({
   dialCodeText: { fontSize: 16, color: colors.ink, fontWeight: "600" },
   phoneInput: { flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 14, fontSize: 16 },
   input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 14, marginBottom: 12, fontSize: 16 },
-  codeSentTo: { color: colors.muted, textAlign: "center", marginBottom: 16 },
+  codeSentTo: { color: colors.muted, textAlign: "center", marginBottom: 4 },
+  expiryText: { color: colors.muted, textAlign: "center", marginBottom: 16, fontSize: 13 },
+  expiryTextExpired: { color: colors.danger, fontWeight: "600" },
   primaryButton: { backgroundColor: colors.accent, borderRadius: 10, padding: 14, alignItems: "center", marginTop: 8 },
   primaryButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
   linkButton: { alignItems: "center", marginTop: 16, padding: 8 },

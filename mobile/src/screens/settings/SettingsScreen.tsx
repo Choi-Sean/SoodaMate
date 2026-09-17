@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 
 import { deleteAccount } from "../../api/account";
+import { createInquiry } from "../../api/inquiries";
 import { useAuthStore } from "../../store/authStore";
 import { env } from "../../config/env";
 import { SUPPORTED_LANGUAGES, setLanguage, type SupportedLanguage } from "../../i18n";
@@ -26,6 +27,33 @@ export default function SettingsScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
   const logout = useAuthStore((s) => s.logout);
   const [deleting, setDeleting] = useState(false);
+  const [inquiryVisible, setInquiryVisible] = useState(false);
+  const [inquirySubject, setInquirySubject] = useState("");
+  const [inquiryMessage, setInquiryMessage] = useState("");
+  const [submittingInquiry, setSubmittingInquiry] = useState(false);
+
+  function openInquiry() {
+    setInquirySubject("");
+    setInquiryMessage("");
+    setInquiryVisible(true);
+  }
+
+  async function submitInquiry() {
+    if (!inquirySubject.trim() || !inquiryMessage.trim()) {
+      showAlert(t("settings.inquiryMissingFields"));
+      return;
+    }
+    setSubmittingInquiry(true);
+    try {
+      await createInquiry(inquirySubject.trim(), inquiryMessage.trim());
+      setInquiryVisible(false);
+      showAlert(t("settings.inquirySentTitle"), t("settings.inquirySentBody"));
+    } catch (e: any) {
+      showAlert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? t("settings.tryAgainLater"));
+    } finally {
+      setSubmittingInquiry(false);
+    }
+  }
 
   function confirmDeleteAccount() {
     showAlert(t("settings.deleteConfirmTitle"), t("settings.deleteConfirmBody"), [
@@ -79,6 +107,10 @@ export default function SettingsScreen({ navigation }: Props) {
         <Text style={styles.rowText}>{t("settings.termsOfService")}</Text>
       </Pressable>
 
+      <Pressable style={styles.row} onPress={openInquiry}>
+        <Text style={styles.rowText}>{t("settings.contactUs")}</Text>
+      </Pressable>
+
       <Pressable style={styles.row} onPress={() => logout()}>
         <Text style={styles.rowText}>{t("settings.logOut")}</Text>
       </Pressable>
@@ -86,6 +118,49 @@ export default function SettingsScreen({ navigation }: Props) {
       <Pressable style={styles.row} onPress={confirmDeleteAccount} disabled={deleting}>
         {deleting ? <ActivityIndicator color={colors.danger} /> : <Text style={styles.dangerText}>{t("settings.deleteAccount")}</Text>}
       </Pressable>
+
+      <Modal visible={inquiryVisible} transparent animationType="slide" onRequestClose={() => setInquiryVisible(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              <Text style={styles.modalTitle}>{t("settings.contactUs")}</Text>
+              <Text style={styles.modalHint}>{t("settings.inquiryHint")}</Text>
+
+              <Text style={styles.fieldLabel}>{t("settings.inquirySubjectLabel")}</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={t("settings.inquirySubjectPlaceholder")}
+                value={inquirySubject}
+                onChangeText={setInquirySubject}
+                maxLength={200}
+              />
+
+              <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>{t("settings.inquiryMessageLabel")}</Text>
+              <TextInput
+                style={[styles.input, styles.multiline]}
+                placeholder={t("settings.inquiryMessagePlaceholder")}
+                value={inquiryMessage}
+                onChangeText={setInquiryMessage}
+                multiline
+                maxLength={4000}
+              />
+
+              <View style={styles.modalButtonRow}>
+                <Pressable style={styles.modalCancelButton} onPress={() => setInquiryVisible(false)}>
+                  <Text style={styles.modalCancelButtonText}>{t("common.cancel")}</Text>
+                </Pressable>
+                <Pressable style={styles.modalSubmitButton} onPress={submitInquiry} disabled={submittingInquiry}>
+                  {submittingInquiry ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.modalSubmitButtonText}>{t("settings.inquirySubmit")}</Text>
+                  )}
+                </Pressable>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -101,4 +176,23 @@ const styles = StyleSheet.create({
   row: { padding: 18, borderBottomWidth: 1, borderBottomColor: colors.border },
   rowText: { fontSize: 16, color: colors.ink },
   dangerText: { fontSize: 16, color: colors.danger },
+  modalBackdrop: { flex: 1, backgroundColor: "rgba(11,41,68,0.55)", justifyContent: "flex-end" },
+  modalCard: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: "85%",
+  },
+  modalTitle: { fontSize: 18, fontWeight: "800", color: colors.navy, marginBottom: 4 },
+  modalHint: { fontSize: 13, color: colors.muted, marginBottom: 16, lineHeight: 18 },
+  fieldLabel: { fontSize: 14, fontWeight: "600", marginBottom: 8, color: colors.muted },
+  fieldLabelSpaced: { marginTop: 14 },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 14, fontSize: 16 },
+  multiline: { minHeight: 100, textAlignVertical: "top" },
+  modalButtonRow: { flexDirection: "row", gap: 10, marginTop: 20, marginBottom: 8 },
+  modalCancelButton: { flex: 1, borderRadius: 10, paddingVertical: 14, alignItems: "center", backgroundColor: colors.creamDeep },
+  modalCancelButtonText: { color: colors.muted, fontWeight: "700" },
+  modalSubmitButton: { flex: 1, borderRadius: 10, paddingVertical: 14, alignItems: "center", backgroundColor: colors.accent },
+  modalSubmitButtonText: { color: "#fff", fontWeight: "700" },
 });

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Image, Platform, Pressable, RefreshControl, ScrollView, Text, View, StyleSheet } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -7,12 +7,13 @@ import { useTranslation } from "react-i18next";
 
 import { getMyProfile } from "../../api/profiles";
 import { cancelSubscription } from "../../api/account";
+import { getFaceVerificationStatus } from "../../api/verification";
 import VerifiedBadge from "../../components/VerifiedBadge";
 import ScreenHeader from "../../components/ScreenHeader";
 import { showAlert } from "../../utils/alert";
 import { openShop } from "../../utils/openShop";
 import { openExternalUrl } from "../../utils/openExternalUrl";
-import { calculateProfileCompleteness } from "../../utils/profileCompleteness";
+import { calculateProfileCompleteness, isAccountActive, MIN_COMPLETENESS_FOR_ACTIVE } from "../../utils/profileCompleteness";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
 import { colors } from "../../theme";
 
@@ -42,6 +43,41 @@ export default function MyProfileScreen({ navigation }: Props) {
   const queryClient = useQueryClient();
   const { data: profile, refetch, isRefetching } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
   const [canceling, setCanceling] = useState(false);
+
+  // Only relevant (and only polled) while the account isn't active yet —
+  // becoming active flips profile.face_verified, at which point this query
+  // goes idle. Polling here (not just on FaceVerificationScreen) is what
+  // lets the "you're active now" alert below fire even if the user never
+  // opens that screen again while waiting.
+  const { data: verificationStatus } = useQuery({
+    queryKey: ["faceVerificationStatus"],
+    queryFn: getFaceVerificationStatus,
+    enabled: profile != null && !profile.face_verified,
+    refetchInterval: (query) => (query.state.data?.status === "pending" ? 10000 : false),
+  });
+
+  // The polled status (above) is what actually changes first — this is
+  // what turns that into profile.face_verified flipping, which is what the
+  // effect below is watching for.
+  useEffect(() => {
+    if (verificationStatus?.status === "approved") {
+      queryClient.invalidateQueries({ queryKey: ["myProfile"] });
+    }
+  }, [verificationStatus?.status, queryClient]);
+
+  // Active requires *both* verification and >=70% profile completeness
+  // (see isAccountActive) — watching the combined flag rather than just
+  // face_verified means finishing the last required field also triggers
+  // this, not just getting a verification approved.
+  const active = profile ? isAccountActive(profile) : undefined;
+  const wasActiveRef = useRef<boolean | undefined>(undefined);
+  useEffect(() => {
+    if (active === undefined) return;
+    if (wasActiveRef.current === false && active) {
+      showAlert(t("profile.verificationApprovedTitle"), t("profile.verificationApprovedBody"));
+    }
+    wasActiveRef.current = active;
+  }, [active, t]);
 
   const photo = profile?.photos[0];
   const completeness = profile ? calculateProfileCompleteness(profile) : null;
@@ -113,7 +149,36 @@ export default function MyProfileScreen({ navigation }: Props) {
             <Text style={styles.completenessBadgeText}>{completeness}%</Text>
           </View>
         )}
+        {active === false && (
+          <Pressable
+            style={styles.verifyBadge}
+            onPress={() => navigation.navigate(profile?.face_verified ? "EditProfile" : "FaceVerification")}
+            hitSlop={6}
+          >
+            <Ionicons name="alert" size={14} color="#fff" />
+          </Pressable>
+        )}
       </View>
+      {active === false && profile && (
+        <Pressable
+          style={styles.verifyBanner}
+          onPress={() => navigation.navigate(profile.face_verified ? "EditProfile" : "FaceVerification")}
+        >
+          <Ionicons name="alert-circle" size={17} color={colors.danger} />
+          <Text style={styles.verifyBannerText}>
+            {!profile.face_verified
+              ? t(
+                  verificationStatus?.status === "pending"
+                    ? "profile.verificationBannerPending"
+                    : verificationStatus?.status === "rejected"
+                      ? "profile.verificationBannerRejected"
+                      : "profile.verificationBannerUnsubmitted"
+                )
+              : t("profile.completenessBannerIncomplete", { percent: completeness, min: MIN_COMPLETENESS_FOR_ACTIVE })}
+          </Text>
+          <Ionicons name="chevron-forward" size={15} color={colors.danger} />
+        </Pressable>
+      )}
 
       <View style={styles.nameRow}>
         <Text style={styles.name}>{profile?.display_name ?? "..."}</Text>
@@ -303,6 +368,30 @@ const styles = StyleSheet.create({
     borderColor: colors.cream,
   },
   completenessBadgeText: { color: "#fff", fontSize: 11, fontWeight: "800" },
+  verifyBadge: {
+    position: "absolute",
+    top: 2,
+    right: 2,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.danger,
+    borderWidth: 2,
+    borderColor: colors.cream,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  verifyBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#FBEAE9",
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    marginTop: 14,
+  },
+  verifyBannerText: { flex: 1, color: "#B3261E", fontSize: 13, fontWeight: "700" },
   nameRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 14 },
   name: { fontSize: 22, fontWeight: "800", color: colors.navy },
   badge: { fontSize: 18 },

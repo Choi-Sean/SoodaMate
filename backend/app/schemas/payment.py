@@ -15,6 +15,12 @@ class ProductOut(BaseModel):
     days: int | None = None
     billing_cycle: str | None = None
     price_usd_cents: int
+    # Set only while an admin-activated Promotion (see routers/admin.py) is
+    # live for this product_id — discounted_price_usd_cents is what
+    # create_checkout_session actually charges; price_usd_cents above stays
+    # the full/strikethrough price for display.
+    discount_percent: int | None = None
+    discounted_price_usd_cents: int | None = None
 
 
 class CreateCheckoutRequest(BaseModel):

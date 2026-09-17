@@ -18,8 +18,9 @@ router = APIRouter(prefix="/payments", tags=["payments"])
 
 
 @router.get("/products", response_model=list[ProductOut])
-async def get_products() -> list[ProductOut]:
-    return [ProductOut(**p) for p in payment_service.list_products()]
+async def get_products(db: AsyncSession = Depends(get_db)) -> list[ProductOut]:
+    discounts = await payment_service.get_active_discounts(db)
+    return [ProductOut(**p) for p in payment_service.list_products(discounts)]
 
 
 @router.post("/create-checkout-session", response_model=CreateCheckoutResponse)
@@ -28,7 +29,9 @@ async def create_checkout_session(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> CreateCheckoutResponse:
-    checkout_url = await payment_service.create_checkout_session(user.id, body.product_id, user.preferred_language)
+    checkout_url = await payment_service.create_checkout_session(
+        db, user.id, body.product_id, user.preferred_language
+    )
     return CreateCheckoutResponse(checkout_url=checkout_url)
 
 

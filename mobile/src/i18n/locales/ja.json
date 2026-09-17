@@ -45,6 +45,7 @@
     "invalidEmail": "有効なメールアドレスを入力してください",
     "emailInUse": "このメールアドレスは既に使用されています",
     "photoLabel": "プロフィール写真",
+    "photoHint": "最大{{max}}枚まで選べます",
     "birthDate": "生年月日",
     "year": "年",
     "month": "月",
@@ -62,6 +63,9 @@
     "validationMissing": "本名と生年月日を入力してください",
     "needPhoto": "写真を1枚以上追加してください",
     "needLocation": "位置情報を設定してください",
+    "categoriesRequired": "興味のある会話カテゴリーを1つ以上選択してください",
+    "preferredCategoriesLabel": "興味のある会話カテゴリー",
+    "preferredCategoriesHint": "ブラインドチャットで話したいトピックを選んでください。後でプロフィール編集から変更できます。",
     "raceEthnicity": "人種/民族（任意）",
     "religion": "宗教（任意）",
     "race": {
@@ -259,6 +263,12 @@
     "soodaListPromoTitle": "SooDaListもチェック",
     "soodaListPromoBody": "SooDaMateと同じチームが作ったもう一つのアプリです",
     "soodaListPromoCta": "ストアで見る",
+    "verificationBannerUnsubmitted": "アカウントを有効にするには本人確認が必要です",
+    "verificationBannerPending": "本人確認を審査中です",
+    "verificationBannerRejected": "本人確認が却下されました — 理由を確認する",
+    "completenessBannerIncomplete": "プロフィールを充実させましょう（現在{{percent}}%、{{min}}%以上必要です）",
+    "verificationApprovedTitle": "本人確認完了 🎉",
+    "verificationApprovedBody": "アカウントが有効になりました。ブラインドチャットを始めましょう！",
     "purchaseSuccessTitle": "購入完了 🎉",
     "purchaseSuperlikeSuccess": "スーパーいいねが{{count}}回分追加されました。",
     "purchaseBoostSuccess": "ブーストが{{count}}回分追加されました。",
@@ -321,7 +331,7 @@
   },
   "faceVerification": {
     "title": "顔認証",
-    "subtitle": "セルフィーを撮るだけでプロフィールに認証バッジが表示されます。提出内容は実際のスタッフが確認します。",
+    "subtitle": "安心してご利用いただくため、本人確認が必須です。セルフィーと身分証明書の写真を提出してください — 実際のスタッフが確認し、承認され次第アカウントが有効になります。",
     "verifiedBanner": "顔認証済み",
     "pendingBanner": "セルフィーを確認中です — 通常そう時間はかかりません。",
     "rejectedBanner": "前回の提出は承認されませんでした。明るく鮮明なセルフィーで再度お試しください。",
@@ -341,8 +351,8 @@
     "takeIdPhoto": "身分証明書の写真を追加",
     "submit": "確認を依頼する",
     "resubmit": "再提出する",
-    "cardTitle": "認証バッジを取得",
-    "cardSubtitle": "セルフィー1枚で簡単に認証バッジを取得できます"
+    "cardTitle": "本人確認を完了する",
+    "cardSubtitle": "アカウントを有効にしてブラインドチャットを始めるには本人確認が必要です"
   },
   "interests": {
     "hiking": "🥾 登山",
@@ -426,7 +436,17 @@
     "deleteFailed": "アカウントを削除できませんでした",
     "tryAgainLater": "しばらくしてから再度お試しください",
     "travelMode": "トラベルモード",
-    "verification": "職場/学校認証"
+    "verification": "職場/学校認証",
+    "contactUs": "お問い合わせ / ご意見",
+    "inquiryHint": "ご質問やご意見をお送りください。確認のうえ対応いたします。",
+    "inquirySubjectLabel": "件名",
+    "inquirySubjectPlaceholder": "件名を入力してください",
+    "inquiryMessageLabel": "内容",
+    "inquiryMessagePlaceholder": "内容を詳しく入力してください",
+    "inquirySubmit": "送信",
+    "inquiryMissingFields": "件名と内容を両方入力してください",
+    "inquirySentTitle": "お問い合わせを受け付けました",
+    "inquirySentBody": "確認のうえ、追ってご連絡いたします。"
   },
   "travel": {
     "title": "トラベルモード",
@@ -490,7 +510,10 @@
   "phoneAuth": {
     "subtitle": "電話番号だけで簡単に始められます",
     "codeSubtitle": "届いた認証コードを入力してください",
-    "invalidNumber": "正しい電話番号を入力してください"
+    "invalidNumber": "正しい電話番号を入力してください",
+    "codeExpiresIn": "認証コードの有効時間：{{time}}",
+    "codeExpired": "認証コードの有効期限が切れました。再度お受け取りください。",
+    "resendCode": "認証コードを再送信"
   },
   "premiumFilters": {
     "title": "プレミアムフィルター",
@@ -625,6 +648,12 @@
     "aiMatchButton": "AIマッチングで探す",
     "aiMatchTitle": "AIマッチング",
     "aiMatchNoneFound": "今は待機中の相手がいません。少ししてからもう一度お試しください — クレジットは消費されていません。",
-    "aiMatchNoCredits": "AIマッチング権がありません。ショップで購入できます。"
+    "aiMatchNoCredits": "AIマッチング権がありません。ショップで購入できます。",
+    "verificationRequiredTitle": "本人確認が必要です",
+    "verificationRequiredBody": "ブラインドチャットを始める前に、セルフィーと身分証明書による本人確認を完了してください。",
+    "verificationRequiredCta": "本人確認へ進む",
+    "profileIncompleteTitle": "プロフィールを充実させましょう",
+    "profileIncompleteBody": "ブラインドチャットを始めるには、プロフィールを70%以上完成させる必要があります。",
+    "profileIncompleteCta": "プロフィールを編集する"
   }
 }
