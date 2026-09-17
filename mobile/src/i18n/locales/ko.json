@@ -274,6 +274,13 @@
     "purchaseBoostSuccess": "부스트 {{count}}회가 추가됐어요.",
     "purchasePremiumSuccess": "프리미엄이 활성화됐어요."
   },
+  "photoCrop": {
+    "title": "사진 편집",
+    "done": "완료",
+    "hint": "드래그해서 위치를 옮기고, 아래 슬라이더로 확대/축소하세요",
+    "previewLabel": "상대방에게 이렇게 보여요",
+    "zoomLabel": "확대"
+  },
   "editProfile": {
     "title": "프로필 수정",
     "sectionBasicInfo": "기본 정보",

@@ -274,6 +274,13 @@
     "purchaseBoostSuccess": "{{count}} Boosts have been added.",
     "purchasePremiumSuccess": "Premium is now active."
   },
+  "photoCrop": {
+    "title": "Edit photo",
+    "done": "Done",
+    "hint": "Drag to reposition, use the slider below to zoom",
+    "previewLabel": "This is what others will see",
+    "zoomLabel": "Zoom"
+  },
   "editProfile": {
     "title": "Edit profile",
     "sectionBasicInfo": "Basic info",

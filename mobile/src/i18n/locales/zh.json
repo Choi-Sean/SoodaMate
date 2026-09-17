@@ -274,6 +274,13 @@
     "purchaseBoostSuccess": "已添加 {{count}} 次曝光加速。",
     "purchasePremiumSuccess": "会员已开通。"
   },
+  "photoCrop": {
+    "title": "编辑照片",
+    "done": "完成",
+    "hint": "拖动调整位置，用下方滑块缩放",
+    "previewLabel": "这就是别人会看到的样子",
+    "zoomLabel": "缩放"
+  },
   "editProfile": {
     "title": "编辑资料",
     "sectionBasicInfo": "基本信息",

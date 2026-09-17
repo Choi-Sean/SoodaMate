@@ -274,6 +274,13 @@
     "purchaseBoostSuccess": "ブーストが{{count}}回分追加されました。",
     "purchasePremiumSuccess": "プレミアムが有効になりました。"
   },
+  "photoCrop": {
+    "title": "写真を編集",
+    "done": "完了",
+    "hint": "ドラッグして位置を調整し、下のスライダーでズームできます",
+    "previewLabel": "相手にはこう表示されます",
+    "zoomLabel": "ズーム"
+  },
   "editProfile": {
     "title": "プロフィール編集",
     "sectionBasicInfo": "基本情報",

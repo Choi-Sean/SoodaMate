@@ -13,6 +13,7 @@ import LocationPicker from "../../components/LocationPicker";
 import HeightInput from "../../components/HeightInput";
 import SelectDropdown, { DropdownOption } from "../../components/SelectDropdown";
 import CityAutocomplete from "../../components/CityAutocomplete";
+import PhotoCropEditor from "../../components/PhotoCropEditor";
 import { calculateAge } from "../../utils/age";
 import {
   EXERCISE_FREQUENCY_KEYS,
@@ -80,6 +81,12 @@ interface Props {
   onComplete: () => void;
 }
 
+interface PhotoItem {
+  uri: string;
+  width: number;
+  height: number;
+}
+
 export default function ProfileSetupScreen({ onComplete }: Props) {
   const { t } = useTranslation();
   const [name, setName] = useState("");
@@ -90,7 +97,8 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   const [gender, setGender] = useState<Gender>("male");
   const [interestedIn, setInterestedIn] = useState<InterestedIn>("female");
   const [openToLanguageExchange, setOpenToLanguageExchange] = useState(false);
-  const [photoUris, setPhotoUris] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [locationLat, setLocationLat] = useState<number | null>(null);
   const [locationLng, setLocationLng] = useState<number | null>(null);
 
@@ -134,7 +142,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
       setErrors([t("profileSetup.photoPermission")]);
       return;
     }
-    const remaining = MAX_PHOTOS - photoUris.length;
+    const remaining = MAX_PHOTOS - photos.length;
     if (remaining <= 0) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -143,13 +151,14 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
       selectionLimit: remaining,
     });
     if (!result.canceled && result.assets.length > 0) {
-      setPhotoUris((prev) => [...prev, ...result.assets.map((a) => a.uri)].slice(0, MAX_PHOTOS));
+      const picked = result.assets.map((a) => ({ uri: a.uri, width: a.width, height: a.height }));
+      setPhotos((prev) => [...prev, ...picked].slice(0, MAX_PHOTOS));
       clearFieldError("photo");
     }
   }
 
   function removePhoto(uri: string) {
-    setPhotoUris((prev) => prev.filter((u) => u !== uri));
+    setPhotos((prev) => prev.filter((p) => p.uri !== uri));
   }
 
   // No upload call to make yet at this point (photos aren't presigned/
@@ -158,18 +167,28 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   // post-signup reorder, minus the network round-trip.
   function movePhoto(index: number, direction: -1 | 1) {
     const target = index + direction;
-    if (target < 0 || target >= photoUris.length) return;
-    setPhotoUris((prev) => {
+    if (target < 0 || target >= photos.length) return;
+    setPhotos((prev) => {
       const next = prev.slice();
       [next[index], next[target]] = [next[target], next[index]];
       return next;
     });
   }
 
+  function handleCropConfirm(result: { uri: string; width: number; height: number }) {
+    setPhotos((prev) => {
+      if (editingIndex == null) return prev;
+      const next = prev.slice();
+      next[editingIndex] = result;
+      return next;
+    });
+    setEditingIndex(null);
+  }
+
   function validate(): { messages: string[]; fields: FieldErrors } {
     const messages: string[] = [];
     const fields: FieldErrors = {};
-    if (photoUris.length === 0) {
+    if (photos.length === 0) {
       messages.push(t("profileSetup.needPhoto"));
       fields.photo = true;
     }
@@ -247,7 +266,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
 
       const contentType = "image/jpeg";
       await Promise.all(
-        photoUris.map(async (uri, position) => {
+        photos.map(async ({ uri }, position) => {
           const { upload_url, gcs_object_path } = await presignUpload(contentType, position);
           await uploadToPresignedUrl(upload_url, uri, contentType);
           await confirmPhoto(gcs_object_path, position);
@@ -305,12 +324,15 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         </Text>
         <Text style={styles.photoHint}>{t("profileSetup.photoHint", { max: MAX_PHOTOS })}</Text>
         <View style={[styles.photoGrid, fieldErrors.photo && styles.photoGridError]}>
-          {photoUris.map((uri, index) => (
-            <View key={uri} style={styles.photoTileWrap}>
+          {photos.map((photo, index) => (
+            <View key={photo.uri} style={styles.photoTileWrap}>
               <View style={styles.photoTile}>
-                <Image source={{ uri }} style={styles.photoTileImage} />
-                <Pressable style={styles.photoRemoveBadge} onPress={() => removePhoto(uri)}>
+                <Image source={{ uri: photo.uri }} style={styles.photoTileImage} />
+                <Pressable style={styles.photoRemoveBadge} onPress={() => removePhoto(photo.uri)}>
                   <Text style={styles.photoRemoveBadgeText}>✕</Text>
+                </Pressable>
+                <Pressable style={styles.photoEditBadge} onPress={() => setEditingIndex(index)}>
+                  <Ionicons name="crop" size={12} color="#fff" />
                 </Pressable>
                 {index === 0 && (
                   <View style={styles.photoPrimaryBadge}>
@@ -318,7 +340,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
                   </View>
                 )}
               </View>
-              {photoUris.length > 1 && (
+              {photos.length > 1 && (
                 <View style={styles.moveRow}>
                   <Pressable
                     style={styles.moveButton}
@@ -331,25 +353,34 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
                   <Pressable
                     style={styles.moveButton}
                     onPress={() => movePhoto(index, 1)}
-                    disabled={index === photoUris.length - 1}
+                    disabled={index === photos.length - 1}
                     hitSlop={4}
                   >
                     <Ionicons
                       name="chevron-forward"
                       size={14}
-                      color={index === photoUris.length - 1 ? colors.border : colors.navy}
+                      color={index === photos.length - 1 ? colors.border : colors.navy}
                     />
                   </Pressable>
                 </View>
               )}
             </View>
           ))}
-          {photoUris.length < MAX_PHOTOS && (
+          {photos.length < MAX_PHOTOS && (
             <Pressable style={[styles.photoTile, styles.photoAddTile]} onPress={pickPhotos}>
               <Text style={styles.photoAddTileText}>+</Text>
             </Pressable>
           )}
         </View>
+
+        <PhotoCropEditor
+          visible={editingIndex != null}
+          uri={editingIndex != null ? photos[editingIndex]?.uri ?? null : null}
+          naturalWidth={editingIndex != null ? photos[editingIndex]?.width ?? 0 : 0}
+          naturalHeight={editingIndex != null ? photos[editingIndex]?.height ?? 0 : 0}
+          onCancel={() => setEditingIndex(null)}
+          onConfirm={handleCropConfirm}
+        />
 
         <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>
           {t("editProfile.name")}
@@ -741,6 +772,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   photoRemoveBadgeText: { color: "#fff", fontSize: 11 },
+  photoEditBadge: {
+    position: "absolute",
+    top: 4,
+    left: 4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "rgba(226,145,77,0.9)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   photoPrimaryBadge: {
     position: "absolute",
     bottom: 4,
