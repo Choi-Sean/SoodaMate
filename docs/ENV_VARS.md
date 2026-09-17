@@ -31,6 +31,7 @@
 | `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID` / `EXPO_PUBLIC_ADMOB_IOS_APP_ID` | AdMob console, after app registered | The *app*-level IDs (one per platform); falls back to Google's test IDs until set |
 | `EXPO_PUBLIC_ADMOB_ANDROID_NATIVE_UNIT_ID` / `EXPO_PUBLIC_ADMOB_IOS_NATIVE_UNIT_ID` | AdMob console → Ad units, after creating a Native unit per platform | Falls back to Google's test native unit ID until set (`src/components/AdCard.native.tsx`) — the in-swipe-deck sponsored card, replacing the old banner strip |
 | `FIREBASE_CONFIG` | Firebase Console → Project settings → your app | google-services.json / GoogleService-Info.plist |
+| `EXPO_PUBLIC_SENTRY_DSN` | sentry.io → create a free React Native project → Settings → Client Keys (DSN) | Crash/error reporting (`src/services/errorReporting.ts`); no-ops entirely (app behaves exactly as before) until this is set. A DSN is meant to be public/client-embeddable — not a secret. Set it in `eas.json`'s three build profiles once you have one; the config plugin for readable (symbolicated) native stack traces isn't wired up yet, see the comment in `app.config.js`. |
 
 **iOS App Tracking Transparency**: `app.config.js` already declares `NSUserTrackingUsageDescription` (via the `expo-tracking-transparency` plugin) and `ads.native.ts` requests the permission before initializing AdMob — required by Apple for any app using an IDFA-capable SDK like AdMob, not optional. No env var needed; nothing to configure here beyond having a real AdMob account eventually.
 

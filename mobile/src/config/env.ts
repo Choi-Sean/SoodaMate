@@ -15,4 +15,8 @@ export const env = {
   // (matches Tinder/Bumble/Hinge; no always-full-screen ads).
   admobAndroidNativeUnitId: process.env.EXPO_PUBLIC_ADMOB_ANDROID_NATIVE_UNIT_ID ?? "",
   admobIosNativeUnitId: process.env.EXPO_PUBLIC_ADMOB_IOS_NATIVE_UNIT_ID ?? "",
+  // Empty until a real Sentry project exists — errorReporting.ts no-ops
+  // entirely when this is blank, so the app behaves exactly as before for
+  // anyone who hasn't set it up yet (same pattern as the AdMob unit ids).
+  sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN ?? "",
 };

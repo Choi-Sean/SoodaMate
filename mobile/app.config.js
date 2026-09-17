@@ -163,6 +163,15 @@ module.exports = {
       // in the Firebase native pods on iOS regardless of whether the
       // config plugin ran, so the Podfile fix is needed either way.
       withRNFirebaseDisableSPM,
+      // @sentry/react-native's own config plugin ("@sentry/react-native" in
+      // this array) is deliberately NOT added yet — it edits the Xcode
+      // build phases / Gradle to upload source maps via sentry-cli, and
+      // that's unverified against a real Sentry project/auth token in this
+      // repo (none exists yet — EXPO_PUBLIC_SENTRY_DSN is blank). Runtime
+      // crash/error capture already works without it (see
+      // src/services/errorReporting.ts); add the plugin once a real Sentry
+      // project exists and there's a build to spend confirming it doesn't
+      // break, for readable (symbolicated) native stack traces.
     ],
     // EAS Update isn't actually wired up (no OTA update flow built) — this
     // just satisfies `eas build`'s own check, since eas.json's build

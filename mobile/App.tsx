@@ -9,10 +9,15 @@ import RootNavigator from "./src/navigation/RootNavigator";
 import { navigationRef } from "./src/navigation/navigationRef";
 import AnimatedSplash from "./src/components/AnimatedSplash";
 import AlertHost from "./src/components/AlertHost";
+import ErrorBoundary from "./src/components/ErrorBoundary";
 import { initAds } from "./src/services/ads";
 import { initDeepLinking } from "./src/services/deepLinking";
+import { initErrorReporting } from "./src/services/errorReporting";
 import { initI18n } from "./src/i18n";
 import { colors } from "./src/theme";
+
+// Before anything else, so a crash during init itself is still captured.
+initErrorReporting();
 
 const queryClient = new QueryClient();
 
@@ -74,14 +79,16 @@ export default function App() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <SafeAreaProvider>
-        <NavigationContainer ref={navigationRef} theme={navTheme}>
-          <RootNavigator />
-          <StatusBar style="auto" />
-        </NavigationContainer>
-        <AlertHost />
-      </SafeAreaProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <SafeAreaProvider>
+          <NavigationContainer ref={navigationRef} theme={navTheme}>
+            <RootNavigator />
+            <StatusBar style="auto" />
+          </NavigationContainer>
+          <AlertHost />
+        </SafeAreaProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

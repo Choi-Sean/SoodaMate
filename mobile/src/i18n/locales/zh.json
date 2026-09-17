@@ -17,6 +17,9 @@
     "somethingWentWrong": "出错了，请重试。",
     "tryAgain": "重试"
   },
+  "errorBoundary": {
+    "title": "哎呀，出问题了"
+  },
   "auth": {
     "loginTitle": "数搭伴侣",
     "email": "邮箱",

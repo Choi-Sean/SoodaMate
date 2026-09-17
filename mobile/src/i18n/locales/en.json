@@ -17,6 +17,9 @@
     "somethingWentWrong": "Something went wrong. Please try again.",
     "tryAgain": "Try again"
   },
+  "errorBoundary": {
+    "title": "Oops, something broke"
+  },
   "auth": {
     "loginTitle": "SooDaMate",
     "email": "Email",

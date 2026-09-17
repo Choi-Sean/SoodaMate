@@ -17,6 +17,9 @@
     "somethingWentWrong": "문제가 발생했어요. 다시 시도해주세요.",
     "tryAgain": "다시 시도"
   },
+  "errorBoundary": {
+    "title": "이런! 문제가 생겼어요"
+  },
   "auth": {
     "loginTitle": "수다메이트",
     "email": "이메일",

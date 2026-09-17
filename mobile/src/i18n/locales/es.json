@@ -17,6 +17,9 @@
     "somethingWentWrong": "Algo salió mal. Inténtalo de nuevo.",
     "tryAgain": "Reintentar"
   },
+  "errorBoundary": {
+    "title": "Vaya, algo se rompió"
+  },
   "auth": {
     "loginTitle": "SooDaMate",
     "email": "Correo electrónico",
