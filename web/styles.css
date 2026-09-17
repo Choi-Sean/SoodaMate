@@ -37,6 +37,16 @@ body {
   line-height: 1.55;
   overflow-wrap: break-word;
 }
+
+/* Jua (rounded, hand-drawn Korean display face — same one used on the
+   mobile app's own splash screen, see mobile/assets/splash-icon.png) for
+   every heading/badge/CTA — keeps the site's "귀염뽀짝" tone consistent
+   with the app itself instead of just inheriting the plain body font.
+   Body copy stays in the Roboto/Noto Sans KR stack above for readability
+   at paragraph length. */
+h1, h2, h3, .eyebrow, .rule-badge, .nav-cta, .store-badge {
+  font-family: "Jua", "Fredoka", sans-serif;
+}
 /* keep-all wraps at spaces, never mid-word - correct for Korean (which
    spaces between words) but wrong for Japanese/Chinese, which have no
    spaces between words at all: keep-all there means the ENTIRE phrase
@@ -63,7 +73,7 @@ button { font-family: inherit; }
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
 }
-.logo { display: flex; align-items: center; gap: 10px; font-family: "Fredoka", sans-serif; font-weight: 600; font-size: 19px; color: var(--navy); }
+.logo { display: flex; align-items: center; gap: 10px; font-family: "Jua", "Fredoka", sans-serif; font-weight: 600; font-size: 19px; color: var(--navy); }
 .logo-mark { width: 34px; height: 34px; }
 .nav-links { display: flex; align-items: center; gap: 30px; font-size: 14.5px; font-weight: 500; color: var(--ink); }
 .nav-links a:hover { color: var(--accent-dark); }

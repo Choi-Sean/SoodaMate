@@ -197,11 +197,11 @@ const translations = {
   },
   "rule.timeline1.title": { ko: "카테고리 매칭", en: "Category match", es: "Match por categoría", zh: "分类配对", ja: "カテゴリーマッチ" },
   "rule.timeline1.body": {
-    ko: "같은 관심사를 고른 인증된 회원과 연결돼요.",
-    en: "You're connected with a verified member who picked the same category.",
-    es: "Te conectamos con un miembro verificado que eligió la misma categoría.",
-    zh: "与选择了相同分类的认证会员建立连接。",
-    ja: "同じカテゴリーを選んだ認証済み会員とつながります。",
+    ko: "얼굴 인증을 마친 회원만 시작할 수 있어요. 같은 관심사를 고른 인증된 상대와 연결돼요.",
+    en: "Only members who've completed face verification can start — you're connected with a verified member who picked the same category.",
+    es: "Solo pueden empezar los miembros que completaron la verificación facial — te conectamos con alguien verificado que eligió la misma categoría.",
+    zh: "只有完成面部认证的会员才能开始——系统会为你匹配选择了相同分类的认证会员。",
+    ja: "顔認証を完了した会員だけが始められます。同じカテゴリーを選んだ認証済み会員とつながります。",
   },
   "rule.timeline2.title": { ko: "비공개 대화", en: "Private conversation", es: "Conversación privada", zh: "匿名对话", ja: "非公開の会話" },
   "rule.timeline2.body": {
@@ -220,6 +220,14 @@ const translations = {
     ja: "お互いが望んだときに、初めて名前と写真がお互いに公開されます。",
   },
 
+  "safety.verify.title": { ko: "얼굴 인증을 완료해야 시작 가능", en: "Face verification required to start", es: "Verificación facial requerida para empezar", zh: "需完成面部认证才能开始", ja: "顔認証完了者のみ開始可能" },
+  "safety.verify.body": {
+    ko: "블라인드 채팅은 얼굴 인증을 마친 회원만 시작할 수 있어요. 가짜 프로필 걱정 없이 대화하세요.",
+    en: "Only members who've completed face verification can start Blind Chat — no fake profiles to worry about.",
+    es: "Solo los miembros que completaron la verificación facial pueden iniciar el Blind Chat — sin preocuparte por perfiles falsos.",
+    zh: "只有完成面部认证的会员才能开始盲聊——无需担心虚假资料。",
+    ja: "ブラインドチャットは顔認証を完了した会員だけが始められます。偽プロフィールの心配はいりません。",
+  },
   "safety.1.title": { ko: "손쉬운 차단·신고", en: "Easy block & report", es: "Bloqueo y reporte fáciles", zh: "轻松拉黑与举报", ja: "簡単ブロック・通報" },
   "safety.1.body": {
     ko: "불편한 상대는 대화방에서 바로 차단하거나 신고할 수 있어요.",
