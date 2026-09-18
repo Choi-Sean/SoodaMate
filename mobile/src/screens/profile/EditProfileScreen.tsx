@@ -46,6 +46,20 @@ const GENDERS: Gender[] = ["male", "female", "other"];
 const MAX_INTERESTS = 5;
 const MAX_K_CONTENT_TAGS = 6;
 
+// Same shape/purpose as ProfileSetupScreen's FieldErrors — drives the red
+// star + border on each still-editable required field, not just a generic
+// top-of-screen message. mbti is deliberately absent: unlike at signup, it's
+// not required here (existing users who predate the MBTI feature shouldn't
+// be blocked from saving other edits just because they haven't taken the
+// quiz yet).
+interface FieldErrors {
+  name?: boolean;
+  birthDate?: boolean;
+  bio?: boolean;
+  categories?: boolean;
+  location?: boolean;
+}
+
 export default function EditProfileScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
@@ -91,7 +105,12 @@ export default function EditProfileScreen({ navigation }: Props) {
   const [showMbtiQuiz, setShowMbtiQuiz] = useState(false);
 
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
+  function clearFieldError(field: keyof FieldErrors) {
+    setFieldErrors((prev) => (prev[field] ? { ...prev, [field]: false } : prev));
+  }
 
   useEffect(() => {
     if (!profile) return;
@@ -152,24 +171,48 @@ export default function EditProfileScreen({ navigation }: Props) {
     await queryClient.invalidateQueries({ queryKey: ["myProfile"] });
   }
 
-  async function handleSave() {
-    if (!profile) return;
+  function validate(): { messages: string[]; fields: FieldErrors } {
+    const messages: string[] = [];
+    const fields: FieldErrors = {};
     // Only the fields that are still editable (blank on the loaded profile)
     // are validated here — a locked field's local state already mirrors the
     // stored value.
     if (!nameLocked && !name.trim()) {
-      setError(t("profileSetup.validationMissing"));
-      return;
+      messages.push(t("profileSetup.nameRequired"));
+      fields.name = true;
     }
     if (!birthDateLocked && !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
-      setError(t("profileSetup.validationMissing"));
-      return;
+      messages.push(t("profileSetup.birthDateRequired"));
+      fields.birthDate = true;
     }
     if (!genderLocked && !gender) {
-      setError(t("profileSetup.validationMissing"));
+      messages.push(t("profileSetup.validationMissing"));
+    }
+    if (!bio.trim()) {
+      messages.push(t("profileSetup.bioRequired"));
+      fields.bio = true;
+    }
+    if (preferredCategories.length === 0) {
+      messages.push(t("profileSetup.categoriesRequired"));
+      fields.categories = true;
+    }
+    if (locationLat == null || locationLng == null) {
+      messages.push(t("profileSetup.needLocation"));
+      fields.location = true;
+    }
+    return { messages, fields };
+  }
+
+  async function handleSave() {
+    if (!profile) return;
+    const { messages, fields } = validate();
+    if (messages.length > 0) {
+      setErrors(messages);
+      setFieldErrors(fields);
       return;
     }
-    setError(null);
+    setErrors([]);
+    setFieldErrors({});
     setSaving(true);
     try {
       await updateMyProfile({
@@ -219,7 +262,7 @@ export default function EditProfileScreen({ navigation }: Props) {
       await refreshProfile();
       navigation.goBack();
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));
+      setErrors([e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong")]);
     } finally {
       setSaving(false);
     }
@@ -248,7 +291,15 @@ export default function EditProfileScreen({ navigation }: Props) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {error && <Text style={styles.error}>{error}</Text>}
+      {errors.length > 0 && (
+        <View style={styles.errorBox}>
+          {errors.map((msg, i) => (
+            <Text key={i} style={styles.errorText}>
+              • {msg}
+            </Text>
+          ))}
+        </View>
+      )}
 
       <ProfilePhotosGrid photos={profile.photos} onChanged={refreshProfile} />
 
@@ -278,7 +329,10 @@ export default function EditProfileScreen({ navigation }: Props) {
 
       <Text style={styles.sectionTitle}>{t("editProfile.sectionBasicInfo")}</Text>
       <View style={styles.card}>
-        <Text style={styles.fieldLabel}>{t("editProfile.name")}</Text>
+        <Text style={styles.fieldLabel}>
+          {t("editProfile.name")}
+          {!nameLocked && <Text style={styles.requiredStar}> *</Text>}
+        </Text>
         {nameLocked ? (
           <View style={styles.lockedField}>
             <Text style={styles.lockedFieldText}>{profile.display_name}</Text>
@@ -286,10 +340,13 @@ export default function EditProfileScreen({ navigation }: Props) {
           </View>
         ) : (
           <TextInput
-            style={styles.input}
+            style={[styles.input, fieldErrors.name && styles.inputError]}
             placeholder={t("editProfile.displayNamePlaceholder")}
             value={name}
-            onChangeText={setName}
+            onChangeText={(v) => {
+              setName(v);
+              clearFieldError("name");
+            }}
           />
         )}
 
@@ -318,7 +375,10 @@ export default function EditProfileScreen({ navigation }: Props) {
           </View>
         )}
 
-        <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>{t("editProfile.birthDate")}</Text>
+        <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>
+          {t("editProfile.birthDate")}
+          {!birthDateLocked && <Text style={styles.requiredStar}> *</Text>}
+        </Text>
         {birthDateLocked ? (
           <View style={styles.lockedField}>
             <Text style={styles.lockedFieldText}>
@@ -329,24 +389,37 @@ export default function EditProfileScreen({ navigation }: Props) {
           </View>
         ) : (
           <TextInput
-            style={styles.input}
+            style={[styles.input, fieldErrors.birthDate && styles.inputError]}
             placeholder={t("profileSetup.birthDate")}
             value={birthDate}
-            onChangeText={setBirthDate}
+            onChangeText={(v) => {
+              setBirthDate(v);
+              clearFieldError("birthDate");
+            }}
           />
         )}
 
         <Text style={styles.nameLockNote}>{t("editProfile.lockedInfoNote")}</Text>
+
+        <View style={styles.fieldGap}>
+          <HeightInput required valueCm={heightCm} onChange={setHeightCm} />
+        </View>
       </View>
 
       <Text style={styles.sectionTitle}>{t("editProfile.sectionAboutMe")}</Text>
       <View style={styles.card}>
-        <Text style={styles.fieldLabel}>{t("editProfile.bio")}</Text>
+        <Text style={styles.fieldLabel}>
+          {t("editProfile.bio")}
+          <Text style={styles.requiredStar}> *</Text>
+        </Text>
         <TextInput
-          style={[styles.input, styles.multiline]}
+          style={[styles.input, styles.multiline, fieldErrors.bio && styles.inputError]}
           placeholder={t("editProfile.bioPlaceholder")}
           value={bio}
-          onChangeText={setBio}
+          onChangeText={(v) => {
+            setBio(v);
+            clearFieldError("bio");
+          }}
           multiline
         />
         <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>{t("editProfile.bio2")}</Text>
@@ -383,17 +456,26 @@ export default function EditProfileScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.fieldGap}>
-          <Text style={styles.fieldLabel}>{t("profileSetup.preferredCategoriesLabel")}</Text>
+          <Text style={styles.fieldLabel}>
+            {t("profileSetup.preferredCategoriesLabel")}
+            <Text style={styles.requiredStar}> *</Text>
+          </Text>
           <Text style={styles.switchHint}>{t("profileSetup.preferredCategoriesHint")}</Text>
           <MultiChipSelect
             label=""
             options={BLIND_CHAT_CATEGORY_KEYS as unknown as readonly string[]}
             translatePrefix="blindChatCategories"
             values={preferredCategories}
-            onChange={setPreferredCategories}
+            onChange={(vals) => {
+              setPreferredCategories(vals);
+              clearFieldError("categories");
+            }}
+            error={fieldErrors.categories}
           />
         </View>
 
+        {/* Deliberately not marked required here (unlike ProfileSetupScreen)
+            — see the FieldErrors comment above. */}
         <View style={styles.fieldGap}>
           <Text style={styles.fieldLabel}>{t("mbti.label")}</Text>
           <SelectDropdown
@@ -418,11 +500,14 @@ export default function EditProfileScreen({ navigation }: Props) {
 
         <View style={styles.fieldGap}>
           <LocationPicker
+            required
+            error={fieldErrors.location}
             lat={locationLat}
             lng={locationLng}
             onChange={(lat, lng) => {
               setLocationLat(lat);
               setLocationLng(lng);
+              clearFieldError("location");
             }}
           />
         </View>
@@ -453,10 +538,6 @@ export default function EditProfileScreen({ navigation }: Props) {
           value={politicalView}
           onChange={setPoliticalView}
         />
-
-        <View style={styles.fieldGap}>
-          <HeightInput valueCm={heightCm} onChange={setHeightCm} />
-        </View>
 
         <View style={styles.fieldGap}>
           <Text style={styles.fieldLabel}>{t("profileSetup.occupation")}</Text>
@@ -595,10 +676,13 @@ const styles = StyleSheet.create({
   switchLabel: { fontSize: 14, fontWeight: "600", color: colors.ink },
   switchHint: { fontSize: 12, color: colors.muted, marginTop: 3, lineHeight: 16 },
   mbtiFindOutLink: { fontSize: 12.5, color: colors.accentDark, fontWeight: "600", marginTop: 8 },
-  error: { color: colors.danger, marginBottom: 12 },
+  errorBox: { marginBottom: 12, marginTop: 12 },
+  errorText: { color: colors.danger, lineHeight: 20 },
+  requiredStar: { color: colors.danger },
   fieldLabel: { fontSize: 14, fontWeight: "600", marginBottom: 8, color: colors.muted },
   fieldLabelSpaced: { marginTop: 16 },
   input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 14, fontSize: 16 },
+  inputError: { borderColor: colors.danger },
   multiline: { minHeight: 80, textAlignVertical: "top" },
   lockedField: {
     flexDirection: "row",
