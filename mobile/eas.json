@@ -10,7 +10,9 @@
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "http://localhost:8001",
         "EXPO_PUBLIC_MARKETING_SITE_URL": "https://www.soodamate.com",
-        "EXPO_PUBLIC_SENTRY_DSN": "https://31c9303a3f64782384e88d8f226e6958@o4512102616793088.ingest.us.sentry.io/4512102620725248"
+        "EXPO_PUBLIC_SENTRY_DSN": "https://31c9303a3f64782384e88d8f226e6958@o4512102616793088.ingest.us.sentry.io/4512102620725248",
+        "EXPO_PUBLIC_ADMOB_IOS_APP_ID": "ca-app-pub-6843109668852382~3400071334",
+        "EXPO_PUBLIC_ADMOB_IOS_NATIVE_UNIT_ID": "ca-app-pub-6843109668852382/6956172961"
       }
     },
     "preview": {
@@ -22,7 +24,9 @@
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://soodamate-production.up.railway.app",
         "EXPO_PUBLIC_MARKETING_SITE_URL": "https://www.soodamate.com",
-        "EXPO_PUBLIC_SENTRY_DSN": "https://31c9303a3f64782384e88d8f226e6958@o4512102616793088.ingest.us.sentry.io/4512102620725248"
+        "EXPO_PUBLIC_SENTRY_DSN": "https://31c9303a3f64782384e88d8f226e6958@o4512102616793088.ingest.us.sentry.io/4512102620725248",
+        "EXPO_PUBLIC_ADMOB_IOS_APP_ID": "ca-app-pub-6843109668852382~3400071334",
+        "EXPO_PUBLIC_ADMOB_IOS_NATIVE_UNIT_ID": "ca-app-pub-6843109668852382/6956172961"
       }
     },
     "production": {
@@ -31,7 +35,9 @@
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://soodamate-production.up.railway.app",
         "EXPO_PUBLIC_MARKETING_SITE_URL": "https://www.soodamate.com",
-        "EXPO_PUBLIC_SENTRY_DSN": "https://31c9303a3f64782384e88d8f226e6958@o4512102616793088.ingest.us.sentry.io/4512102620725248"
+        "EXPO_PUBLIC_SENTRY_DSN": "https://31c9303a3f64782384e88d8f226e6958@o4512102616793088.ingest.us.sentry.io/4512102620725248",
+        "EXPO_PUBLIC_ADMOB_IOS_APP_ID": "ca-app-pub-6843109668852382~3400071334",
+        "EXPO_PUBLIC_ADMOB_IOS_NATIVE_UNIT_ID": "ca-app-pub-6843109668852382/6956172961"
       }
     }
   },
