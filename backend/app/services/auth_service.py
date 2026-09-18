@@ -6,12 +6,22 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.core.auth_provider_base import ExternalIdentity
 from app.core.phone import normalize_e164
 from app.core.security import create_token, decode_token, hash_password, verify_password
 from app.core.sms_verifier_base import SmsVerifier
 from app.models.user import AuthProvider, User
 from app.schemas.auth import TokenResponse
+
+
+def _is_dev_bypass_number(phone_number: str) -> bool:
+    """Gate for the whitelisted-number/fixed-code shortcut below. Requires a
+    non-empty dev_phone_bypass_code, so this is a no-op (matches nothing) in
+    every environment except one where that's been deliberately set."""
+    if not settings.dev_phone_bypass_code:
+        return False
+    return phone_number in settings.dev_phone_bypass_number_list
 
 
 def issue_tokens(user_id: uuid.UUID) -> TokenResponse:
@@ -100,6 +110,8 @@ async def start_phone_auth(verifier: SmsVerifier, phone_number: str) -> None:
     login/signup entry point, so there's no existing user to check against
     yet. Twilio Verify's own per-number rate limiting is the abuse guard."""
     phone_number = normalize_e164(phone_number)
+    if _is_dev_bypass_number(phone_number):
+        return
     await verifier.start(phone_number)
 
 
@@ -112,7 +124,10 @@ async def login_or_signup_with_phone(
     Returns (tokens, is_new_user)."""
     phone_number = normalize_e164(phone_number)
 
-    approved = await verifier.check(phone_number, code)
+    if _is_dev_bypass_number(phone_number) and code == settings.dev_phone_bypass_code:
+        approved = True
+    else:
+        approved = await verifier.check(phone_number, code)
     if not approved:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "incorrect or expired code")
 

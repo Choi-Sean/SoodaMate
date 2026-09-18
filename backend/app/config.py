@@ -79,6 +79,15 @@ class Settings(BaseSettings):
     twilio_auth_token: str = ""
     twilio_verify_service_sid: str = ""
 
+    # Dev-only bypass for specific whitelisted E.164 numbers, so repeated
+    # manual testing doesn't burn real (billed) Twilio Verify sends. Both
+    # must be set for it to do anything — empty dev_phone_bypass_code (the
+    # default everywhere except a developer's own env) means phone auth
+    # behaves identically for every number, listed or not. See auth_service's
+    # start_phone_auth/login_or_signup_with_phone and docs/ENV_VARS.md.
+    dev_phone_bypass_numbers: str = ""
+    dev_phone_bypass_code: str = ""
+
     # Phase 17 — Stripe (web checkout, not in-app purchase — user explicitly
     # rejected IAP's store commission; boost/superlike credits are bought via
     # the marketing website and synced back to the account by webhook).
@@ -93,6 +102,10 @@ class Settings(BaseSettings):
     @property
     def stun_url_list(self) -> list[str]:
         return [u.strip() for u in self.stun_urls.split(",") if u.strip()]
+
+    @property
+    def dev_phone_bypass_number_list(self) -> list[str]:
+        return [n.strip() for n in self.dev_phone_bypass_numbers.split(",") if n.strip()]
 
 
 settings = Settings()
