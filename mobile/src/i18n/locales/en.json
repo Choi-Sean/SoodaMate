@@ -671,6 +671,24 @@
     "profileIncompleteBody": "Your profile needs to be at least 70% complete before you can start Blind Chat.",
     "profileIncompleteCta": "Complete my profile"
   },
+  "blindFeedback": {
+    "menuItem": "Leave feedback on this person",
+    "title": "How was your chat with {{name}}?",
+    "subtitle": "Only used to improve matching. This is never shown to them.",
+    "tagsLabel": "What stood out? (optional)",
+    "tag": {
+      "kind": "They were kind",
+      "great_conversation": "Great conversation",
+      "similar_interests": "We had similar interests",
+      "awkward": "Conversation felt off",
+      "uncomfortable": "It was uncomfortable",
+      "no_show": "They suddenly stopped replying",
+      "other": "Other"
+    },
+    "commentPlaceholder": "What happened? (under 100 characters)",
+    "submit": "Submit",
+    "skip": "Maybe later"
+  },
   "mbti": {
     "label": "MBTI",
     "placeholder": "Select your MBTI type",

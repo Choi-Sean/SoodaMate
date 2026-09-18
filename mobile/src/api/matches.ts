@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { Icebreaker, Match } from "../types";
+import type { BlindChatFeedback, BlindChatFeedbackInput, Icebreaker, Match } from "../types";
 
 export async function getMatches(): Promise<Match[]> {
   const resp = await apiClient.get<Match[]>("/matches");
@@ -18,5 +18,13 @@ export async function requestBlindReveal(matchId: string): Promise<Match> {
 
 export async function acceptBlindReveal(matchId: string): Promise<Match> {
   const resp = await apiClient.post<Match>(`/matches/${matchId}/blind-reveal/accept`);
+  return resp.data;
+}
+
+export async function submitBlindFeedback(
+  matchId: string,
+  input: BlindChatFeedbackInput
+): Promise<BlindChatFeedback> {
+  const resp = await apiClient.post<BlindChatFeedback>(`/matches/${matchId}/blind-feedback`, input);
   return resp.data;
 }

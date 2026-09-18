@@ -16,9 +16,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 
+import BlindChatFeedbackModal from "../../components/BlindChatFeedbackModal";
 import ChatBubble from "../../components/ChatBubble";
 import { getMessageHistory } from "../../api/messages";
-import { acceptBlindReveal, getIcebreaker, requestBlindReveal } from "../../api/matches";
+import { acceptBlindReveal, getIcebreaker, requestBlindReveal, submitBlindFeedback } from "../../api/matches";
 import { presignChatImage, uploadToPresignedUrl } from "../../api/uploads";
 import { blockUser, reportUser } from "../../api/safety";
 import { showAlert } from "../../utils/alert";
@@ -26,7 +27,7 @@ import { useChatSocket, type ChatSocketError } from "../../hooks/useChatSocket";
 import { useMatches } from "../../hooks/useMatches";
 import { useAuthStore } from "../../store/authStore";
 import type { ChatStackParamList } from "../../navigation/ChatStack";
-import type { ChatMessage, Icebreaker } from "../../types";
+import type { BlindChatFeedbackInput, ChatMessage, Icebreaker } from "../../types";
 import { colors } from "../../theme";
 
 type Props = NativeStackScreenProps<ChatStackParamList, "ChatRoom">;
@@ -76,6 +77,7 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [bioExpanded, setBioExpanded] = useState(false);
+  const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const otherBioLines = [match?.other_bio, match?.other_bio2, match?.other_bio3].filter(
     (b): b is string => !!b && b.trim().length > 0
   );
@@ -213,6 +215,15 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
     }
   }
 
+  async function handleSubmitFeedback(input: BlindChatFeedbackInput) {
+    try {
+      await submitBlindFeedback(matchId, input);
+      setFeedbackModalVisible(false);
+    } catch (e: any) {
+      showAlert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? "");
+    }
+  }
+
   function confirmBlock() {
     showAlert(t("chat.blockConfirmTitle"), t("chat.blockConfirmBody"), [
       { text: t("chat.cancel"), style: "cancel" },
@@ -226,6 +237,9 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
         text: t("chat.writeCoupleStory"),
         onPress: () => navigation.navigate("SubmitCoupleStory", { matchId, otherDisplayName }),
       },
+      ...(match?.is_blind
+        ? [{ text: t("blindFeedback.menuItem"), onPress: () => setFeedbackModalVisible(true) }]
+        : []),
       { text: t("chat.report"), onPress: openReportReasons },
       { text: t("chat.block"), style: "destructive", onPress: confirmBlock },
       { text: t("chat.cancel"), style: "cancel" },
@@ -370,6 +384,12 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
           </Pressable>
         </View>
       )}
+      <BlindChatFeedbackModal
+        visible={feedbackModalVisible}
+        otherDisplayName={otherDisplayName}
+        onCancel={() => setFeedbackModalVisible(false)}
+        onSubmit={handleSubmitFeedback}
+      />
     </KeyboardAvoidingView>
   );
 }

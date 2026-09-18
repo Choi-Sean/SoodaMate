@@ -88,6 +88,12 @@ class Settings(BaseSettings):
     dev_phone_bypass_numbers: str = ""
     dev_phone_bypass_code: str = ""
 
+    # Claude API (console.anthropic.com > API Keys) — powers LLM-assisted AI
+    # Match ranking (llm_match_service.py). Empty means find_ai_match falls
+    # back to the deterministic tag-overlap score only, same "degrade, don't
+    # break" convention as every other optional integration above.
+    anthropic_api_key: str = ""
+
     # Phase 17 — Stripe (web checkout, not in-app purchase — user explicitly
     # rejected IAP's store commission; boost/superlike credits are bought via
     # the marketing website and synced back to the account by webhook).

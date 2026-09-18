@@ -1,7 +1,9 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from app.models.blind_chat_feedback import BLIND_CHAT_FEEDBACK_TAG_KEYS
 
 
 class SwipeRequest(BaseModel):
@@ -95,6 +97,36 @@ class AiMatchOut(BaseModel):
 
     found: bool
     match: MatchOut | None = None
+
+
+class BlindChatFeedbackCreate(BaseModel):
+    rating: int = Field(ge=1, le=5)
+    tags: list[str] = Field(default_factory=list, max_length=len(BLIND_CHAT_FEEDBACK_TAG_KEYS))
+    # Only meaningful (and only ever stored) alongside "other" in tags —
+    # never sent to the LLM prompt, see BlindChatFeedback's own docstring.
+    comment: str | None = Field(default=None, max_length=100)
+
+    @field_validator("tags")
+    @classmethod
+    def _tags_must_be_known(cls, value: list[str]) -> list[str]:
+        invalid = sorted(set(value) - set(BLIND_CHAT_FEEDBACK_TAG_KEYS))
+        if invalid:
+            raise ValueError(f"unknown feedback tag(s): {invalid}")
+        return value
+
+    @model_validator(mode="after")
+    def _comment_requires_other_tag(self) -> "BlindChatFeedbackCreate":
+        if self.comment and "other" not in self.tags:
+            raise ValueError("comment is only allowed alongside the 'other' tag")
+        return self
+
+
+class BlindChatFeedbackOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    rating: int
+    tags: list[str]
+    comment: str | None = None
 
 
 class IcebreakerOut(BaseModel):

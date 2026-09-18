@@ -427,3 +427,149 @@ async def test_ai_match_picks_the_higher_compatibility_candidate(client):
     assert high_view.json()["status"] == "matched"
     low_view = await client.get("/blind-chat/queue", headers=low_headers)
     assert low_view.json()["status"] == "waiting"
+
+
+@pytest.mark.asyncio
+async def test_blind_feedback_submit_then_resubmit_upserts(client):
+    _, a_headers, _, _, match_id = await _paired_couple(client, "fbA", "fbB")
+
+    first = await client.post(
+        f"/matches/{match_id}/blind-feedback",
+        headers=a_headers,
+        json={"rating": 3, "tags": ["kind"]},
+    )
+    assert first.status_code == 200
+    body = first.json()
+    assert body["rating"] == 3
+    assert body["tags"] == ["kind"]
+    assert body["comment"] is None
+
+    # A changes their mind — same (match, rater) upserts instead of stacking
+    # a second row (the unique constraint on MatchId+RaterUserId).
+    second = await client.post(
+        f"/matches/{match_id}/blind-feedback",
+        headers=a_headers,
+        json={
+            "rating": 5,
+            "tags": ["great_conversation", "other"],
+            "comment": "Had a lot in common!",
+        },
+    )
+    assert second.status_code == 200
+    body2 = second.json()
+    assert body2["rating"] == 5
+    assert set(body2["tags"]) == {"great_conversation", "other"}
+    assert body2["comment"] == "Had a lot in common!"
+
+
+@pytest.mark.asyncio
+async def test_blind_feedback_comment_requires_other_tag(client):
+    _, a_headers, _, _, match_id = await _paired_couple(client, "fbC", "fbD")
+
+    resp = await client.post(
+        f"/matches/{match_id}/blind-feedback",
+        headers=a_headers,
+        json={"rating": 4, "tags": ["kind"], "comment": "not allowed without other"},
+    )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_blind_feedback_rejects_unknown_tag(client):
+    _, a_headers, _, _, match_id = await _paired_couple(client, "fbE", "fbF")
+
+    resp = await client.post(
+        f"/matches/{match_id}/blind-feedback",
+        headers=a_headers,
+        json={"rating": 4, "tags": ["made_up_tag"]},
+    )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_blind_feedback_rejects_non_participant(client):
+    _, _, _, _, match_id = await _paired_couple(client, "fbG", "fbH")
+    _, stranger_headers = await create_user_with_profile(client, "fbStranger@example.com")
+
+    resp = await client.post(
+        f"/matches/{match_id}/blind-feedback",
+        headers=stranger_headers,
+        json={"rating": 4, "tags": []},
+    )
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_blind_feedback_rejects_non_blind_match(client):
+    a_id, a_headers = await create_user_with_profile(
+        client, "fbSwipeA@example.com", gender="male", interested_in="female"
+    )
+    b_id, b_headers = await create_user_with_profile(
+        client, "fbSwipeB@example.com", gender="female", interested_in="male"
+    )
+    await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
+    matched = await client.post(
+        "/interactions/superlike", headers=b_headers, json={"to_user_id": a_id}
+    )
+    match_id = matched.json()["match_id"]
+
+    resp = await client.post(
+        f"/matches/{match_id}/blind-feedback", headers=a_headers, json={"rating": 4, "tags": []}
+    )
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_feedback_summary_aggregates_rating_and_tags(client):
+    """get_feedback_summary is what llm_match_service folds into its
+    ranking prompt — proves the aggregate (not the raw rows/comment) is
+    computed correctly for the rated side."""
+    import uuid as uuid_mod
+
+    from app.database import async_session_factory
+    from app.services import blind_chat_service
+
+    _, a_headers, b_id, _, match_id = await _paired_couple(client, "fbSumA", "fbSumB")
+    await client.post(
+        f"/matches/{match_id}/blind-feedback",
+        headers=a_headers,
+        json={"rating": 5, "tags": ["kind", "great_conversation"]},
+    )
+
+    async with async_session_factory() as session:
+        avg_rating, top_tags = await blind_chat_service.get_feedback_summary(
+            session, uuid_mod.UUID(b_id)
+        )
+    assert avg_rating == 5.0
+    assert set(top_tags) == {"kind", "great_conversation"}
+
+
+@pytest.mark.asyncio
+async def test_ai_match_unconfigured_llm_falls_back_to_deterministic_pick(client):
+    """No ANTHROPIC_API_KEY is set in this test environment — proves
+    find_ai_match's LLM re-ranking step is a true no-op in that case rather
+    than erroring the whole request out (llm_match_service.pick_best_candidate
+    returns None whenever settings.anthropic_api_key is empty)."""
+    import uuid as uuid_mod
+
+    from app.database import async_session_factory
+    from app.models.profile import Profile
+
+    user_id, headers = await create_user_with_profile(
+        client, "fbLlmA@example.com", gender="male", interested_in="female"
+    )
+    async with async_session_factory() as session:
+        profile = await session.get(Profile, uuid_mod.UUID(user_id))
+        profile.ai_match_credits = 1
+        await session.commit()
+
+    _, cand_headers = await create_user_with_profile(
+        client, "fbLlmB@example.com", gender="female", interested_in="male"
+    )
+    await client.post("/blind-chat/queue", headers=cand_headers, json={"categories": ["travel"]})
+
+    resp = await client.post(
+        "/blind-chat/ai-match", headers=headers, json={"categories": ["travel"]}
+    )
+    assert resp.status_code == 200
+    assert resp.json()["found"] is True

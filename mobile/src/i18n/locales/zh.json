@@ -671,6 +671,24 @@
     "profileIncompleteBody": "开始盲聊前，个人主页完成度需达到70%以上。",
     "profileIncompleteCta": "去完善主页"
   },
+  "blindFeedback": {
+    "menuItem": "给对方留下反馈",
+    "title": "和{{name}}的聊天怎么样？",
+    "subtitle": "仅用于改进匹配，绝不会显示给对方。",
+    "tagsLabel": "感受如何？（可选）",
+    "tag": {
+      "kind": "很友善",
+      "great_conversation": "聊得很投机",
+      "similar_interests": "兴趣很相似",
+      "awkward": "聊天不太顺畅",
+      "uncomfortable": "感觉不舒服",
+      "no_show": "突然不回复了",
+      "other": "其他"
+    },
+    "commentPlaceholder": "具体说说吧（100字以内）",
+    "submit": "提交",
+    "skip": "以后再说"
+  },
   "mbti": {
     "label": "MBTI",
     "placeholder": "请选择你的MBTI类型",

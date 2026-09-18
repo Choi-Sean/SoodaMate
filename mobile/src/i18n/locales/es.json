@@ -671,6 +671,24 @@
     "profileIncompleteBody": "Tu perfil debe estar al menos 70% completo antes de poder iniciar el Chat a Ciegas.",
     "profileIncompleteCta": "Completar mi perfil"
   },
+  "blindFeedback": {
+    "menuItem": "Dejar comentarios sobre esta persona",
+    "title": "¿Cómo fue tu chat con {{name}}?",
+    "subtitle": "Solo se usa para mejorar el emparejamiento. Nunca se le muestra a esa persona.",
+    "tagsLabel": "¿Qué destacarías? (opcional)",
+    "tag": {
+      "kind": "Fue amable",
+      "great_conversation": "Muy buena conversación",
+      "similar_interests": "Teníamos intereses parecidos",
+      "awkward": "La conversación fue incómoda",
+      "uncomfortable": "Me sentí incómodo/a",
+      "no_show": "Dejó de responder de repente",
+      "other": "Otro"
+    },
+    "commentPlaceholder": "¿Qué pasó? (menos de 100 caracteres)",
+    "submit": "Enviar",
+    "skip": "Quizás luego"
+  },
   "mbti": {
     "label": "MBTI",
     "placeholder": "Selecciona tu tipo de MBTI",

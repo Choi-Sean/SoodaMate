@@ -5,14 +5,21 @@ from fastapi import HTTPException, status
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.interaction import Block, Match
 from app.models.blind_chat import BlindChatQueueEntry
+from app.models.blind_chat_feedback import BlindChatFeedback
+from app.models.interaction import Block, Match
 from app.models.profile import Profile
 from app.models.user import User
-from app.schemas.match import BlindChatLimitOut, BlindChatQueueStatusOut
-from app.services import push_service
+from app.schemas.match import (
+    BlindChatFeedbackCreate,
+    BlindChatFeedbackOut,
+    BlindChatLimitOut,
+    BlindChatQueueStatusOut,
+)
+from app.services import llm_match_service, push_service
 from app.utils.mbti import compatible_types
 from app.utils.premium import is_premium
+from app.utils.upsert import try_insert
 from app.ws.connection_manager import manager
 
 # Mobile's BLIND_CHAT_CATEGORY_KEYS entry that opts into MBTI-compatibility
@@ -290,11 +297,19 @@ async def find_ai_match(
     db: AsyncSession, user: User, viewer_profile: Profile, categories: list[str]
 ) -> tuple[BlindChatQueueEntry, Profile] | None:
     """Consumes 1 ai_match_credit (checked by the router before calling this)
-    to instantly pair with the *best-scoring* currently-waiting candidate,
-    rather than the live queue's plain FIFO order — see
-    _compatibility_score. Deliberately scoped to the existing waiting pool
-    (not every eligible user in the app) so both sides have already opted
-    into blind chat; nobody is pulled into a match they never asked for."""
+    to instantly pair with the best currently-waiting candidate, rather than
+    the live queue's plain FIFO order. Deliberately scoped to the existing
+    waiting pool (not every eligible user in the app) so both sides have
+    already opted into blind chat; nobody is pulled into a match they never
+    asked for.
+
+    Two-stage ranking: _compatibility_score (tags/age/distance) always runs
+    first and picks the shortlist order — cheap, deterministic, and the
+    final answer whenever the LLM path is unconfigured or fails. When
+    ANTHROPIC_API_KEY *is* set, llm_match_service.pick_best_candidate gets a
+    shot at re-ranking just that shortlist using profile text, the viewer's
+    own message tone, and candidates' past-partner feedback — signals the
+    tag-overlap score can't see at all."""
     filters = _compatibility_filters(user.id, viewer_profile, categories, None, None, None)
     filters += _distance_filters(viewer_profile, None)
     stmt = (
@@ -312,8 +327,16 @@ async def find_ai_match(
         shared = set(categories) & set(entry.categories.split(","))
         return _compatibility_score(viewer_profile, profile, shared)
 
-    best = max(rows, key=score_row)
-    return best[0], best[1]
+    ranked = sorted(rows, key=score_row, reverse=True)
+
+    shortlist = []
+    for entry, profile in ranked[: llm_match_service.MAX_CANDIDATES]:
+        avg_rating, top_tags = await get_feedback_summary(db, entry.user_id)
+        shortlist.append((profile, avg_rating, top_tags))
+
+    llm_index = await llm_match_service.pick_best_candidate(db, viewer_profile, shortlist)
+    chosen = ranked[llm_index] if llm_index is not None else ranked[0]
+    return chosen[0], chosen[1]
 
 
 async def _create_match(
@@ -447,3 +470,81 @@ async def get_queue_status(db: AsyncSession, user_id: uuid.UUID) -> BlindChatQue
     if entry is None:
         return BlindChatQueueStatusOut(status="idle")
     return await _resolve_own_entry(db, entry)
+
+
+def _feedback_out(row: BlindChatFeedback) -> BlindChatFeedbackOut:
+    return BlindChatFeedbackOut(
+        rating=row.rating,
+        tags=[t for t in row.tags.split(",") if t],
+        comment=row.comment,
+    )
+
+
+async def submit_blind_chat_feedback(
+    db: AsyncSession, match_id: uuid.UUID, rater_user_id: uuid.UUID, body: BlindChatFeedbackCreate
+) -> BlindChatFeedbackOut | None:
+    """Returns None only if the match doesn't exist or rater_user_id isn't a
+    participant (-> 404 at the router), mirroring request_blind_reveal's own
+    convention. Unlike that flow, feedback is allowed on any blind match
+    regardless of is_active/blind_revealed — a stale or already-revealed
+    chat is still one you can rate. Re-submitting overwrites the rater's
+    prior feedback for this match rather than erroring (try_insert first,
+    UPDATE on the unique-constraint miss — same portable-upsert convention
+    as everywhere else in this codebase that needs ON CONFLICT)."""
+    match = await db.get(Match, match_id)
+    if match is None or rater_user_id not in (match.user_a_id, match.user_b_id):
+        return None
+    if not match.is_blind:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "not a blind chat match")
+
+    rated_user_id = match.user_b_id if match.user_a_id == rater_user_id else match.user_a_id
+    tags_csv = ",".join(body.tags)
+
+    row = BlindChatFeedback(
+        match_id=match_id,
+        rater_user_id=rater_user_id,
+        rated_user_id=rated_user_id,
+        rating=body.rating,
+        tags=tags_csv,
+        comment=body.comment,
+    )
+    if not await try_insert(db, row):
+        existing = await db.scalar(
+            select(BlindChatFeedback).where(
+                BlindChatFeedback.match_id == match_id,
+                BlindChatFeedback.rater_user_id == rater_user_id,
+            )
+        )
+        existing.rating = body.rating
+        existing.tags = tags_csv
+        existing.comment = body.comment
+        row = existing
+    await db.commit()
+    await db.refresh(row)
+    return _feedback_out(row)
+
+
+async def get_feedback_summary(
+    db: AsyncSession, user_id: uuid.UUID
+) -> tuple[float | None, list[str]]:
+    """Aggregate-only view of the feedback a user has *received*, for
+    llm_match_service's ranking prompt — never the individual rows, and
+    never `comment` (free text has no business leaving this table; only the
+    structured rating/tags do). Returns (average_rating, top_tag_keys),
+    (None, []) if nobody has rated them yet. Capped to the 3 most frequent
+    tags so the prompt stays short regardless of how many ratings pile up."""
+    stmt = select(BlindChatFeedback.rating, BlindChatFeedback.tags).where(
+        BlindChatFeedback.rated_user_id == user_id
+    )
+    rows = (await db.execute(stmt)).all()
+    if not rows:
+        return None, []
+
+    avg_rating = sum(r.rating for r in rows) / len(rows)
+    tag_counts: dict[str, int] = {}
+    for r in rows:
+        for tag in r.tags.split(","):
+            if tag and tag != "other":
+                tag_counts[tag] = tag_counts.get(tag, 0) + 1
+    top_tags = sorted(tag_counts, key=lambda t: tag_counts[t], reverse=True)[:3]
+    return round(avg_rating, 1), top_tags

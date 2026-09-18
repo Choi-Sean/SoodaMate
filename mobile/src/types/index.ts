@@ -159,6 +159,18 @@ export interface BlindChatQueueStatus {
   match_id: string | null;
 }
 
+export interface BlindChatFeedbackInput {
+  rating: number;
+  tags: string[];
+  comment?: string | null;
+}
+
+export interface BlindChatFeedback {
+  rating: number;
+  tags: string[];
+  comment: string | null;
+}
+
 export interface BlindChatFilters {
   gender?: "male" | "female" | "other" | "all" | null;
   min_age?: number | null;

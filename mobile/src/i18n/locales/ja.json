@@ -671,6 +671,24 @@
     "profileIncompleteBody": "ブラインドチャットを始めるには、プロフィールを70%以上完成させる必要があります。",
     "profileIncompleteCta": "プロフィールを編集する"
   },
+  "blindFeedback": {
+    "menuItem": "お相手へのフィードバックを送る",
+    "title": "{{name}}さんとのチャットはどうでしたか？",
+    "subtitle": "マッチングの改善のみに使われます。お相手には表示されません。",
+    "tagsLabel": "感じたことを選んでください（任意）",
+    "tag": {
+      "kind": "親切でした",
+      "great_conversation": "会話がとても弾みました",
+      "similar_interests": "興味が似ていました",
+      "awkward": "会話がかみ合いませんでした",
+      "uncomfortable": "不快に感じました",
+      "no_show": "急に返信がなくなりました",
+      "other": "その他"
+    },
+    "commentPlaceholder": "詳しく教えてください（100文字以内）",
+    "submit": "送信する",
+    "skip": "また今度"
+  },
   "mbti": {
     "label": "MBTI",
     "placeholder": "MBTIタイプを選択してください",

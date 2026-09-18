@@ -671,6 +671,24 @@
     "profileIncompleteBody": "블라인드 채팅을 시작하려면 프로필을 70% 이상 완성해주세요.",
     "profileIncompleteCta": "프로필 채우러 가기"
   },
+  "blindFeedback": {
+    "menuItem": "상대방 피드백 남기기",
+    "title": "{{name}}님과의 대화는 어땠나요?",
+    "subtitle": "매칭 품질 개선에만 사용돼요. 상대방에게는 보이지 않아요.",
+    "tagsLabel": "느낀 점을 골라주세요 (선택)",
+    "tag": {
+      "kind": "친절했어요",
+      "great_conversation": "대화가 잘 통했어요",
+      "similar_interests": "관심사가 비슷했어요",
+      "awkward": "대화가 잘 안 통했어요",
+      "uncomfortable": "불편했어요",
+      "no_show": "갑자기 대화가 끊겼어요",
+      "other": "기타"
+    },
+    "commentPlaceholder": "어떤 점이 그랬는지 적어주세요 (100자 이내)",
+    "submit": "제출하기",
+    "skip": "다음에 할게요"
+  },
   "mbti": {
     "label": "MBTI",
     "placeholder": "MBTI를 선택해주세요",
