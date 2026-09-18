@@ -14,6 +14,7 @@ import HeightInput from "../../components/HeightInput";
 import SelectDropdown, { DropdownOption } from "../../components/SelectDropdown";
 import CityAutocomplete from "../../components/CityAutocomplete";
 import PhotoCropEditor from "../../components/PhotoCropEditor";
+import MbtiQuizModal from "../../components/MbtiQuizModal";
 import { calculateAge } from "../../utils/age";
 import {
   EXERCISE_FREQUENCY_KEYS,
@@ -29,6 +30,7 @@ import { EDUCATION_KEYS } from "../../constants/educationLevels";
 import { INTEREST_KEYS, LANGUAGE_KEYS } from "../../constants/interestsAndLanguages";
 import { K_CONTENT_KEYS } from "../../constants/kContentTags";
 import { BLIND_CHAT_CATEGORY_KEYS } from "../../constants/blindChatCategories";
+import { MBTI_TYPE_KEYS } from "../../constants/mbtiTypes";
 import type { Gender, InterestedIn } from "../../types";
 import { colors } from "../../theme";
 
@@ -75,6 +77,7 @@ interface FieldErrors {
   bio?: boolean;
   location?: boolean;
   categories?: boolean;
+  mbti?: boolean;
 }
 
 interface Props {
@@ -122,6 +125,8 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   const [kContentTags, setKContentTags] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
   const [preferredCategories, setPreferredCategories] = useState<string[]>([]);
+  const [mbti, setMbti] = useState<string | null>(null);
+  const [showMbtiQuiz, setShowMbtiQuiz] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -216,6 +221,10 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
       messages.push(t("profileSetup.categoriesRequired"));
       fields.categories = true;
     }
+    if (!mbti) {
+      messages.push(t("profileSetup.mbtiRequired"));
+      fields.mbti = true;
+    }
     return { messages, fields };
   }
 
@@ -262,6 +271,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         k_content_tags: kContentTags,
         languages,
         preferred_categories: preferredCategories,
+        mbti,
       });
 
       const contentType = "image/jpeg";
@@ -286,6 +296,8 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   }
 
   const ageFromBirthDate = calculateAge(birthDate);
+
+  const mbtiOptions: DropdownOption[] = MBTI_TYPE_KEYS.map((key) => ({ key, label: key }));
 
   const educationOptions: DropdownOption[] = EDUCATION_KEYS.map((key) => ({
     key,
@@ -380,6 +392,16 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
           naturalHeight={editingIndex != null ? photos[editingIndex]?.height ?? 0 : 0}
           onCancel={() => setEditingIndex(null)}
           onConfirm={handleCropConfirm}
+        />
+
+        <MbtiQuizModal
+          visible={showMbtiQuiz}
+          onCancel={() => setShowMbtiQuiz(false)}
+          onApply={(result) => {
+            setMbti(result);
+            setShowMbtiQuiz(false);
+            clearFieldError("mbti");
+          }}
         />
 
         <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>
@@ -556,6 +578,27 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
           />
         </View>
 
+        <View style={styles.fieldGap}>
+          <Text style={styles.fieldLabel}>
+            {t("mbti.label")}
+            <Text style={styles.requiredStar}> *</Text>
+          </Text>
+          <SelectDropdown
+            label={t("mbti.label")}
+            placeholder={t("mbti.placeholder")}
+            options={mbtiOptions}
+            value={mbti}
+            onChange={(v) => {
+              setMbti(v);
+              clearFieldError("mbti");
+            }}
+            error={fieldErrors.mbti}
+          />
+          <Pressable onPress={() => setShowMbtiQuiz(true)}>
+            <Text style={styles.mbtiFindOutLink}>{t("mbti.dontKnow")} · {t("mbti.findOutCta")}</Text>
+          </Pressable>
+        </View>
+
         <View style={[styles.switchRow, styles.fieldGap]}>
           <View style={styles.switchTextWrap}>
             <Text style={styles.switchLabel}>{t("editProfile.languageExchangeLabel")}</Text>
@@ -729,6 +772,7 @@ const styles = StyleSheet.create({
   errorText: { color: colors.danger, lineHeight: 20 },
   requiredStar: { color: colors.danger },
   photoHint: { fontSize: 12, color: colors.muted, marginBottom: 10 },
+  mbtiFindOutLink: { fontSize: 12.5, color: colors.accentDark, fontWeight: "600", marginTop: 8 },
   photoGrid: {
     flexDirection: "row",
     flexWrap: "wrap",

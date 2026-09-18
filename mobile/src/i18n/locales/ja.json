@@ -67,6 +67,7 @@
     "needPhoto": "写真を1枚以上追加してください",
     "needLocation": "位置情報を設定してください",
     "categoriesRequired": "興味のある会話カテゴリーを1つ以上選択してください",
+    "mbtiRequired": "MBTIを選択してください",
     "preferredCategoriesLabel": "興味のある会話カテゴリー",
     "preferredCategoriesHint": "ブラインドチャットで話したいトピックを選んでください。後でプロフィール編集から変更できます。",
     "raceEthnicity": "人種/民族（任意）",

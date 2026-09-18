@@ -67,6 +67,7 @@
     "needPhoto": "Add at least one photo",
     "needLocation": "Set your location",
     "categoriesRequired": "Please select at least one conversation category you're interested in",
+    "mbtiRequired": "Please select your MBTI type",
     "preferredCategoriesLabel": "Conversation categories you're interested in",
     "preferredCategoriesHint": "Pick the topics you'd like to talk about in Blind Chat. You can change these later in Edit Profile.",
     "raceEthnicity": "Race/ethnicity (optional)",

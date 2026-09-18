@@ -33,6 +33,7 @@ export interface ProfileUpdateInput {
   languages?: string[];
   k_content_tags?: string[];
   preferred_categories?: string[];
+  mbti?: string | null;
 }
 
 export async function getMyProfile(): Promise<Profile> {

@@ -17,6 +17,7 @@ import VerifiedBadge from "../../components/VerifiedBadge";
 import ProfileCompletenessBar from "../../components/ProfileCompletenessBar";
 import HeightInput from "../../components/HeightInput";
 import CityAutocomplete from "../../components/CityAutocomplete";
+import MbtiQuizModal from "../../components/MbtiQuizModal";
 import { calculateProfileCompleteness } from "../../utils/profileCompleteness";
 import { calculateAge, formatDate } from "../../utils/age";
 import {
@@ -33,6 +34,7 @@ import { EDUCATION_KEYS } from "../../constants/educationLevels";
 import { INTEREST_KEYS, LANGUAGE_KEYS } from "../../constants/interestsAndLanguages";
 import { K_CONTENT_KEYS } from "../../constants/kContentTags";
 import { BLIND_CHAT_CATEGORY_KEYS } from "../../constants/blindChatCategories";
+import { MBTI_TYPE_KEYS } from "../../constants/mbtiTypes";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
 import type { Gender, InterestedIn } from "../../types";
 import { colors } from "../../theme";
@@ -85,6 +87,8 @@ export default function EditProfileScreen({ navigation }: Props) {
   const [languages, setLanguages] = useState<string[]>([]);
   const [kContentTags, setKContentTags] = useState<string[]>([]);
   const [preferredCategories, setPreferredCategories] = useState<string[]>([]);
+  const [mbti, setMbti] = useState<string | null>(null);
+  const [showMbtiQuiz, setShowMbtiQuiz] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -113,6 +117,9 @@ export default function EditProfileScreen({ navigation }: Props) {
     setRelationshipGoal(profile.relationship_goal);
     setWantsKids(profile.wants_kids);
     setHasKids(profile.has_kids);
+    // `?? null` for the same reason as the `?? []`s below — undeployed-field
+    // deploy-sync safety, not just an ordinary null.
+    setMbti(profile.mbti ?? null);
     // Older profiles (seeded/saved before INTEREST_KEYS/LANGUAGE_KEYS
     // existed) can still hold free-text values like "여행" instead of the
     // canonical key "travel" — MultiChipSelect highlights a chip via
@@ -201,6 +208,7 @@ export default function EditProfileScreen({ navigation }: Props) {
         k_content_tags: kContentTags,
         languages,
         preferred_categories: preferredCategories,
+        mbti,
         // Not editable on this screen anymore (age/distance now live only
         // in the Swipe tab's Filters modal) — round-tripped unchanged so
         // this full-replace PUT doesn't reset them to schema defaults.
@@ -221,6 +229,8 @@ export default function EditProfileScreen({ navigation }: Props) {
     key,
     label: t(`profileSetup.educationOption.${key}`),
   }));
+
+  const mbtiOptions: DropdownOption[] = MBTI_TYPE_KEYS.map((key) => ({ key, label: key }));
 
   const interestOptions = INTEREST_KEYS as unknown as readonly string[];
   const languageOptions = LANGUAGE_KEYS as unknown as readonly string[];
@@ -243,6 +253,8 @@ export default function EditProfileScreen({ navigation }: Props) {
       <ProfilePhotosGrid photos={profile.photos} onChanged={refreshProfile} />
 
       <MomentsEditor moments={profile.moments} onChanged={refreshProfile} />
+
+      <MbtiQuizModal visible={showMbtiQuiz} onCancel={() => setShowMbtiQuiz(false)} onApply={(result) => { setMbti(result); setShowMbtiQuiz(false); }} />
 
       <ProfileCompletenessBar percent={calculateProfileCompleteness(profile)} />
 
@@ -380,6 +392,20 @@ export default function EditProfileScreen({ navigation }: Props) {
             values={preferredCategories}
             onChange={setPreferredCategories}
           />
+        </View>
+
+        <View style={styles.fieldGap}>
+          <Text style={styles.fieldLabel}>{t("mbti.label")}</Text>
+          <SelectDropdown
+            label={t("mbti.label")}
+            placeholder={t("mbti.placeholder")}
+            options={mbtiOptions}
+            value={mbti}
+            onChange={setMbti}
+          />
+          <Pressable onPress={() => setShowMbtiQuiz(true)}>
+            <Text style={styles.mbtiFindOutLink}>{t("mbti.dontKnow")} · {t("mbti.findOutCta")}</Text>
+          </Pressable>
         </View>
 
         <View style={[styles.switchRow, styles.fieldGap]}>
@@ -568,6 +594,7 @@ const styles = StyleSheet.create({
   switchTextWrap: { flex: 1 },
   switchLabel: { fontSize: 14, fontWeight: "600", color: colors.ink },
   switchHint: { fontSize: 12, color: colors.muted, marginTop: 3, lineHeight: 16 },
+  mbtiFindOutLink: { fontSize: 12.5, color: colors.accentDark, fontWeight: "600", marginTop: 8 },
   error: { color: colors.danger, marginBottom: 12 },
   fieldLabel: { fontSize: 14, fontWeight: "600", marginBottom: 8, color: colors.muted },
   fieldLabelSpaced: { marginTop: 16 },

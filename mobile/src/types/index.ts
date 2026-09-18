@@ -89,6 +89,7 @@ export interface Profile {
   k_content_tags: string[];
   k_content_filter: string[];
   preferred_categories: string[];
+  mbti: string | null;
   updated_at: string;
   photos: Photo[];
   moments: Moment[];

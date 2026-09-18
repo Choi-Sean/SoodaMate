@@ -67,6 +67,7 @@
     "needPhoto": "请至少添加一张照片",
     "needLocation": "请设置你的位置",
     "categoriesRequired": "请至少选择一个你感兴趣的聊天分类",
+    "mbtiRequired": "请选择你的MBTI类型",
     "preferredCategoriesLabel": "感兴趣的聊天分类",
     "preferredCategoriesHint": "选择你想在盲聊中聊的话题，之后可以在编辑资料中修改。",
     "raceEthnicity": "种族/民族（可选）",
