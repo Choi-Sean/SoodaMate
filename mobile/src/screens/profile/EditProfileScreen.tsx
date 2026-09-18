@@ -121,11 +121,23 @@ export default function EditProfileScreen({ navigation }: Props) {
     // raw array length). Dropping unrecognized values here keeps the count
     // and the highlighted chips honest; saving afterwards naturally
     // rewrites the stored value to only ever contain valid keys.
-    setInterests(profile.interests.filter((key) => (INTEREST_KEYS as readonly string[]).includes(key)));
-    setLanguages(profile.languages.filter((key) => (LANGUAGE_KEYS as readonly string[]).includes(key)));
-    setKContentTags(profile.k_content_tags.filter((key) => (K_CONTENT_KEYS as readonly string[]).includes(key)));
+    //
+    // `?? []` on each: a real prod crash (Sentry, 2026-09-18) traced back to
+    // a backend/mobile deploy-sync gap — preferred_categories didn't exist
+    // yet on the deployed API, so the key was missing from the response
+    // entirely (`undefined`, not `null`) and .filter() threw. The backend
+    // fix is deploying the already-committed schema change; this guard is
+    // the belt-and-suspenders half, so a future field added to one side
+    // before the other degrades to "not preselected" instead of a crash.
+    setInterests((profile.interests ?? []).filter((key) => (INTEREST_KEYS as readonly string[]).includes(key)));
+    setLanguages((profile.languages ?? []).filter((key) => (LANGUAGE_KEYS as readonly string[]).includes(key)));
+    setKContentTags(
+      (profile.k_content_tags ?? []).filter((key) => (K_CONTENT_KEYS as readonly string[]).includes(key))
+    );
     setPreferredCategories(
-      profile.preferred_categories.filter((key) => (BLIND_CHAT_CATEGORY_KEYS as readonly string[]).includes(key))
+      (profile.preferred_categories ?? []).filter((key) =>
+        (BLIND_CHAT_CATEGORY_KEYS as readonly string[]).includes(key)
+      )
     );
   }, [profile]);
 
