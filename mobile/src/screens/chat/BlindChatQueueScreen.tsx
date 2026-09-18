@@ -16,6 +16,7 @@ import {
 import { getMatches } from "../../api/matches";
 import { getMyProfile } from "../../api/profiles";
 import { BLIND_CHAT_CATEGORY_KEYS } from "../../constants/blindChatCategories";
+import AdCard from "../../components/AdCard";
 import ChipSelect from "../../components/ChipSelect";
 import MultiChipSelect from "../../components/MultiChipSelect";
 import RangeSlider from "../../components/RangeSlider";
@@ -64,6 +65,11 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
   const [waiting, setWaiting] = useState(false);
   const [starting, setStarting] = useState(false);
   const [aiMatching, setAiMatching] = useState(false);
+  // The wait for a match is genuine idle time (no active conversation to
+  // interrupt), unlike the chat itself — the one ad surface left now that
+  // swipe/Classic Matching is out of the concept entirely. Hidden outright
+  // on failure to load rather than leaving a dead/broken box.
+  const [adUnavailable, setAdUnavailable] = useState(false);
 
   const { data: profile } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
   const { data: limit } = useQuery({ queryKey: ["blindChatLimit"], queryFn: getBlindChatLimit });
@@ -212,6 +218,11 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
             </View>
           ))}
         </View>
+        {!adUnavailable && (
+          <View style={styles.waitingAdSlot}>
+            <AdCard onUnavailable={() => setAdUnavailable(true)} />
+          </View>
+        )}
         <Pressable style={styles.cancelButton} onPress={handleCancel}>
           <Text style={styles.cancelButtonText}>{t("common.cancel")}</Text>
         </Pressable>
@@ -348,6 +359,7 @@ const styles = StyleSheet.create({
   waitingChips: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "center" },
   waitingChip: { backgroundColor: colors.creamDeep, borderRadius: 20, paddingVertical: 6, paddingHorizontal: 14 },
   waitingChipText: { fontSize: 13, color: colors.ink, fontWeight: "600" },
+  waitingAdSlot: { width: "100%", height: 220, marginTop: 8 },
   cancelButton: { marginTop: 12, paddingVertical: 12, paddingHorizontal: 28, borderRadius: 12, backgroundColor: colors.creamDeep },
   cancelButtonText: { color: colors.muted, fontWeight: "700" },
 });
