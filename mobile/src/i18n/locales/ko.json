@@ -214,6 +214,7 @@
     "viewOriginal": "원문 보기",
     "viewTranslated": "번역 보기",
     "translatedLabel": "번역됨",
+    "aboutThem": "{{name}}님 소개",
     "icebreakerLabel": "대화 시작 제안",
     "icebreaker": {
       "shared_kcontent": "둘 다 {{label}} 좋아하시네요! 최애 포인트가 뭐예요? 👀",
@@ -633,7 +634,8 @@
     "pets": "🐶 반려동물",
     "books": "📚 책·자기계발",
     "language_exchange": "🗣️ 언어교류",
-    "free_talk": "💬 자유주제"
+    "free_talk": "💬 자유주제",
+    "mbti_match": "🧩 MBTI 궁합 매칭"
   },
   "blindChat": {
     "title": "블라인드 채팅",

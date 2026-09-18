@@ -214,6 +214,7 @@
     "viewOriginal": "查看原文",
     "viewTranslated": "查看翻译",
     "translatedLabel": "已翻译",
+    "aboutThem": "关于{{name}}",
     "icebreakerLabel": "开场话题推荐",
     "icebreaker": {
       "shared_kcontent": "你们都喜欢{{label}}！最喜欢哪一点呢？👀",
@@ -633,7 +634,8 @@
     "pets": "🐶 宠物",
     "books": "📚 读书·自我提升",
     "language_exchange": "🗣️ 语言交流",
-    "free_talk": "💬 自由聊天"
+    "free_talk": "💬 自由聊天",
+    "mbti_match": "🧩 MBTI 契合匹配"
   },
   "blindChat": {
     "title": "盲聊",

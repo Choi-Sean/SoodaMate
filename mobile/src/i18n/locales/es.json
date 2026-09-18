@@ -214,6 +214,7 @@
     "viewOriginal": "Ver original",
     "viewTranslated": "Ver traducción",
     "translatedLabel": "Traducido",
+    "aboutThem": "Sobre {{name}}",
     "icebreakerLabel": "Sugerencia para iniciar la charla",
     "icebreaker": {
       "shared_kcontent": "¡A ambos les gusta {{label}}! ¿Qué es lo que más te gusta? 👀",
@@ -633,7 +634,8 @@
     "pets": "🐶 Mascotas",
     "books": "📚 Libros y superación personal",
     "language_exchange": "🗣️ Intercambio de idiomas",
-    "free_talk": "💬 Charla libre"
+    "free_talk": "💬 Charla libre",
+    "mbti_match": "🧩 Compatibilidad MBTI"
   },
   "blindChat": {
     "title": "Chat a ciegas",

@@ -214,6 +214,7 @@
     "viewOriginal": "View original",
     "viewTranslated": "View translation",
     "translatedLabel": "Translated",
+    "aboutThem": "About {{name}}",
     "icebreakerLabel": "Conversation starter",
     "icebreaker": {
       "shared_kcontent": "You both like {{label}}! What's your favorite part? 👀",
@@ -633,7 +634,8 @@
     "pets": "🐶 Pets",
     "books": "📚 Books & Self-improvement",
     "language_exchange": "🗣️ Language exchange",
-    "free_talk": "💬 Free talk"
+    "free_talk": "💬 Free talk",
+    "mbti_match": "🧩 MBTI Compatibility Match"
   },
   "blindChat": {
     "title": "Blind Chat",

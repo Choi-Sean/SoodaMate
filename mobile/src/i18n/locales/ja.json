@@ -214,6 +214,7 @@
     "viewOriginal": "原文を見る",
     "viewTranslated": "翻訳を見る",
     "translatedLabel": "翻訳済み",
+    "aboutThem": "{{name}}さんについて",
     "icebreakerLabel": "会話のきっかけ",
     "icebreaker": {
       "shared_kcontent": "お二人とも{{label}}が好きなんですね！どこが一番好きですか？👀",
@@ -633,7 +634,8 @@
     "pets": "🐶 ペット",
     "books": "📚 読書・自己啓発",
     "language_exchange": "🗣️ 言語交換",
-    "free_talk": "💬 フリートーク"
+    "free_talk": "💬 フリートーク",
+    "mbti_match": "🧩 MBTI相性マッチング"
   },
   "blindChat": {
     "title": "ブラインドチャット",

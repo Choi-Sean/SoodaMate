@@ -20,6 +20,13 @@ class MatchOut(BaseModel):
     other_user_id: uuid.UUID
     other_display_name: str
     other_photo_url: str | None = None
+    # Shown regardless of is_blind/blind_revealed — unlike name/photo above,
+    # a bio was never treated as identifying enough to withhold during an
+    # anonymous chat (product decision), so _build_match_out populates these
+    # outside its hide_identity branch.
+    other_bio: str | None = None
+    other_bio2: str | None = None
+    other_bio3: str | None = None
     matched_at: datetime
     is_message_restricted: bool = False
     can_send_first_message: bool = True

@@ -132,6 +132,12 @@ export interface Match {
   other_user_id: string;
   other_display_name: string;
   other_photo_url: string | null;
+  // Shown regardless of is_blind/blind_revealed — unlike name/photo above, a
+  // bio was never treated as identifying enough to withhold during an
+  // anonymous chat (product decision).
+  other_bio: string | null;
+  other_bio2: string | null;
+  other_bio3: string | null;
   matched_at: string;
   is_message_restricted: boolean;
   can_send_first_message: boolean;

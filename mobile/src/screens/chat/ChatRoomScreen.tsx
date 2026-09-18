@@ -75,6 +75,10 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
+  const [bioExpanded, setBioExpanded] = useState(false);
+  const otherBioLines = [match?.other_bio, match?.other_bio2, match?.other_bio3].filter(
+    (b): b is string => !!b && b.trim().length > 0
+  );
 
   useEffect(() => {
     if (history) setMessages(history);
@@ -279,6 +283,23 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
           contentContainerStyle={styles.list}
         />
       )}
+      {otherBioLines.length > 0 && (
+        <Pressable style={styles.bioCard} onPress={() => setBioExpanded((v) => !v)}>
+          <View style={styles.bioCardHeader}>
+            <Text style={styles.bioCardLabel}>{t("chat.aboutThem", { name: otherDisplayName })}</Text>
+            <Ionicons name={bioExpanded ? "chevron-up" : "chevron-down"} size={16} color={colors.muted} />
+          </View>
+          {bioExpanded && (
+            <View style={styles.bioCardBody}>
+              {otherBioLines.map((line, i) => (
+                <Text key={i} style={styles.bioCardText}>
+                  {line}
+                </Text>
+              ))}
+            </View>
+          )}
+        </Pressable>
+      )}
       {!historyLoading && messages.length === 0 && icebreakerText && !composerLocked && (
         <Pressable style={styles.icebreakerChip} onPress={() => setInput(icebreakerText)}>
           <Text style={styles.icebreakerChipLabel}>{t("chat.icebreakerLabel")}</Text>
@@ -371,6 +392,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   expiredBannerText: { fontSize: 12.5, color: colors.muted, textAlign: "center" },
+  bioCard: {
+    marginHorizontal: 12,
+    marginBottom: 8,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: colors.creamDeep,
+  },
+  bioCardHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  bioCardLabel: { fontSize: 12, fontWeight: "700", color: colors.navy },
+  bioCardBody: { marginTop: 8, gap: 6 },
+  bioCardText: { fontSize: 13, color: colors.ink, lineHeight: 18 },
   icebreakerChip: {
     marginHorizontal: 12,
     marginBottom: 8,
