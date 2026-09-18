@@ -44,6 +44,21 @@ class ProfileUpdate(BaseModel):
     legal_first_name: str = Field(min_length=1, max_length=50)
     birth_date: date
     gender: str = Field(pattern="^(male|female|other)$")
+
+    @field_validator("birth_date")
+    @classmethod
+    def _must_be_18_or_older(cls, value: date) -> date:
+        # Google Play's Aug 2026 anonymous/random-chat policy requires
+        # restricting under-18 access — the mobile signup birth-year picker
+        # already excludes those years, but that's client-side only
+        # (bypassable by calling this endpoint directly), so this is the
+        # actual enforcement.
+        today = date.today()
+        age = today.year - value.year - ((today.month, today.day) < (value.month, value.day))
+        if age < 18:
+            raise ValueError("must be at least 18 years old")
+        return value
+
     interested_in: str = Field(pattern="^(male|female|other|all)$")
     open_to_language_exchange: bool = False
     bio: str | None = Field(default=None, max_length=1000)

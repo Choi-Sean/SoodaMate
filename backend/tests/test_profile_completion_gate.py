@@ -86,3 +86,23 @@ async def test_set_core_fields_stay_locked(client):
     r = await client.put("/profiles/me", headers=headers, json=body)
     assert r.json()["gender"] == "male"
     assert r.json()["display_name"] == "Sam"
+
+
+@pytest.mark.asyncio
+async def test_under_18_birth_date_is_rejected(client):
+    uid, headers = await _signup(client, "gate5@example.com")
+    today = date.today()
+    body = _profile_body()
+    body["birth_date"] = f"{today.year - 17}-{today.month:02d}-{today.day:02d}"
+    r = await client.put("/profiles/me", headers=headers, json=body)
+    assert r.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_exactly_18_birth_date_is_accepted(client):
+    uid, headers = await _signup(client, "gate6@example.com")
+    today = date.today()
+    body = _profile_body()
+    body["birth_date"] = f"{today.year - 18}-{today.month:02d}-{today.day:02d}"
+    r = await client.put("/profiles/me", headers=headers, json=body)
+    assert r.status_code == 200
