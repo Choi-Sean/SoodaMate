@@ -184,10 +184,16 @@ const styles = StyleSheet.create({
   optionTextSelected: { color: colors.navy, fontWeight: "700" },
   validationText: { color: colors.danger, fontSize: 12.5, textAlign: "center", marginTop: 4 },
   footer: { flexDirection: "row", gap: 10, paddingVertical: 16 },
-  primaryButton: { flex: 1, backgroundColor: colors.accent, borderRadius: 12, paddingVertical: 15, alignItems: "center" },
+  // alignSelf: "stretch" is a no-op in the row-based quiz footer below (its
+  // cross axis is vertical) but is what makes these fill the width when
+  // reused as direct, centered-column children of resultContent — without
+  // it they were shrinking to hug their own text ("Apply"/"Retake quiz")
+  // and floating centered as small pills instead of full-width buttons.
+  primaryButton: { flex: 1, alignSelf: "stretch", backgroundColor: colors.accent, borderRadius: 12, paddingVertical: 15, alignItems: "center" },
   primaryButtonText: { color: "#fff", fontWeight: "700", fontSize: 15 },
   secondaryButton: { flex: 1, backgroundColor: colors.creamDeep, borderRadius: 12, paddingVertical: 15, alignItems: "center" },
   secondaryButtonFull: {
+    alignSelf: "stretch",
     backgroundColor: colors.creamDeep,
     borderRadius: 12,
     paddingVertical: 15,
@@ -199,5 +205,10 @@ const styles = StyleSheet.create({
   resultType: { fontSize: 40, fontWeight: "900", color: colors.accentDark, marginTop: 12 },
   resultTitle: { fontSize: 17, fontWeight: "800", color: colors.navy, marginTop: 6, marginBottom: 20, textAlign: "center" },
   resultSectionLabel: { alignSelf: "flex-start", fontSize: 12.5, fontWeight: "700", color: colors.accentDark, marginTop: 8, marginBottom: 6 },
-  resultBody: { fontSize: 14.5, color: colors.ink, lineHeight: 21, marginBottom: 12 },
+  // alignSelf: "stretch" + explicit textAlign: "left" for the same reason as
+  // the buttons above — resultContent centers its children by default,
+  // which was shrinking this paragraph to its own width and floating it
+  // away from resultSectionLabel's left edge instead of running full-width
+  // underneath it.
+  resultBody: { alignSelf: "stretch", textAlign: "left", fontSize: 14.5, color: colors.ink, lineHeight: 21, marginBottom: 12 },
 });

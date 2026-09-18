@@ -579,11 +579,8 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         </View>
 
         <View style={styles.fieldGap}>
-          <Text style={styles.fieldLabel}>
-            {t("mbti.label")}
-            <Text style={styles.requiredStar}> *</Text>
-          </Text>
           <SelectDropdown
+            required
             label={t("mbti.label")}
             placeholder={t("mbti.placeholder")}
             options={mbtiOptions}

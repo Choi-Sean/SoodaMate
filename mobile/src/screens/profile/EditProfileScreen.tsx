@@ -477,7 +477,6 @@ export default function EditProfileScreen({ navigation }: Props) {
         {/* Deliberately not marked required here (unlike ProfileSetupScreen)
             — see the FieldErrors comment above. */}
         <View style={styles.fieldGap}>
-          <Text style={styles.fieldLabel}>{t("mbti.label")}</Text>
           <SelectDropdown
             label={t("mbti.label")}
             placeholder={t("mbti.placeholder")}

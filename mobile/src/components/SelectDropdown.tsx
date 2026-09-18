@@ -17,19 +17,23 @@ interface Props {
   onChange: (value: string) => void;
   disabled?: boolean;
   error?: boolean;
+  required?: boolean;
 }
 
 /** Tap-to-open modal picker — used instead of free-text inputs or
  * @react-native-picker/picker (a native module we'd need to rebuild for;
  * see feedback_no_eas_builds_without_asking) wherever a field has a fixed
  * set of choices. */
-export default function SelectDropdown({ label, placeholder, options, value, onChange, disabled, error }: Props) {
+export default function SelectDropdown({ label, placeholder, options, value, onChange, disabled, error, required }: Props) {
   const [open, setOpen] = useState(false);
   const selected = options.find((o) => o.key === value);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label}>
+        {label}
+        {required && <Text style={styles.requiredStar}> *</Text>}
+      </Text>
       <Pressable
         style={[styles.field, disabled && styles.fieldDisabled, error && styles.fieldError]}
         onPress={() => !disabled && setOpen(true)}
@@ -70,6 +74,7 @@ export default function SelectDropdown({ label, placeholder, options, value, onC
 const styles = StyleSheet.create({
   container: { marginBottom: 12 },
   label: { fontSize: 14, fontWeight: "600", marginTop: 12, marginBottom: 8, color: colors.muted },
+  requiredStar: { color: colors.danger },
   field: {
     flexDirection: "row",
     alignItems: "center",
