@@ -11,8 +11,14 @@ from app.models.profile import Profile
 from app.models.user import User
 from app.schemas.match import BlindChatLimitOut, BlindChatQueueStatusOut
 from app.services import push_service
+from app.utils.mbti import compatible_types
 from app.utils.premium import is_premium
 from app.ws.connection_manager import manager
+
+# Mobile's BLIND_CHAT_CATEGORY_KEYS entry that opts into MBTI-compatibility
+# filtering below — not a real "topic" category (no conversation-starter
+# meaning), just reuses the same category-picker UI/plumbing.
+MBTI_MATCH_CATEGORY = "mbti_match"
 
 # Free members get this many blind-chat matches per calendar day (counted
 # from Match rows, same "count real rows in a window" approach as
@@ -153,6 +159,17 @@ def _compatibility_filters(
         )
     ).exists()
 
+    # Only when the viewer opted into MBTI_MATCH_CATEGORY *and* has their own
+    # MBTI set (nothing to compute compatibility against otherwise) — degrades
+    # to no extra constraint rather than matching no one, since the mobile
+    # queue screen already disables that chip until profile.mbti is set, this
+    # is defense-in-depth, not the primary UX gate.
+    mbti_filters = []
+    if MBTI_MATCH_CATEGORY in categories:
+        matches = compatible_types(viewer_profile.mbti)
+        if matches:
+            mbti_filters = [Profile.mbti.in_(matches)]
+
     return [
         BlindChatQueueEntry.user_id != user_id,
         BlindChatQueueEntry.matched_id.is_(None),
@@ -166,6 +183,7 @@ def _compatibility_filters(
         candidate_min_age <= viewer_age,
         candidate_max_age >= viewer_age,
         ~blocked_either_direction,
+        *mbti_filters,
     ]
 
 

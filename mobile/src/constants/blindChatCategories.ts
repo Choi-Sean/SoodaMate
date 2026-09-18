@@ -18,4 +18,10 @@ export const BLIND_CHAT_CATEGORY_KEYS = [
   "gaming",
   "kpop",
   "free_talk",
+  // Not a conversation topic like the ones above — opts into MBTI-
+  // compatibility filtering on the backend (see blind_chat_service.py's
+  // MBTI_MATCH_CATEGORY) rather than a shared-interest tag. Reuses this
+  // same array/picker deliberately, so it's available at both signup and
+  // in the queue screen without any new UI plumbing.
+  "mbti_match",
 ] as const;

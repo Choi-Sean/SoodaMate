@@ -173,6 +173,14 @@ class Profile(Base):
     # location aren't either — client-side requiredness only, matching the
     # rest of ProfileSetupScreen's fields.
     preferred_categories: Mapped[str | None] = mapped_column("PreferredCategories", Unicode(255), nullable=True)
+    # One of the 16 four-letter MBTI codes (e.g. "INTJ"), uppercase. Required
+    # client-side at signup (ProfileSetupScreen.validate()) going forward —
+    # nullable here for the same reason as every other "required" field on
+    # this model: existing profiles predate it and shouldn't be retroactively
+    # locked out. See constants/mbtiCompatibility.ts (mobile) /
+    # mbti.py (backend) for the compatibility table blind_chat_service uses
+    # when a user opts into the "mbti_match" blind-chat category.
+    mbti: Mapped[str | None] = mapped_column("Mbti", Unicode(4), nullable=True)
     # K-content taste tags (K-drama/K-pop/webtoon/K-movie favorites) — same
     # comma-separated storage convention as interests/languages above, own
     # curated key list (mobile/src/constants/kContentTags.ts) rather than

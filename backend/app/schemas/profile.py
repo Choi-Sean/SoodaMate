@@ -89,6 +89,7 @@ class ProfileUpdate(BaseModel):
     # (see ProfileUpdate's own docstring convention above), same
     # comma-separated storage as interests/languages.
     preferred_categories: list[str] = Field(default_factory=list)
+    mbti: str | None = Field(default=None, pattern="^[EI][SN][TF][JP]$")
 
 
 class ProfileOut(BaseModel):
@@ -159,6 +160,7 @@ class ProfileOut(BaseModel):
     k_content_tags: list[str] = []
     k_content_filter: list[str] = []
     preferred_categories: list[str] = []
+    mbti: str | None = None
     updated_at: datetime
     photos: list[PhotoOut] = []
     moments: list[MomentOut] = []
