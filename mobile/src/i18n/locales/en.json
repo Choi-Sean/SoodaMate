@@ -647,6 +647,8 @@
     "categoryLabel": "Pick what you're into",
     "start": "Find a match",
     "waitingTitle": "Looking for someone to chat with...",
+    "queueTimeoutTitle": "Still haven't found a chat partner",
+    "queueTimeoutBody": "Looks like no one's waiting right now. Try again in a bit!",
     "matchedOn": "Matched on {{categories}}",
     "incomingRevealRequest": "{{name}} wants to reveal profiles",
     "acceptReveal": "Accept & reveal",

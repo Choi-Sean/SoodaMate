@@ -43,13 +43,22 @@ async def test_two_compatible_users_are_paired_on_second_queue_call(client):
 
 
 @pytest.mark.asyncio
-async def test_no_shared_category_means_no_match(client):
+async def test_no_shared_category_still_matches(client):
+    """Category is a topic preference, not a hard filter — with a small
+    early user base, requiring overlap left most queues matching nobody at
+    all. Two otherwise-compatible users with zero shared categories should
+    still pair, just with an empty blind_categories (nothing in common to
+    show as a shared-topic icebreaker)."""
     _, a_headers = await create_user_with_profile(client, "blindA2@example.com", gender="male", interested_in="female")
     _, b_headers = await create_user_with_profile(client, "blindB2@example.com", gender="female", interested_in="male")
 
     await client.post("/blind-chat/queue", headers=a_headers, json={"categories": ["travel"]})
     r = await client.post("/blind-chat/queue", headers=b_headers, json={"categories": ["gaming"]})
-    assert r.json()["status"] == "waiting"
+    assert r.json()["status"] == "matched"
+
+    matches_a = (await client.get("/matches", headers=a_headers)).json()
+    match = next(m for m in matches_a if m["id"] == r.json()["match_id"])
+    assert match["blind_categories"] == []
 
 
 @pytest.mark.asyncio

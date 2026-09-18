@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Switch, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
@@ -41,6 +41,18 @@ const DEFAULT_MIN_AGE = 18;
 const DEFAULT_MAX_AGE = 60;
 const DEFAULT_DISTANCE_KM = 50;
 const MAX_DISTANCE_KM = 500;
+// However fast a real match arrives (even instantly, when someone was
+// already waiting), the waiting/ad screen stays up at least this long before
+// revealing it — otherwise a lucky instant match skips the one ad surface
+// left in the app entirely. Re-rolled fresh each time a queue attempt
+// starts (see beginWaiting) rather than a fixed value.
+function randomMinRevealMs(): number {
+  return 3000 + Math.random() * 2000;
+}
+// After this long with no match, stop pretending the spinner means
+// something is about to happen and show an honest empty state instead —
+// polling keeps running underneath so a late match still gets picked up.
+const QUEUE_TIMEOUT_MS = 20000;
 
 /** Picks categories (+ optional gender/age/distance filters) -> POSTs
  * /blind-chat/queue. A "matched" response (either right away, from this
@@ -70,6 +82,24 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
   // swipe/Classic Matching is out of the concept entirely. Hidden outright
   // on failure to load rather than leaving a dead/broken box.
   const [adUnavailable, setAdUnavailable] = useState(false);
+  // When the current queue attempt started (Date.now()) — the anchor both
+  // revealMatch (minimum ad-exposure hold) and the timeout timer measure
+  // from. Kept in state (not just a ref) because the polling effect below
+  // needs to read it on a later render, after the initial tap.
+  const [waitingStartedAt, setWaitingStartedAt] = useState<number | null>(null);
+  // True once QUEUE_TIMEOUT_MS has passed with no match — swaps the spinner
+  // for an honest "no one's here" state. Polling keeps running underneath,
+  // so a match that arrives after this still gets picked up and revealed.
+  const [queueTimedOut, setQueueTimedOut] = useState(false);
+  const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timeoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
+      if (timeoutTimerRef.current) clearTimeout(timeoutTimerRef.current);
+    };
+  }, []);
 
   const { data: profile } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
   const { data: limit } = useQuery({ queryKey: ["blindChatLimit"], queryFn: getBlindChatLimit });
@@ -115,9 +145,38 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
     });
   }
 
+  // Starts (or restarts, on retry) a queue attempt's local bookkeeping —
+  // resets the timeout clock and hands back the start timestamp revealMatch
+  // needs, since the caller's own `waitingStartedAt` state read in the same
+  // tick would still be stale (React hasn't re-rendered yet).
+  function beginWaiting(): number {
+    if (timeoutTimerRef.current) clearTimeout(timeoutTimerRef.current);
+    setQueueTimedOut(false);
+    const startedAt = Date.now();
+    setWaitingStartedAt(startedAt);
+    setWaiting(true);
+    timeoutTimerRef.current = setTimeout(() => setQueueTimedOut(true), QUEUE_TIMEOUT_MS);
+    return startedAt;
+  }
+
+  // Whether the match was found instantly (from the initial join call) or
+  // via polling, both paths funnel through here so neither can skip the
+  // minimum ad-exposure hold.
+  function revealMatch(matchId: string, startedAt: number) {
+    // A reveal is already scheduled (e.g. the 3s poll ticked again during
+    // the hold) — don't stack a second timer on top of it.
+    if (revealTimerRef.current) return;
+    if (timeoutTimerRef.current) {
+      clearTimeout(timeoutTimerRef.current);
+      timeoutTimerRef.current = null;
+    }
+    const remaining = Math.max(0, randomMinRevealMs() - (Date.now() - startedAt));
+    revealTimerRef.current = setTimeout(() => goToMatch(matchId), remaining);
+  }
+
   useEffect(() => {
-    if (status?.status === "matched" && status.match_id) {
-      goToMatch(status.match_id);
+    if (status?.status === "matched" && status.match_id && waitingStartedAt != null) {
+      revealMatch(status.match_id, waitingStartedAt);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
@@ -159,14 +218,21 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
   async function handleStart() {
     if (selected.length === 0 || !requireVerified()) return;
     setStarting(true);
+    // Shown immediately, before the network call resolves — a match that's
+    // already waiting can come back instantly, and it still needs to land
+    // on the ad-bearing waiting screen rather than skip straight to chat.
+    const startedAt = beginWaiting();
     try {
       const result = await joinBlindChatQueue(selected, currentFilters());
       if (result.status === "matched" && result.match_id) {
-        await goToMatch(result.match_id);
-      } else {
-        setWaiting(true);
+        revealMatch(result.match_id, startedAt);
       }
     } catch (e: any) {
+      if (timeoutTimerRef.current) {
+        clearTimeout(timeoutTimerRef.current);
+        timeoutTimerRef.current = null;
+      }
+      setWaiting(false);
       showAlert(t("common.somethingWentWrong"), explainError(e));
     } finally {
       setStarting(false);
@@ -175,9 +241,13 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
 
   async function handleAiMatch() {
     if (selected.length === 0 || !requireVerified()) return;
-    // ai_match_credits are checked server-side (402 -> a "buy credits"
-    // prompt below) — this screen doesn't fetch the payments balance just
-    // to gate the button locally.
+    // Credits are also re-checked server-side (402 -> the same alert) since
+    // this client-known balance can be stale, but checking it here first
+    // saves a round trip for the common "I already know I'm at zero" case.
+    if ((profile?.ai_match_credits ?? 0) <= 0) {
+      showAlert(t("blindChat.aiMatchTitle"), t("blindChat.aiMatchNoCredits"));
+      return;
+    }
     setAiMatching(true);
     try {
       const result = await requestAiMatch(selected);
@@ -198,7 +268,16 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
   }
 
   async function handleCancel() {
+    if (revealTimerRef.current) {
+      clearTimeout(revealTimerRef.current);
+      revealTimerRef.current = null;
+    }
+    if (timeoutTimerRef.current) {
+      clearTimeout(timeoutTimerRef.current);
+      timeoutTimerRef.current = null;
+    }
     setWaiting(false);
+    setQueueTimedOut(false);
     try {
       await leaveBlindChatQueue();
     } catch {
@@ -209,8 +288,21 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
   if (waiting) {
     return (
       <View style={styles.waitingContainer}>
-        <ActivityIndicator size="large" color={colors.accent} />
-        <Text style={styles.waitingTitle}>{t("blindChat.waitingTitle")}</Text>
+        {queueTimedOut ? (
+          <>
+            <Ionicons name="hourglass-outline" size={36} color={colors.muted} />
+            <Text style={styles.waitingTitle}>{t("blindChat.queueTimeoutTitle")}</Text>
+            <Text style={styles.queueTimeoutBody}>{t("blindChat.queueTimeoutBody")}</Text>
+            <Pressable style={styles.retryButton} onPress={handleStart} disabled={starting}>
+              {starting ? <ActivityIndicator color="#fff" /> : <Text style={styles.retryButtonText}>{t("common.tryAgain")}</Text>}
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <ActivityIndicator size="large" color={colors.accent} />
+            <Text style={styles.waitingTitle}>{t("blindChat.waitingTitle")}</Text>
+          </>
+        )}
         <View style={styles.waitingChips}>
           {selected.map((key) => (
             <View key={key} style={styles.waitingChip}>
@@ -310,6 +402,7 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
           </>
         )}
       </Pressable>
+      {profile && <Text style={styles.aiMatchCreditsText}>{t("profile.aiMatchCredits", { count: profile.ai_match_credits })}</Text>}
     </ScrollView>
   );
 }
@@ -329,14 +422,19 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   limitBannerText: { fontSize: 12.5, color: colors.accentDark, fontWeight: "600" },
+  // Matches the white-bordered `card` pattern used everywhere else
+  // (EditProfileScreen/ProfileSetupScreen) — this used to be a flat
+  // colors.creamDeep block with no border, which read as visually
+  // inconsistent with the rest of the app.
   filtersCard: {
     marginTop: 16,
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: colors.creamDeep,
-    gap: 4,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  filtersTitle: { fontSize: 13, fontWeight: "700", color: colors.navy, marginBottom: 4 },
+  filtersTitle: { fontSize: 16, fontWeight: "700", color: colors.navy, marginBottom: 4 },
   switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 14 },
   switchLabel: { fontSize: 14, fontWeight: "600", color: colors.muted },
   startButton: { backgroundColor: colors.accent, borderRadius: 12, paddingVertical: 15, alignItems: "center", marginTop: 24 },
@@ -354,8 +452,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   aiMatchButtonText: { color: colors.navy, fontWeight: "700", fontSize: 15 },
+  aiMatchCreditsText: { fontSize: 12.5, color: colors.muted, textAlign: "center", marginTop: 8 },
   waitingContainer: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32, gap: 16 },
   waitingTitle: { fontSize: 16, fontWeight: "700", color: colors.navy, textAlign: "center" },
+  queueTimeoutBody: { fontSize: 13.5, color: colors.muted, textAlign: "center", lineHeight: 19, marginTop: -8 },
+  retryButton: { backgroundColor: colors.accent, borderRadius: 12, paddingVertical: 13, paddingHorizontal: 32, alignItems: "center" },
+  retryButtonText: { color: "#fff", fontWeight: "700", fontSize: 15 },
   waitingChips: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "center" },
   waitingChip: { backgroundColor: colors.creamDeep, borderRadius: 20, paddingVertical: 6, paddingHorizontal: 14 },
   waitingChipText: { fontSize: 13, color: colors.ink, fontWeight: "600" },

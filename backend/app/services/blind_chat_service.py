@@ -28,13 +28,14 @@ MBTI_MATCH_CATEGORY = "mbti_match"
 # Premium members and Unlimited Matching purchasers skip this entirely.
 BLIND_CHAT_FREE_DAILY_LIMIT = 3
 
-
-def _csv_contains_any(column, values: list[str]):
-    """Same portable comma-list "contains any of" match as
-    discovery_service._csv_contains_any — duplicated locally (three lines)
-    rather than importing a module-private helper across services."""
-    wrapped = func.concat(",", column, ",")
-    return or_(*[wrapped.like(f"%,{v},%") for v in values])
+# A queue entry older than this is treated as abandoned (app closed/crashed/
+# backgrounded without hitting Cancel — there's no client-side cleanup on
+# unmount) and excluded from matching, not just stale-looking in a UI. Found
+# empirically: with category no longer narrowing candidates (see
+# _compatibility_filters), one real leftover entry from manual testing was
+# old enough to out-rank every genuinely-waiting candidate on `ORDER BY
+# created_at ASC` and silently absorb a match meant for someone else.
+STALE_QUEUE_ENTRY = timedelta(minutes=15)
 
 
 def _age_to_birth_date_bounds(min_age: int, max_age: int) -> tuple[date, date]:
@@ -138,7 +139,14 @@ def _compatibility_filters(
     their own session's preferences to that row when *they* joined, and this
     viewer's search is what finds and matches against it later. Reading the
     candidate's live Profile columns instead would silently ignore whatever
-    override the candidate's own session actually asked for."""
+    override the candidate's own session actually asked for.
+
+    categories is NOT a hard filter here — with a small early user base,
+    requiring an overlapping topic left most queues matching nobody at all.
+    It's still used to compute blind_categories (shared-topic display in the
+    match) and find_ai_match's scoring, and MBTI_MATCH_CATEGORY below is the
+    one exception: that's a real compatibility gate (must match the
+    opposite-typed MBTI), not a conversation topic, so it stays enforced."""
     lo, hi = min_age or viewer_profile.min_age_pref, max_age or viewer_profile.max_age_pref
     viewer_min_birth, viewer_max_birth = _age_to_birth_date_bounds(lo, hi)
     viewer_age = _age(viewer_profile.birth_date)
@@ -173,9 +181,9 @@ def _compatibility_filters(
     return [
         BlindChatQueueEntry.user_id != user_id,
         BlindChatQueueEntry.matched_id.is_(None),
+        BlindChatQueueEntry.created_at >= datetime.now(timezone.utc) - STALE_QUEUE_ENTRY,
         ~User.is_banned,
         User.is_active,
-        _csv_contains_any(BlindChatQueueEntry.categories, categories),
         mutual_interest,
         *gender_filters,
         Profile.birth_date >= viewer_min_birth,

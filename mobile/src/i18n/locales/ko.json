@@ -647,6 +647,8 @@
     "categoryLabel": "관심 있는 카테고리를 선택하세요",
     "start": "매칭 시작하기",
     "waitingTitle": "대화 상대를 찾는 중이에요...",
+    "queueTimeoutTitle": "아직 대화 상대를 찾지 못했어요",
+    "queueTimeoutBody": "지금은 대기 중인 분이 없나봐요. 잠시 후 다시 시도해보세요!",
     "matchedOn": "{{categories}} 카테고리에서 매칭됐어요",
     "incomingRevealRequest": "{{name}}님이 프로필 공개를 원해요",
     "acceptReveal": "수락하고 공개하기",

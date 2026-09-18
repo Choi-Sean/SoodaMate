@@ -647,6 +647,8 @@
     "categoryLabel": "选择你感兴趣的话题",
     "start": "开始匹配",
     "waitingTitle": "正在寻找聊天对象...",
+    "queueTimeoutTitle": "暂时还没找到聊天对象",
+    "queueTimeoutBody": "现在好像没有人在等待呢。请稍后再试一次！",
     "matchedOn": "因{{categories}}匹配成功",
     "incomingRevealRequest": "{{name}}想要公开资料",
     "acceptReveal": "同意并公开",

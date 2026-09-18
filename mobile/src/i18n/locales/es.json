@@ -647,6 +647,8 @@
     "categoryLabel": "Elige lo que te interesa",
     "start": "Buscar match",
     "waitingTitle": "Buscando a alguien para chatear...",
+    "queueTimeoutTitle": "Aún no encontramos a nadie",
+    "queueTimeoutBody": "Parece que ahora mismo no hay nadie esperando. ¡Intenta de nuevo en un momento!",
     "matchedOn": "Emparejados por {{categories}}",
     "incomingRevealRequest": "{{name}} quiere revelar los perfiles",
     "acceptReveal": "Aceptar y revelar",

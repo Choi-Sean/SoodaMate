@@ -647,6 +647,8 @@
     "categoryLabel": "興味のあるカテゴリーを選んでください",
     "start": "マッチングを始める",
     "waitingTitle": "お相手を探しています...",
+    "queueTimeoutTitle": "まだお相手が見つかっていません",
+    "queueTimeoutBody": "今は待っている人がいないようです。少ししてからもう一度試してみてください！",
     "matchedOn": "{{categories}}でマッチしました",
     "incomingRevealRequest": "{{name}}さんがプロフィール公開を希望しています",
     "acceptReveal": "同意して公開する",
