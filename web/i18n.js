@@ -139,6 +139,14 @@ const translations = {
     zh: "先聊天，不看脸——与兴趣相投的认证会员开始匿名对话。只有双方都同意，姓名和照片才会公开。",
     ja: "写真より先に会話から — 趣味が合う認証済みメンバーとチャット。名前と写真はお互いが同意したときだけ公開されます。",
   },
+  "feature.8.title": { ko: "MBTI 궁합 매칭", en: "MBTI Compatibility Match", es: "Compatibilidad MBTI", zh: "MBTI 契合匹配", ja: "MBTI相性マッチング" },
+  "feature.8.body": {
+    ko: "프로필에 MBTI를 등록하면, 나와 잘 맞는 유형의 인증된 회원과 우선적으로 연결해드려요. MBTI를 모른다면 앱 안에서 바로 성향 테스트를 받을 수 있어요.",
+    en: "Add your MBTI to your profile and we'll prioritize connecting you with verified members whose type is a great match. Don't know your type? Take the in-app quiz.",
+    es: "Añade tu MBTI a tu perfil y te conectaremos primero con miembros verificados cuyo tipo sea muy compatible con el tuyo. ¿No sabes tu tipo? Haz el test dentro de la app.",
+    zh: "在个人资料中填写你的MBTI，我们会优先为你匹配类型合拍的认证会员。不知道自己的MBTI？在应用内直接测试即可。",
+    ja: "プロフィールにMBTIを登録すると、相性の良いタイプの認証済みメンバーと優先的につながれます。MBTIが分からない方は、アプリ内ですぐに診断テストを受けられます。",
+  },
 
   "how.head.title": { ko: "시작하는 방법", en: "How to get started", es: "Cómo empezar", zh: "如何开始", ja: "始め方" },
   "how.head.sub": {
