@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Unicode, UnicodeText, Uuid, func
+from sqlalchemy import DateTime, ForeignKey, Unicode, UnicodeText, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base
+from app.database import Base, utc_now, utc_now_default
 
 
 class ContactInquiry(Base):
@@ -23,5 +23,7 @@ class ContactInquiry(Base):
     message: Mapped[str] = mapped_column("Message", UnicodeText, nullable=False)
     status: Mapped[str] = mapped_column("Status", Unicode(20), default="new", nullable=False)  # 'new' | 'read' | 'resolved'
     admin_note: Mapped[str | None] = mapped_column("AdminNote", UnicodeText, nullable=True)
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
     resolved_at: Mapped[datetime | None] = mapped_column("ResolvedAt", DateTime(timezone=True), nullable=True)

@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, Unicode, Uuid, func, text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, Unicode, Uuid, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base
+from app.database import Base, utc_now, utc_now_default
 
 
 class User(Base):
@@ -54,11 +54,17 @@ class User(Base):
     phone_number: Mapped[str | None] = mapped_column("PhoneNumber", Unicode(20), nullable=True)
     phone_verified_at: Mapped[datetime | None] = mapped_column("PhoneVerifiedAt", DateTime(timezone=True), nullable=True)
     last_active_at: Mapped[datetime] = mapped_column(
-        "LastActiveAt", DateTime(timezone=True), server_default=func.now()
+        "LastActiveAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
     )
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        "UpdatedAt", DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+        "UpdatedAt",
+        DateTime(timezone=True),
+        server_default=utc_now_default,
+        default=utc_now,
+        onupdate=utc_now,
     )
 
     auth_providers: Mapped[list["AuthProvider"]] = relationship(
@@ -93,6 +99,8 @@ class AuthProvider(Base):
     )
     provider: Mapped[str] = mapped_column("Provider", Unicode(20), nullable=False)  # 'google' | 'apple' | 'email'
     provider_user_id: Mapped[str | None] = mapped_column("ProviderUserId", Unicode(255), nullable=True)
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
 
     user: Mapped["User"] = relationship(back_populates="auth_providers")

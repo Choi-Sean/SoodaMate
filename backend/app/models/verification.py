@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Unicode, UniqueConstraint, Uuid, func
+from sqlalchemy import DateTime, ForeignKey, Integer, Unicode, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base
+from app.database import Base, utc_now, utc_now_default
 
 
 class Verification(Base):
@@ -22,4 +22,6 @@ class Verification(Base):
     attempts: Mapped[int] = mapped_column("Attempts", Integer, default=0, nullable=False)
     expires_at: Mapped[datetime] = mapped_column("ExpiresAt", DateTime(timezone=True), nullable=False)
     verified_at: Mapped[datetime | None] = mapped_column("VerifiedAt", DateTime(timezone=True), nullable=True)
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )

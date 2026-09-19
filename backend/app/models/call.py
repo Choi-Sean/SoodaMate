@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Unicode, Uuid, func
+from sqlalchemy import DateTime, ForeignKey, Unicode, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base
+from app.database import Base, utc_now, utc_now_default
 
 
 class CallSession(Base):
@@ -24,6 +24,8 @@ class CallSession(Base):
     # 'ringing' | 'active' | 'ended' | 'declined' | 'missed'
     end_reason: Mapped[str | None] = mapped_column("EndReason", Unicode(20), nullable=True)
     # 'hangup' | 'declined' | 'cancelled' | 'timeout' | 'peer_offline'
-    started_at: Mapped[datetime] = mapped_column("StartedAt", DateTime(timezone=True), server_default=func.now())
+    started_at: Mapped[datetime] = mapped_column(
+        "StartedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
     connected_at: Mapped[datetime | None] = mapped_column("ConnectedAt", DateTime(timezone=True), nullable=True)
     ended_at: Mapped[datetime | None] = mapped_column("EndedAt", DateTime(timezone=True), nullable=True)

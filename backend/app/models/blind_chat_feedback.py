@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, SmallInteger, Unicode, UniqueConstraint, Uuid, func
+from sqlalchemy import DateTime, ForeignKey, SmallInteger, Unicode, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base
+from app.database import Base, utc_now, utc_now_default
 
 # Signal only — never shown to the rated user, never used for moderation
 # (that's Report's job). Deliberately not a superset/copy of Report's
@@ -60,8 +60,12 @@ class BlindChatFeedback(Base):
     # structured rating/tags feed AI Match — see llm_match_service.py).
     comment: Mapped[str | None] = mapped_column("Comment", Unicode(100), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        "CreatedAt", DateTime(timezone=True), server_default=func.now()
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
     )
     updated_at: Mapped[datetime] = mapped_column(
-        "UpdatedAt", DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+        "UpdatedAt",
+        DateTime(timezone=True),
+        server_default=utc_now_default,
+        default=utc_now,
+        onupdate=utc_now,
     )

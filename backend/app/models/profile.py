@@ -12,11 +12,10 @@ from sqlalchemy import (
     UnicodeText,
     UniqueConstraint,
     Uuid,
-    func,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base
+from app.database import Base, utc_now, utc_now_default
 
 
 class Profile(Base):
@@ -196,7 +195,11 @@ class Profile(Base):
     )
 
     updated_at: Mapped[datetime] = mapped_column(
-        "UpdatedAt", DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+        "UpdatedAt",
+        DateTime(timezone=True),
+        server_default=utc_now_default,
+        default=utc_now,
+        onupdate=utc_now,
     )
 
 
@@ -216,7 +219,9 @@ class Photo(Base):
     media_type: Mapped[str] = mapped_column(
         "MediaType", Unicode(10), nullable=False, server_default="photo", default="photo"
     )
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
 
 
 class FaceVerification(Base):
@@ -242,7 +247,9 @@ class FaceVerification(Base):
     id_photo_object_path: Mapped[str | None] = mapped_column("IdPhotoObjectPath", Unicode(512), nullable=True)
     # "pending" | "approved" | "rejected"
     status: Mapped[str] = mapped_column("Status", Unicode(20), nullable=False, default="pending")
-    submitted_at: Mapped[datetime] = mapped_column("SubmittedAt", DateTime(timezone=True), server_default=func.now())
+    submitted_at: Mapped[datetime] = mapped_column(
+        "SubmittedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
     reviewed_at: Mapped[datetime | None] = mapped_column("ReviewedAt", DateTime(timezone=True), nullable=True)
     # Set on reject, shown back to the user so they know what to fix before
     # resubmitting. rejection_reason_key is one of a fixed set the admin

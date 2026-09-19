@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Unicode, UnicodeText, UniqueConstraint, Uuid, func
+from sqlalchemy import DateTime, ForeignKey, Integer, Unicode, UnicodeText, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base
+from app.database import Base, utc_now, utc_now_default
 
 
 class CoupleStory(Base):
@@ -43,7 +43,9 @@ class CoupleStory(Base):
     # documented gap as FaceVerification's manual review page).
     status: Mapped[str] = mapped_column("Status", Unicode(20), nullable=False, default="pending")
     report_count: Mapped[int] = mapped_column("ReportCount", Integer, nullable=False, default=0)
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
     published_at: Mapped[datetime | None] = mapped_column("PublishedAt", DateTime(timezone=True), nullable=True)
 
 
@@ -61,4 +63,6 @@ class CoupleStoryReport(Base):
     # cascade off that user's own matches.
     reporter_id: Mapped[uuid.UUID] = mapped_column("ReporterId", ForeignKey("Users.Id"), nullable=False)
     reason: Mapped[str] = mapped_column("Reason", Unicode(100), nullable=False)
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )

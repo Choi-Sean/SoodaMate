@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Index, Unicode, Uuid, func
+from sqlalchemy import DateTime, ForeignKey, Index, Unicode, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base
+from app.database import Base, utc_now, utc_now_default
 
 
 class Moment(Base):
@@ -28,4 +28,6 @@ class Moment(Base):
     )
     image_object_path: Mapped[str] = mapped_column("ImageObjectPath", Unicode(512), nullable=False)
     caption: Mapped[str | None] = mapped_column("Caption", Unicode(280), nullable=True)
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )

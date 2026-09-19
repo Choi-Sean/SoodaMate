@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Unicode, Uuid, func
+from sqlalchemy import DateTime, ForeignKey, Integer, Unicode, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base
+from app.database import Base, utc_now, utc_now_default
 
 
 class BlindChatQueueEntry(Base):
@@ -36,7 +36,9 @@ class BlindChatQueueEntry(Base):
     min_age_filter: Mapped[int | None] = mapped_column("MinAgeFilter", Integer, nullable=True)
     max_age_filter: Mapped[int | None] = mapped_column("MaxAgeFilter", Integer, nullable=True)
     max_distance_km_filter: Mapped[int | None] = mapped_column("MaxDistanceKmFilter", Integer, nullable=True)
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
     # Set by whichever OTHER user's queue call claims this entry to pair with
     # it — the waiting side's own next GET/POST then sees this and reports
     # "matched" (deleting the row at that point). Deliberately NOT a

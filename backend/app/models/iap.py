@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Unicode, UnicodeText, UniqueConstraint, Uuid, func
+from sqlalchemy import DateTime, ForeignKey, Integer, Unicode, UnicodeText, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base
+from app.database import Base, utc_now, utc_now_default
 
 
 class PaymentTransaction(Base):
@@ -24,4 +24,6 @@ class PaymentTransaction(Base):
     credit_kind: Mapped[str] = mapped_column("CreditKind", Unicode(30), nullable=False)  # 'superlike' | 'boost' | 'ai_match' | 'unlimited_matching_days' | 'membership'
     credits_granted: Mapped[int] = mapped_column("CreditsGranted", Integer, nullable=False)
     raw_payload: Mapped[str] = mapped_column("RawPayload", UnicodeText, nullable=False)
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )

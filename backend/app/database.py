@@ -1,5 +1,7 @@
 from collections.abc import AsyncGenerator
+from datetime import datetime, timezone
 
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.pool import NullPool
@@ -30,6 +32,31 @@ else:
     engine = create_async_engine(settings.database_url, pool_pre_ping=True, **_engine_kwargs)
 
 async_session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+# func.now() compiles to MSSQL's CURRENT_TIMESTAMP (== GETDATE()), which
+# returns the DB SERVER's OS-local time, not UTC — confirmed empirically on
+# this server (several hours behind UTC). Every server_default=func.now()
+# timestamp column was silently skewed against the UTC "today" boundaries
+# services compute in Python (e.g. blind_chat_service's daily free-match
+# limit undercounting matches made in the first few UTC hours of each day).
+# Same cross-dialect trap, and same fix pattern, as discovery_service's
+# _ORDER_RANDOM (func.newid() vs func.random()) — resolved once at import
+# time from the dialect actually in use.
+#
+# server_default alone can't fix rows on the *existing* live table, though:
+# it's a DDL-time construct (only takes effect for a fresh CREATE/ALTER),
+# and this DB's columns already carry the old GETDATE()-based constraint
+# from whenever each table was first created. Every model below also sets
+# default=utc_now — a client-side Python default, computed and sent by the
+# ORM with every INSERT (the same mechanism every model already relies on
+# for id=uuid.uuid4) — which is what actually corrects the live behavior,
+# no migration required, since it wins over server_default whenever the ORM
+# is doing the inserting (i.e. always, in this codebase).
+utc_now_default = func.getutcdate() if engine.dialect.name == "mssql" else func.now()
+
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 class Base(DeclarativeBase):

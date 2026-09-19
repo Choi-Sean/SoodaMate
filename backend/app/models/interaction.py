@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Unicode, UnicodeText, UniqueConstraint, Uuid, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Unicode, UnicodeText, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base
+from app.database import Base, utc_now, utc_now_default
 
 
 class Swipe(Base):
@@ -19,7 +19,9 @@ class Swipe(Base):
     from_user_id: Mapped[uuid.UUID] = mapped_column("FromUserId", ForeignKey("Users.Id"), nullable=False)
     to_user_id: Mapped[uuid.UUID] = mapped_column("ToUserId", ForeignKey("Users.Id"), nullable=False)
     action: Mapped[str] = mapped_column("Action", Unicode(10), nullable=False)  # 'like' | 'pass' | 'superlike'
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
 
 
 class Match(Base):
@@ -29,7 +31,9 @@ class Match(Base):
     id: Mapped[uuid.UUID] = mapped_column("Id", Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_a_id: Mapped[uuid.UUID] = mapped_column("UserAId", ForeignKey("Users.Id"), nullable=False)
     user_b_id: Mapped[uuid.UUID] = mapped_column("UserBId", ForeignKey("Users.Id"), nullable=False)
-    matched_at: Mapped[datetime] = mapped_column("MatchedAt", DateTime(timezone=True), server_default=func.now())
+    matched_at: Mapped[datetime] = mapped_column(
+        "MatchedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
     is_active: Mapped[bool] = mapped_column("IsActive", Boolean, default=True, nullable=False)
 
     # Phase 14 — Bumble-style first-message rule. Snapshotted at match-creation
@@ -90,7 +94,9 @@ class Block(Base):
     id: Mapped[uuid.UUID] = mapped_column("Id", Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     blocker_id: Mapped[uuid.UUID] = mapped_column("BlockerId", ForeignKey("Users.Id"), nullable=False)
     blocked_id: Mapped[uuid.UUID] = mapped_column("BlockedId", ForeignKey("Users.Id"), nullable=False)
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
 
 
 class Report(Base):
@@ -102,4 +108,6 @@ class Report(Base):
     reason: Mapped[str] = mapped_column("Reason", Unicode(100), nullable=False)
     detail: Mapped[str | None] = mapped_column("Detail", UnicodeText, nullable=True)
     status: Mapped[str] = mapped_column("Status", Unicode(20), default="open", nullable=False)
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )

@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Index, Unicode, UnicodeText, Uuid, func
+from sqlalchemy import DateTime, ForeignKey, Index, Unicode, UnicodeText, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base
+from app.database import Base, utc_now, utc_now_default
 
 
 class Message(Base):
@@ -41,6 +41,8 @@ class Message(Base):
     original_language: Mapped[str | None] = mapped_column("OriginalLanguage", Unicode(10), nullable=True)
     translated_content: Mapped[str | None] = mapped_column("TranslatedContent", UnicodeText, nullable=True)
     translated_language: Mapped[str | None] = mapped_column("TranslatedLanguage", Unicode(10), nullable=True)
-    sent_at: Mapped[datetime] = mapped_column("SentAt", DateTime(timezone=True), server_default=func.now())
+    sent_at: Mapped[datetime] = mapped_column(
+        "SentAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
     delivered_at: Mapped[datetime | None] = mapped_column("DeliveredAt", DateTime(timezone=True), nullable=True)
     read_at: Mapped[datetime | None] = mapped_column("ReadAt", DateTime(timezone=True), nullable=True)

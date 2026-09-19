@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Unicode, Uuid, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Unicode, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base
+from app.database import Base, utc_now, utc_now_default
 
 
 class Promotion(Base):
@@ -25,4 +25,6 @@ class Promotion(Base):
     created_by: Mapped[uuid.UUID | None] = mapped_column(
         "CreatedBy", ForeignKey("Users.Id"), nullable=True
     )
-    created_at: Mapped[datetime] = mapped_column("CreatedAt", DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        "CreatedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
