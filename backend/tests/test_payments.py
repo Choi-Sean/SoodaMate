@@ -1,4 +1,5 @@
 import uuid as uuid_mod
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -19,6 +20,11 @@ async def test_purchase_history_empty_for_new_user(client):
 async def test_purchase_history_lists_transactions_newest_first_localized(client):
     user_id, headers = await create_user_with_profile(client, "historyItems@example.com")
 
+    # Explicit, clearly-ordered created_at values rather than relying on
+    # the column's own default — two rows inserted in the same commit can
+    # otherwise land on the same DB timestamp (MSSQL DATETIME's ~3ms
+    # rounding), making "newest first" order flaky/undefined between them.
+    now = datetime.now(timezone.utc)
     async with async_session_factory() as session:
         session.add(
             PaymentTransaction(
@@ -29,6 +35,7 @@ async def test_purchase_history_lists_transactions_newest_first_localized(client
                 credit_kind="ai_match",
                 credits_granted=5,
                 raw_payload="{}",
+                created_at=now - timedelta(minutes=1),
             )
         )
         session.add(
@@ -40,6 +47,7 @@ async def test_purchase_history_lists_transactions_newest_first_localized(client
                 credit_kind="membership",
                 credits_granted=0,
                 raw_payload="{}",
+                created_at=now,
             )
         )
         await session.commit()
