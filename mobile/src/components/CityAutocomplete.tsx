@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Pressable, Text, TextInput, View, StyleSheet } from "react-native";
-import { City, Country, State } from "country-state-city";
-
+import { getCitiesOfCountry, getCountryByCode, getStateByCodeAndCountry } from "../data/locations";
 import { SUPPORTED_COUNTRY_CODES } from "../constants/supportedCountries";
 import { colors } from "../theme";
 
@@ -28,14 +27,12 @@ let cachedAllCities: CityEntry[] | null = null;
 function getAllCities(): CityEntry[] {
   if (cachedAllCities) return cachedAllCities;
   cachedAllCities = SUPPORTED_COUNTRY_CODES.flatMap((countryCode) => {
-    const country = Country.getCountryByCode(countryCode);
-    return (
-      City.getCitiesOfCountry(countryCode)?.map((city) => {
-        const state = city.stateCode ? State.getStateByCodeAndCountry(city.stateCode, countryCode) : null;
-        const label = [city.name, state?.name, country?.name].filter(Boolean).join(", ");
-        return { key: `${countryCode}-${city.stateCode}-${city.name}`, searchText: city.name.toLowerCase(), label };
-      }) ?? []
-    );
+    const country = getCountryByCode(countryCode);
+    return getCitiesOfCountry(countryCode).map((city) => {
+      const state = city.stateCode ? getStateByCodeAndCountry(city.stateCode, countryCode) : undefined;
+      const label = [city.name, state?.name, country?.name].filter(Boolean).join(", ");
+      return { key: `${countryCode}-${city.stateCode}-${city.name}`, searchText: city.name.toLowerCase(), label };
+    });
   });
   return cachedAllCities;
 }

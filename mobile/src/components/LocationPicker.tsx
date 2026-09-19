@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, Text, TextInput, View, StyleSheet } from "react-native";
 import * as Location from "expo-location";
-import { Country, State, City } from "country-state-city";
 import { useTranslation } from "react-i18next";
 
 import SelectDropdown, { DropdownOption } from "./SelectDropdown";
-import { SUPPORTED_COUNTRY_CODES } from "../constants/supportedCountries";
+import {
+  getAllCountries,
+  getCitiesOfState,
+  getCountryByCode,
+  getStateByCodeAndCountry,
+  getStatesOfCountry,
+} from "../data/locations";
 import { colors } from "../theme";
 import { showAlert } from "../utils/alert";
 
@@ -127,22 +132,23 @@ export default function LocationPicker({ lat, lng, onChange, required, error }: 
     }
   }
 
-  const countryOptions: DropdownOption[] = Country.getAllCountries()
-    .filter((c) => (SUPPORTED_COUNTRY_CODES as readonly string[]).includes(c.isoCode))
-    .map((c) => ({ key: c.isoCode, label: `${c.flag} ${c.name}` }));
+  const countryOptions: DropdownOption[] = getAllCountries().map((c) => ({
+    key: c.isoCode,
+    label: `${c.flag} ${c.name}`,
+  }));
   const stateOptions: DropdownOption[] = countryCode
-    ? State.getStatesOfCountry(countryCode).map((s) => ({ key: s.isoCode, label: s.name }))
+    ? getStatesOfCountry(countryCode).map((s) => ({ key: s.isoCode, label: s.name }))
     : [];
   const cityOptions: DropdownOption[] = (
-    countryCode && stateCode ? City.getCitiesOfState(countryCode, stateCode) : []
+    countryCode && stateCode ? getCitiesOfState(countryCode, stateCode) : []
   ).map((c) => ({ key: c.name, label: c.name }));
 
   function handlePickCity(name: string) {
     setCityName(name);
     if (!countryCode || !stateCode) return;
-    const city = City.getCitiesOfState(countryCode, stateCode).find((c) => c.name === name);
-    const country = Country.getCountryByCode(countryCode);
-    const state = State.getStateByCodeAndCountry(stateCode, countryCode);
+    const city = getCitiesOfState(countryCode, stateCode).find((c) => c.name === name);
+    const country = getCountryByCode(countryCode);
+    const state = getStateByCodeAndCountry(stateCode, countryCode);
     if (city && city.latitude && city.longitude) {
       onChange(Number(city.latitude), Number(city.longitude));
       setCurrentPlace({ city: name, region: state?.name ?? "", country: country?.name ?? "" });
