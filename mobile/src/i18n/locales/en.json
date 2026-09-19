@@ -277,7 +277,20 @@
     "purchaseSuccessTitle": "Purchase complete 🎉",
     "purchaseSuperlikeSuccess": "{{count}} Super Likes have been added.",
     "purchaseBoostSuccess": "{{count}} Boosts have been added.",
-    "purchasePremiumSuccess": "Premium is now active."
+    "purchasePremiumSuccess": "Premium is now active.",
+    "purchaseAiMatchSuccess": "{{count}} AI Match credit(s) added.",
+    "purchaseUnlimitedMatchingSuccess": "Unlimited Matching is now active.",
+    "membershipPremium": "Premium member",
+    "membershipFree": "Free member",
+    "purchaseHistoryLink": "View purchase history",
+    "perkAdvancedFilters": "Advanced filters (race, religion, politics, and more)"
+  },
+  "purchaseHistory": {
+    "title": "Purchase history",
+    "empty": "No purchases yet.",
+    "membershipSubtitle": "Premium Membership",
+    "unlimitedMatchingSubtitle": "Unlimited Matching",
+    "creditsSubtitle": "{{count}} credited"
   },
   "photoCrop": {
     "title": "Edit photo",
@@ -669,7 +682,11 @@
     "verificationRequiredCta": "Verify now",
     "profileIncompleteTitle": "Finish filling out your profile",
     "profileIncompleteBody": "Your profile needs to be at least 70% complete before you can start Blind Chat.",
-    "profileIncompleteCta": "Complete my profile"
+    "profileIncompleteCta": "Complete my profile",
+    "watchAdForBonus": "Watch an ad for +1",
+    "adBonusTitle": "Bonus match",
+    "adBonusSuccess": "You've got 1 extra match today!",
+    "adBonusUnavailable": "No ad available right now. Try again in a bit."
   },
   "blindFeedback": {
     "menuItem": "Leave feedback on this person",

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Image, Platform, Pressable, RefreshControl, ScrollView, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Image, Platform, Pressable, RefreshControl, ScrollView, Text, View, StyleSheet } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
@@ -126,9 +126,18 @@ export default function MyProfileScreen({ navigation }: Props) {
       <ScreenHeader
         title={t("tabs.profile")}
         right={
-          <Pressable style={styles.gearButton} onPress={() => navigation.navigate("Settings")} hitSlop={8}>
-            <Ionicons name="settings-outline" size={22} color={colors.navy} />
-          </Pressable>
+          <View style={styles.headerButtons}>
+            <Pressable style={styles.gearButton} onPress={() => refetch()} hitSlop={8} disabled={isRefetching}>
+              {isRefetching ? (
+                <ActivityIndicator size="small" color={colors.navy} />
+              ) : (
+                <Ionicons name="refresh" size={20} color={colors.navy} />
+              )}
+            </Pressable>
+            <Pressable style={styles.gearButton} onPress={() => navigation.navigate("Settings")} hitSlop={8}>
+              <Ionicons name="settings-outline" size={22} color={colors.navy} />
+            </Pressable>
+          </View>
         }
       />
 
@@ -185,6 +194,14 @@ export default function MyProfileScreen({ navigation }: Props) {
         {profile?.verified_badge && <Text style={styles.badge}>🏅</Text>}
         {profile?.face_verified && <VerifiedBadge size={20} />}
       </View>
+      {profile && (
+        <View style={[styles.membershipPill, isPremium && styles.membershipPillActive]}>
+          <Ionicons name={isPremium ? "star" : "star-outline"} size={12} color={isPremium ? "#fff" : colors.muted} />
+          <Text style={[styles.membershipPillText, isPremium && styles.membershipPillTextActive]}>
+            {t(isPremium ? "profile.membershipPremium" : "profile.membershipFree")}
+          </Text>
+        </View>
+      )}
       {profile?.bio && <Text style={styles.bio}>{profile.bio}</Text>}
 
       {completeness != null && completeness < 100 && (
@@ -291,7 +308,10 @@ export default function MyProfileScreen({ navigation }: Props) {
 
       <View style={styles.perksCard}>
         <Text style={styles.perksTitle}>{t("profile.perksTitle")}</Text>
-        {[{ icon: "chatbubbles" as const, label: t("profile.perkUnlimitedBlindChat") }].map((perk, i) => (
+        {[
+          { icon: "chatbubbles" as const, label: t("profile.perkUnlimitedBlindChat") },
+          { icon: "options" as const, label: t("profile.perkAdvancedFilters") },
+        ].map((perk, i) => (
           <View key={i} style={styles.perkRow}>
             <View style={styles.perkIconBubble}>
               <Ionicons name={perk.icon} size={15} color={colors.accentDark} />
@@ -301,6 +321,12 @@ export default function MyProfileScreen({ navigation }: Props) {
           </View>
         ))}
       </View>
+
+      <Pressable style={styles.purchaseHistoryLink} onPress={() => navigation.navigate("PurchaseHistory")}>
+        <Ionicons name="receipt-outline" size={17} color={colors.accentDark} />
+        <Text style={styles.purchaseHistoryLinkText}>{t("profile.purchaseHistoryLink")}</Text>
+        <Ionicons name="chevron-forward" size={15} color={colors.accentDark} />
+      </Pressable>
 
       <Pressable style={styles.soodaListCard} onPress={() => openExternalUrl(SOODALIST_STORE_URL)}>
         <Image source={require("../../../assets/soodalist-logo.png")} style={styles.soodaListLogo} resizeMode="contain" />
@@ -318,6 +344,7 @@ export default function MyProfileScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { paddingBottom: 20, backgroundColor: colors.cream, flexGrow: 1 },
   body: { paddingHorizontal: 20, gap: 4 },
+  headerButtons: { flexDirection: "row", gap: 10 },
   gearButton: {
     width: 40,
     height: 40,
@@ -395,6 +422,20 @@ const styles = StyleSheet.create({
   nameRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 14 },
   name: { fontSize: 22, fontWeight: "800", color: colors.navy },
   badge: { fontSize: 18 },
+  membershipPill: {
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: colors.creamDeep,
+    borderRadius: 999,
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    marginTop: 8,
+  },
+  membershipPillActive: { backgroundColor: colors.accent },
+  membershipPillText: { fontSize: 12, fontWeight: "800", color: colors.muted },
+  membershipPillTextActive: { color: "#fff" },
   bio: { color: colors.muted, textAlign: "center", marginTop: 4, marginBottom: 4, paddingHorizontal: 12 },
   completeCta: {
     alignSelf: "center",
@@ -523,6 +564,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   perkText: { flex: 1, fontSize: 13.5, color: colors.ink, fontWeight: "500" },
+  purchaseHistoryLink: {
+    marginTop: 12,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  purchaseHistoryLinkText: { flex: 1, fontSize: 13.5, fontWeight: "700", color: colors.navy },
   soodaListCard: {
     marginTop: 16,
     backgroundColor: colors.white,

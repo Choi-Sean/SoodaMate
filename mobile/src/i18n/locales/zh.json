@@ -277,7 +277,20 @@
     "purchaseSuccessTitle": "购买完成 🎉",
     "purchaseSuperlikeSuccess": "已添加 {{count}} 个超级喜欢。",
     "purchaseBoostSuccess": "已添加 {{count}} 次曝光加速。",
-    "purchasePremiumSuccess": "会员已开通。"
+    "purchasePremiumSuccess": "会员已开通。",
+    "purchaseAiMatchSuccess": "已增加 {{count}} 次AI匹配。",
+    "purchaseUnlimitedMatchingSuccess": "无限匹配已开通。",
+    "membershipPremium": "高级会员",
+    "membershipFree": "免费会员",
+    "purchaseHistoryLink": "查看购买记录",
+    "perkAdvancedFilters": "高级筛选（种族、宗教、政治倾向等）"
+  },
+  "purchaseHistory": {
+    "title": "购买记录",
+    "empty": "暂无购买记录。",
+    "membershipSubtitle": "高级会员",
+    "unlimitedMatchingSubtitle": "无限匹配",
+    "creditsSubtitle": "已到账 {{count}} 个"
   },
   "photoCrop": {
     "title": "编辑照片",
@@ -669,7 +682,11 @@
     "verificationRequiredCta": "立即认证",
     "profileIncompleteTitle": "请完善你的个人主页",
     "profileIncompleteBody": "开始盲聊前，个人主页完成度需达到70%以上。",
-    "profileIncompleteCta": "去完善主页"
+    "profileIncompleteCta": "去完善主页",
+    "watchAdForBonus": "看广告 +1 次",
+    "adBonusTitle": "额外匹配",
+    "adBonusSuccess": "今天多获得了1次匹配机会！",
+    "adBonusUnavailable": "暂时无法加载广告，请稍后再试。"
   },
   "blindFeedback": {
     "menuItem": "给对方留下反馈",

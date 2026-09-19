@@ -277,7 +277,20 @@
     "purchaseSuccessTitle": "購入完了 🎉",
     "purchaseSuperlikeSuccess": "スーパーいいねが{{count}}回分追加されました。",
     "purchaseBoostSuccess": "ブーストが{{count}}回分追加されました。",
-    "purchasePremiumSuccess": "プレミアムが有効になりました。"
+    "purchasePremiumSuccess": "プレミアムが有効になりました。",
+    "purchaseAiMatchSuccess": "AIマッチ権が{{count}}回追加されました。",
+    "purchaseUnlimitedMatchingSuccess": "無制限マッチングが有効になりました。",
+    "membershipPremium": "プレミアム会員",
+    "membershipFree": "無料会員",
+    "purchaseHistoryLink": "購入履歴を見る",
+    "perkAdvancedFilters": "人種・宗教・政治観など高度なフィルター"
+  },
+  "purchaseHistory": {
+    "title": "購入履歴",
+    "empty": "まだ購入履歴がありません。",
+    "membershipSubtitle": "プレミアム会員",
+    "unlimitedMatchingSubtitle": "無制限マッチング",
+    "creditsSubtitle": "{{count}}件付与"
   },
   "photoCrop": {
     "title": "写真を編集",
@@ -669,7 +682,11 @@
     "verificationRequiredCta": "本人確認へ進む",
     "profileIncompleteTitle": "プロフィールを充実させましょう",
     "profileIncompleteBody": "ブラインドチャットを始めるには、プロフィールを70%以上完成させる必要があります。",
-    "profileIncompleteCta": "プロフィールを編集する"
+    "profileIncompleteCta": "プロフィールを編集する",
+    "watchAdForBonus": "広告を見て+1回もらう",
+    "adBonusTitle": "ボーナスマッチング",
+    "adBonusSuccess": "本日のマッチング回数が1回増えました！",
+    "adBonusUnavailable": "今は広告を読み込めません。しばらくしてからもう一度お試しください。"
   },
   "blindFeedback": {
     "menuItem": "お相手へのフィードバックを送る",

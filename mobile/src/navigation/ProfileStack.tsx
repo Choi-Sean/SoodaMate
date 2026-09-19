@@ -8,6 +8,7 @@ import VerificationScreen from "../screens/profile/VerificationScreen";
 import FaceVerificationScreen from "../screens/profile/FaceVerificationScreen";
 import CoupleStoriesFeedScreen from "../screens/profile/CoupleStoriesFeedScreen";
 import MyCoupleStoriesScreen from "../screens/profile/MyCoupleStoriesScreen";
+import PurchaseHistoryScreen from "../screens/profile/PurchaseHistoryScreen";
 import SettingsScreen from "../screens/settings/SettingsScreen";
 import DiscoverScreen from "../screens/discover/DiscoverScreen";
 import SwipeScreen from "../screens/swipe/SwipeScreen";
@@ -22,6 +23,7 @@ export type ProfileStackParamList = {
   FaceVerification: undefined;
   CoupleStoriesFeed: undefined;
   MyCoupleStories: undefined;
+  PurchaseHistory: undefined;
   Settings: undefined;
   // Discover/classic swipe matching and Likes are no longer bottom tabs
   // (Blind Chat is the app's primary flow now, with just Chat/Profile
@@ -58,6 +60,11 @@ export default function ProfileStack() {
       <Stack.Screen name="FaceVerification" component={FaceVerificationScreen} options={{ title: t("faceVerification.title") }} />
       <Stack.Screen name="CoupleStoriesFeed" component={CoupleStoriesFeedScreen} options={{ title: t("coupleStory.feedTitle") }} />
       <Stack.Screen name="MyCoupleStories" component={MyCoupleStoriesScreen} options={{ title: t("coupleStory.myStoriesTitle") }} />
+      <Stack.Screen
+        name="PurchaseHistory"
+        component={PurchaseHistoryScreen}
+        options={{ title: t("purchaseHistory.title") }}
+      />
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t("settings.title") }} />
       <Stack.Screen name="ClassicDiscover" component={DiscoverScreen} options={{ title: t("tabs.discover") }} />
       <Stack.Screen name="ClassicSwipe" component={SwipeScreen} options={{ title: t("tabs.matches") }} />

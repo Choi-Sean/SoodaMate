@@ -7,6 +7,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 
 import {
+  claimBlindChatAdBonus,
   getBlindChatLimit,
   getBlindChatQueueStatus,
   joinBlindChatQueue,
@@ -21,6 +22,7 @@ import ChipSelect from "../../components/ChipSelect";
 import MultiChipSelect from "../../components/MultiChipSelect";
 import RangeSlider from "../../components/RangeSlider";
 import SingleSlider from "../../components/SingleSlider";
+import { showRewardedAd } from "../../services/rewardedAd";
 import { showAlert } from "../../utils/alert";
 import { calculateProfileCompleteness, MIN_COMPLETENESS_FOR_ACTIVE } from "../../utils/profileCompleteness";
 import { formatDistanceKm } from "../../utils/units";
@@ -77,6 +79,7 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
   const [waiting, setWaiting] = useState(false);
   const [starting, setStarting] = useState(false);
   const [aiMatching, setAiMatching] = useState(false);
+  const [claimingBonus, setClaimingBonus] = useState(false);
   // The wait for a match is genuine idle time (no active conversation to
   // interrupt), unlike the chat itself — the one ad surface left now that
   // swipe/Classic Matching is out of the concept entirely. Hidden outright
@@ -267,6 +270,24 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
     }
   }
 
+  async function handleWatchAdForBonus() {
+    setClaimingBonus(true);
+    try {
+      const earned = await showRewardedAd();
+      if (!earned) {
+        showAlert(t("blindChat.adBonusTitle"), t("blindChat.adBonusUnavailable"));
+        return;
+      }
+      await claimBlindChatAdBonus();
+      await queryClient.invalidateQueries({ queryKey: ["blindChatLimit"] });
+      showAlert(t("blindChat.adBonusTitle"), t("blindChat.adBonusSuccess"));
+    } catch (e: any) {
+      showAlert(t("common.somethingWentWrong"), explainError(e));
+    } finally {
+      setClaimingBonus(false);
+    }
+  }
+
   async function handleCancel() {
     if (revealTimerRef.current) {
       clearTimeout(revealTimerRef.current);
@@ -327,9 +348,23 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
       <Text style={styles.intro}>{t("blindChat.intro")}</Text>
 
       {limit && !limit.unlimited && (
-        <View style={styles.limitBanner}>
-          <Ionicons name="flash-outline" size={14} color={colors.accentDark} />
-          <Text style={styles.limitBannerText}>{t("blindChat.dailyLimitRemaining", { count: limit.remaining })}</Text>
+        <View style={styles.limitRow}>
+          <View style={styles.limitBanner}>
+            <Ionicons name="flash-outline" size={14} color={colors.accentDark} />
+            <Text style={styles.limitBannerText}>{t("blindChat.dailyLimitRemaining", { count: limit.remaining })}</Text>
+          </View>
+          {limit.bonus_available && (
+            <Pressable style={styles.adBonusButton} onPress={handleWatchAdForBonus} disabled={claimingBonus}>
+              {claimingBonus ? (
+                <ActivityIndicator size="small" color={colors.accentDark} />
+              ) : (
+                <>
+                  <Ionicons name="play-circle" size={14} color={colors.accentDark} />
+                  <Text style={styles.adBonusButtonText}>{t("blindChat.watchAdForBonus")}</Text>
+                </>
+              )}
+            </Pressable>
+          )}
         </View>
       )}
 
@@ -422,6 +457,18 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   limitBannerText: { fontSize: 12.5, color: colors.accentDark, fontWeight: "600" },
+  limitRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 8 },
+  adBonusButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: colors.accentSoft,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignSelf: "flex-start",
+  },
+  adBonusButtonText: { fontSize: 12.5, color: colors.accentDark, fontWeight: "700" },
   // Matches the white-bordered `card` pattern used everywhere else
   // (EditProfileScreen/ProfileSetupScreen) — this used to be a flat
   // colors.creamDeep block with no border, which read as visually

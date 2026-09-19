@@ -277,7 +277,20 @@
     "purchaseSuccessTitle": "Compra completada 🎉",
     "purchaseSuperlikeSuccess": "Se añadieron {{count}} Super Likes.",
     "purchaseBoostSuccess": "Se añadieron {{count}} Boosts.",
-    "purchasePremiumSuccess": "Premium ya está activo."
+    "purchasePremiumSuccess": "Premium ya está activo.",
+    "purchaseAiMatchSuccess": "Se añadieron {{count}} match(es) con IA.",
+    "purchaseUnlimitedMatchingSuccess": "El matching ilimitado ya está activo.",
+    "membershipPremium": "Miembro Premium",
+    "membershipFree": "Miembro gratuito",
+    "purchaseHistoryLink": "Ver historial de compras",
+    "perkAdvancedFilters": "Filtros avanzados (raza, religión, política y más)"
+  },
+  "purchaseHistory": {
+    "title": "Historial de compras",
+    "empty": "Aún no hay compras.",
+    "membershipSubtitle": "Membresía Premium",
+    "unlimitedMatchingSubtitle": "Matching ilimitado",
+    "creditsSubtitle": "{{count}} acreditado(s)"
   },
   "photoCrop": {
     "title": "Editar foto",
@@ -669,7 +682,11 @@
     "verificationRequiredCta": "Verificar ahora",
     "profileIncompleteTitle": "Termina de completar tu perfil",
     "profileIncompleteBody": "Tu perfil debe estar al menos 70% completo antes de poder iniciar el Chat a Ciegas.",
-    "profileIncompleteCta": "Completar mi perfil"
+    "profileIncompleteCta": "Completar mi perfil",
+    "watchAdForBonus": "Ver un anuncio por +1",
+    "adBonusTitle": "Match extra",
+    "adBonusSuccess": "¡Tienes 1 match extra hoy!",
+    "adBonusUnavailable": "No hay ningún anuncio disponible ahora. Inténtalo de nuevo en un momento."
   },
   "blindFeedback": {
     "menuItem": "Dejar comentarios sobre esta persona",

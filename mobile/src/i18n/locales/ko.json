@@ -277,7 +277,20 @@
     "purchaseSuccessTitle": "결제 완료 🎉",
     "purchaseSuperlikeSuccess": "슈퍼좋아요 {{count}}개가 추가됐어요.",
     "purchaseBoostSuccess": "부스트 {{count}}회가 추가됐어요.",
-    "purchasePremiumSuccess": "프리미엄이 활성화됐어요."
+    "purchasePremiumSuccess": "프리미엄이 활성화됐어요.",
+    "purchaseAiMatchSuccess": "AI 매칭권 {{count}}회가 추가됐어요.",
+    "purchaseUnlimitedMatchingSuccess": "무제한 매칭이 활성화됐어요.",
+    "membershipPremium": "프리미엄 회원",
+    "membershipFree": "무료 회원",
+    "purchaseHistoryLink": "구매 내역 보기",
+    "perkAdvancedFilters": "인종·종교·정치성향 등 고급 필터"
+  },
+  "purchaseHistory": {
+    "title": "구매 내역",
+    "empty": "아직 구매 내역이 없어요.",
+    "membershipSubtitle": "프리미엄 멤버십",
+    "unlimitedMatchingSubtitle": "무제한 매칭",
+    "creditsSubtitle": "{{count}}개 지급"
   },
   "photoCrop": {
     "title": "사진 편집",
@@ -669,7 +682,11 @@
     "verificationRequiredCta": "본인인증하러 가기",
     "profileIncompleteTitle": "프로필을 더 채워주세요",
     "profileIncompleteBody": "블라인드 채팅을 시작하려면 프로필을 70% 이상 완성해주세요.",
-    "profileIncompleteCta": "프로필 채우러 가기"
+    "profileIncompleteCta": "프로필 채우러 가기",
+    "watchAdForBonus": "광고 보고 +1 받기",
+    "adBonusTitle": "보너스 매칭",
+    "adBonusSuccess": "오늘의 매칭 횟수가 1회 늘었어요!",
+    "adBonusUnavailable": "지금은 광고를 불러올 수 없어요. 잠시 후 다시 시도해주세요."
   },
   "blindFeedback": {
     "menuItem": "상대방 피드백 남기기",

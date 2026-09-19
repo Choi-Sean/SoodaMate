@@ -183,6 +183,15 @@ export interface BlindChatLimit {
   limit: number;
   resets_at: string | null;
   unlimited: boolean;
+  bonus_available: boolean;
+}
+
+export interface PurchaseHistoryItem {
+  product_id: string;
+  name: string;
+  credit_kind: string;
+  credits_granted: number;
+  created_at: string;
 }
 
 export interface AiMatchResult {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, Text, View, StyleSheet } from "react-native";
+import { Image, Pressable, Text, View, StyleSheet } from "react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
@@ -88,7 +88,7 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
       </View>
 
       <Pressable style={styles.centerButton} onPress={handleCenterPress}>
-        <Text style={styles.centerButtonIcon}>🎭</Text>
+        <Image source={require("../../assets/logo-mascot.png")} style={styles.centerButtonIcon} resizeMode="contain" />
       </Pressable>
       <Text style={styles.centerLabel} numberOfLines={1}>
         {t("tabs.blindChat")}
@@ -139,7 +139,10 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.accent,
+    // White (not colors.accent) so the mascot's own orange face reads
+    // clearly against it — an orange character on an orange fill blended
+    // into an indistinct blob at this size.
+    backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 4,
@@ -150,7 +153,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 10,
   },
-  centerButtonIcon: { fontSize: 26 },
+  centerButtonIcon: { width: 44, height: 44 },
   centerLabel: {
     position: "absolute",
     top: 36,

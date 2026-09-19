@@ -27,9 +27,15 @@ export function usePurchaseReturnWatch() {
         const gainedSuperlike = fresh.superlike_credits - before.superlikeCredits;
         const gainedBoost = fresh.boost_credits - before.boostCredits;
         const gainedPremium = fresh.is_premium_member && !before.isPremium;
+        const gainedAiMatch = fresh.ai_match_credits - before.aiMatchCredits;
+        const gainedUnlimitedMatching = fresh.is_unlimited_matching_active && !before.unlimitedMatchingActive;
 
         if (gainedPremium) {
           showAlert(t("profile.purchaseSuccessTitle"), t("profile.purchasePremiumSuccess"));
+        } else if (gainedUnlimitedMatching) {
+          showAlert(t("profile.purchaseSuccessTitle"), t("profile.purchaseUnlimitedMatchingSuccess"));
+        } else if (gainedAiMatch > 0) {
+          showAlert(t("profile.purchaseSuccessTitle"), t("profile.purchaseAiMatchSuccess", { count: gainedAiMatch }));
         } else if (gainedSuperlike > 0) {
           showAlert(t("profile.purchaseSuccessTitle"), t("profile.purchaseSuperlikeSuccess", { count: gainedSuperlike }));
         } else if (gainedBoost > 0) {

@@ -9,6 +9,8 @@ export interface EntitlementSnapshot {
   superlikeCredits: number;
   boostCredits: number;
   isPremium: boolean;
+  aiMatchCredits: number;
+  unlimitedMatchingActive: boolean;
 }
 
 interface PurchaseState {
