@@ -4,6 +4,7 @@
 // need embedded markup like the accent <span> in the hero title).
 const SUPPORTED_LANGS = ["ko", "en", "es", "zh", "ja"];
 const LANG_LABELS = { ko: "한국어", en: "English", es: "Español", zh: "中文", ja: "日本語" };
+const LANG_FLAGS = { ko: "🇰🇷", en: "🇺🇸", es: "🇪🇸", zh: "🇨🇳", ja: "🇯🇵" };
 
 const translations = {
   "brand.name": { ko: "수다메이트", en: "SooDaMate", es: "SooDaMate", zh: "SooDaMate", ja: "SooDaMate" },
@@ -15,11 +16,11 @@ const translations = {
   "nav.download": { ko: "다운로드", en: "Download", es: "Descargar", zh: "下载", ja: "ダウンロード" },
 
   "hero.eyebrow": {
-    ko: "🎭 인증된 회원만의 블라인드 채팅",
-    en: "🎭 Blind chat, verified members only",
-    es: "🎭 Chat a ciegas, solo miembros verificados",
-    zh: "🎭 仅限认证会员的盲聊",
-    ja: "🎭 認証済み会員限定のブラインドチャット",
+    ko: "인증된 회원만의 블라인드 채팅",
+    en: "Blind chat, verified members only",
+    es: "Chat a ciegas, solo miembros verificados",
+    zh: "仅限认证会员的盲聊",
+    ja: "認証済み会員限定のブラインドチャット",
   },
   "hero.title": {
     ko: '얼굴 공개는 천천히,<br /><span class="accent">대화는 지금 바로</span>',
@@ -39,7 +40,7 @@ const translations = {
   "hero.trust1": { ko: "전화번호 인증을 마친 회원만", en: "Phone-verified members only", es: "Solo miembros con teléfono verificado", zh: "仅限已完成手机验证的会员", ja: "電話番号認証済みの会員のみ" },
   "hero.trust2": { ko: "매칭 전까지 이름·사진 비공개", en: "Name & photo hidden until matched", es: "Nombre y foto ocultos hasta el match", zh: "配对前姓名与照片保密", ja: "マッチするまで名前・写真は非公開" },
   "hero.trust3": { ko: "실시간 신고·차단", en: "Real-time report & block", es: "Reporte y bloqueo en tiempo real", zh: "实时举报与拉黑", ja: "リアルタイム通報・ブロック" },
-  "hero.matchToast": { ko: "🎭 대화가 시작됐어요!", en: "🎭 The conversation has started!", es: "🎭 ¡La conversación ha comenzado!", zh: "🎭 对话已经开始！", ja: "🎭 会話が始まりました！" },
+  "hero.matchToast": { ko: "대화가 시작됐어요!", en: "The conversation has started!", es: "¡La conversación ha comenzado!", zh: "对话已经开始！", ja: "会話が始まりました！" },
   "hero.chatToast": { ko: "💬 실시간 채팅 연결됨", en: "💬 Live chat connected", es: "💬 Chat en vivo conectado", zh: "💬 实时聊天已连接", ja: "💬 リアルタイムチャット接続中" },
   "hero.cardDistance": { ko: "🎵 음악 카테고리", en: "🎵 Music category", es: "🎵 Categoría de música", zh: "🎵 音乐分类", ja: "🎵 音楽カテゴリー" },
   "hero.cardName": { ko: "S***, 27", en: "S***, 27", es: "S***, 27", zh: "S***, 27岁", ja: "S***, 27歳" },
@@ -181,7 +182,7 @@ const translations = {
     ja: "名前も写真もない状態で気軽に会話し、お互い準備ができて同意したときだけ公開されます。",
   },
 
-  "rule.badge": { ko: "🎭 이름도 사진도 없이 시작하는 대화", en: "🎭 No name, no photo — just talk", es: "🎭 Sin nombre, sin foto — solo hablar", zh: "🎭 没有姓名照片，先聊起来", ja: "🎭 名前も写真もなく、まず会話から" },
+  "rule.badge": { ko: "이름도 사진도 없이 시작하는 대화", en: "No name, no photo — just talk", es: "Sin nombre, sin foto — solo hablar", zh: "没有姓名照片，先聊起来", ja: "名前も写真もなく、まず会話から" },
   "rule.title": {
     ko: "얼굴부터 보지 않아도<br />괜찮아요",
     en: "You don't have to see<br />a face first",
@@ -286,7 +287,7 @@ const translations = {
     ja: "実際のアプリのスクリーンショットはリリース後にここに掲載されます。",
   },
   "screens.discover": { ko: "카테고리 선택<br />블라인드 채팅 시작", en: "Pick a category<br />Start Blind Chat", es: "Elige categoría<br />Empieza el chat a ciegas", zh: "选择分类<br />开始盲聊", ja: "カテゴリーを選ぶ<br />ブラインドチャット開始" },
-  "screens.match": { ko: "🎭 비공개 대화 중", en: "🎭 Chatting, still private", es: "🎭 Chateando, aún en privado", zh: "🎭 匿名对话中", ja: "🎭 非公開で会話中" },
+  "screens.match": { ko: "비공개 대화 중", en: "Chatting, still private", es: "Chateando, aún en privado", zh: "匿名对话中", ja: "非公開で会話中" },
   "screens.chat": { ko: "💛 서로 공개했어요!", en: "💛 You revealed each other!", es: "💛 ¡Se revelaron mutuamente!", zh: "💛 双方已互相公开！", ja: "💛 お互いに公開しました！" },
 
   "cta.title": { ko: "지금 바로 시작하세요", en: "Get started today", es: "Empieza hoy mismo", zh: "现在就开始吧", ja: "今すぐ始めよう" },
@@ -775,11 +776,14 @@ const translations = {
   "shopSuccess.backBtn": { ko: "앱으로 돌아가기", en: "Back to the app", es: "Volver a la app", zh: "返回应用", ja: "アプリに戻る" },
 };
 
+// Defaults to English for every first-time visitor regardless of browser
+// locale (product decision — was previously navigator.language-detected,
+// which meant a Korean browser landed on the Korean page even for e.g. an
+// App Store reviewer). Only a language the visitor explicitly picks here
+// (remembered below) overrides it.
 function currentLang() {
   const saved = localStorage.getItem("sooda_lang");
-  if (saved && SUPPORTED_LANGS.includes(saved)) return saved;
-  const browserLang = (navigator.language || "en").slice(0, 2);
-  return SUPPORTED_LANGS.includes(browserLang) ? browserLang : "en";
+  return saved && SUPPORTED_LANGS.includes(saved) ? saved : "en";
 }
 
 function applyLang(lang) {
@@ -795,18 +799,60 @@ function applyLang(lang) {
   document.querySelectorAll("[data-lang-option]").forEach((el) => {
     el.classList.toggle("active", el.getAttribute("data-lang-option") === lang);
   });
+  const trigger = document.querySelector("[data-lang-trigger]");
+  if (trigger) {
+    trigger.querySelector(".lang-trigger-flag").textContent = LANG_FLAGS[lang];
+    trigger.querySelector(".lang-trigger-label").textContent = LANG_LABELS[lang];
+  }
   localStorage.setItem("sooda_lang", lang);
 }
 
+// A row of 5 buttons never fit a phone-width header (see the removed
+// .lang-switcher overflow-scroll workaround) — a single flag+label trigger
+// that opens a small dropdown menu does, and reads as one cute button
+// instead of a wall of text.
 function initLangSwitcher() {
-  const switcher = document.querySelector("[data-lang-switcher]");
-  if (!switcher) return;
-  switcher.innerHTML = SUPPORTED_LANGS.map(
-    (l) => `<button type="button" data-lang-option="${l}">${LANG_LABELS[l]}</button>`
-  ).join("");
-  switcher.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-lang-option]");
-    if (btn) applyLang(btn.getAttribute("data-lang-option"));
+  const switchers = document.querySelectorAll("[data-lang-switcher]");
+  if (!switchers.length) return;
+
+  switchers.forEach((switcher) => {
+    switcher.classList.add("lang-dropdown");
+    switcher.innerHTML = `
+      <button type="button" class="lang-trigger" data-lang-trigger aria-haspopup="listbox" aria-expanded="false">
+        <span class="lang-trigger-flag"></span>
+        <span class="lang-trigger-label"></span>
+        <span class="lang-trigger-caret">▾</span>
+      </button>
+      <ul class="lang-menu" role="listbox">
+        ${SUPPORTED_LANGS.map(
+          (l) =>
+            `<li><button type="button" class="lang-option" data-lang-option="${l}" role="option">
+              <span class="lang-option-flag">${LANG_FLAGS[l]}</span>${LANG_LABELS[l]}
+            </button></li>`
+        ).join("")}
+      </ul>
+    `;
+
+    const trigger = switcher.querySelector("[data-lang-trigger]");
+    trigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = switcher.classList.toggle("open");
+      trigger.setAttribute("aria-expanded", String(open));
+    });
+    switcher.querySelector(".lang-menu").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-lang-option]");
+      if (!btn) return;
+      applyLang(btn.getAttribute("data-lang-option"));
+      switcher.classList.remove("open");
+      trigger.setAttribute("aria-expanded", "false");
+    });
+  });
+
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".lang-dropdown.open").forEach((el) => {
+      el.classList.remove("open");
+      el.querySelector("[data-lang-trigger]")?.setAttribute("aria-expanded", "false");
+    });
   });
 }
 

@@ -21,9 +21,7 @@ html { scroll-behavior: smooth; }
 
 html, body {
   /* Hard safety net: nothing on this page should ever be able to force a
-     horizontal scrollbar on the page itself (see .lang-switcher below for
-     what actually overflowed — 5 language buttons at Japanese/English
-     label widths no longer fit a 375px header without this). */
+     horizontal scrollbar on the page itself. */
   overflow-x: hidden;
   max-width: 100%;
 }
@@ -93,24 +91,43 @@ button { font-family: inherit; }
   line-height: 1;
   cursor: pointer;
 }
-.lang-switcher {
-  display: flex; gap: 4px; background: var(--cream-deep); border-radius: 999px; padding: 4px;
-  /* 5 language buttons (ko/en/es/zh/ja) at English/Spanish label widths
-     don't reliably fit next to the logo + download button under ~420px —
-     scroll the switcher itself rather than letting it force the whole
-     .bar (and page) wider than the viewport. */
-  overflow-x: auto;
-  max-width: 100%;
-  scrollbar-width: none;
+/* A single cute flag+label pill that opens a small dropdown — replaces the
+   old row of 5 language buttons, which never reliably fit next to the logo
+   + download button under ~420px (see git history for the overflow-scroll
+   workaround this used to need). */
+.lang-dropdown { position: relative; flex-shrink: 0; }
+.lang-trigger {
+  display: flex; align-items: center; gap: 6px;
+  border: none; background: var(--cream-deep); cursor: pointer;
+  font-family: "Jua", "Fredoka", sans-serif;
+  font-size: 13px; font-weight: 700; color: var(--navy);
+  padding: 7px 12px; border-radius: 999px; white-space: nowrap;
+  transition: background 0.15s ease;
 }
-.lang-switcher::-webkit-scrollbar { display: none; }
-.lang-switcher button {
+.lang-trigger:hover { background: var(--accent-soft); }
+.lang-trigger-flag { font-size: 15px; line-height: 1; }
+.lang-trigger-caret { font-size: 10px; color: var(--muted); transition: transform 0.15s ease; }
+.lang-dropdown.open .lang-trigger-caret { transform: rotate(180deg); }
+.lang-menu {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  list-style: none; margin: 0; padding: 6px;
+  background: var(--white); border-radius: 16px;
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  min-width: 150px;
+  opacity: 0; visibility: hidden; transform: translateY(-6px);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+  z-index: 30;
+}
+.lang-dropdown.open .lang-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+.lang-option {
+  display: flex; align-items: center; gap: 8px; width: 100%;
   border: none; background: transparent; cursor: pointer;
-  font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap;
-  padding: 6px 10px; border-radius: 999px; transition: background 0.15s ease, color 0.15s ease;
+  font-size: 13.5px; font-weight: 600; color: var(--ink); text-align: left;
+  padding: 9px 10px; border-radius: 10px;
 }
-.lang-switcher button.active { background: var(--navy); color: #fff; }
-.lang-switcher button:hover:not(.active) { color: var(--navy); }
+.lang-option-flag { font-size: 16px; line-height: 1; }
+.lang-option:hover { background: var(--cream-deep); }
+.lang-option.active { background: var(--accent-soft); color: var(--accent-dark); font-weight: 800; }
 .nav-cta {
   background: var(--accent);
   color: var(--white);
@@ -246,7 +263,8 @@ button { font-family: inherit; }
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 46px;
+  width: 52px;
+  height: 52px;
   opacity: 0.9;
 }
 .phone-category-chip {
@@ -308,6 +326,8 @@ section { padding: 88px 24px; }
   display: flex; align-items: center; justify-content: center;
   font-size: 22px; margin-bottom: 18px;
 }
+.feature-icon-img { width: 28px; height: 28px; }
+.badge-icon { width: 18px; height: 18px; flex-shrink: 0; }
 .feature-card h3 { font-size: 16.5px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
 .feature-card p { font-size: 14px; color: var(--muted); }
 
@@ -479,6 +499,7 @@ section { padding: 88px 24px; }
   .nav-links { padding-left: 16px; padding-right: 16px; }
   .logo { flex-shrink: 0; font-size: 16px; }
   .logo-mark { width: 26px; height: 26px; }
-  .lang-switcher button { padding: 6px 8px; font-size: 11px; }
+  .lang-trigger { padding: 6px 9px; font-size: 12px; }
+  .lang-trigger-label { display: none; }
   .nav-cta { flex-shrink: 0; padding: 8px 14px; font-size: 13px; }
 }
