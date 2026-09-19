@@ -11,6 +11,7 @@ from app.config import settings
 from app.models.iap import PaymentTransaction
 from app.models.profile import Profile
 from app.models.promotion import Promotion
+from app.schemas.payment import PurchaseHistoryItemOut
 from app.utils.premium import is_premium
 from app.utils.upsert import try_insert
 
@@ -383,3 +384,36 @@ async def activate_boost(db: AsyncSession, user_id: uuid.UUID) -> datetime:
     profile.boost_active_until = datetime.now(timezone.utc) + timedelta(minutes=BOOST_DURATION_MINUTES)
     await db.commit()
     return profile.boost_active_until
+
+
+async def get_purchase_history(
+    db: AsyncSession, user_id: uuid.UUID, language: str
+) -> list[PurchaseHistoryItemOut]:
+    """Newest-first list of completed purchases — the user-facing answer to
+    "did my payment actually go through", independent of whatever the
+    profile's current balance happens to be (credits get spent, this
+    doesn't). product_id no longer in PRODUCTS (a retired/renamed catalog
+    entry) falls back to the raw id rather than 500ing."""
+    rows = (
+        await db.scalars(
+            select(PaymentTransaction)
+            .where(PaymentTransaction.user_id == user_id)
+            .order_by(PaymentTransaction.created_at.desc())
+        )
+    ).all()
+    items = []
+    for row in rows:
+        product = PRODUCTS.get(row.product_id)
+        name = row.product_id
+        if product:
+            name = _localized_product_name(row.product_id, product, language)
+        items.append(
+            PurchaseHistoryItemOut(
+                product_id=row.product_id,
+                name=name,
+                credit_kind=row.credit_kind,
+                credits_granted=row.credits_granted,
+                created_at=row.created_at,
+            )
+        )
+    return items

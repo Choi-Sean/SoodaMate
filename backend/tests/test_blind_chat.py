@@ -317,9 +317,15 @@ async def test_free_daily_blind_match_limit_then_unlimited_bypasses_it(client):
     _, a_headers = await create_user_with_profile(client, "limitA@example.com", gender="male", interested_in="female")
 
     limit0 = await client.get("/blind-chat/limit", headers=a_headers)
-    assert limit0.json() == {"remaining": 3, "limit": 3, "resets_at": None, "unlimited": False}
+    assert limit0.json() == {
+        "remaining": 5,
+        "limit": 5,
+        "resets_at": None,
+        "unlimited": False,
+        "bonus_available": True,
+    }
 
-    for i in range(3):
+    for i in range(5):
         _, b_headers = await create_user_with_profile(
             client, f"limitB{i}@example.com", gender="female", interested_in="male"
         )
@@ -328,7 +334,7 @@ async def test_free_daily_blind_match_limit_then_unlimited_bypasses_it(client):
     limit3 = await client.get("/blind-chat/limit", headers=a_headers)
     assert limit3.json()["remaining"] == 0
 
-    _, b4_headers = await create_user_with_profile(client, "limitB4@example.com", gender="female", interested_in="male")
+    _, b4_headers = await create_user_with_profile(client, "limitB5@example.com", gender="female", interested_in="male")
     blocked = await client.post("/blind-chat/queue", headers=a_headers, json={"categories": ["travel"]})
     assert blocked.status_code == 429
 
@@ -352,6 +358,38 @@ async def test_free_daily_blind_match_limit_then_unlimited_bypasses_it(client):
     await client.post("/blind-chat/queue", headers=a_headers, json={"categories": ["travel"]})
     unblocked = await client.post("/blind-chat/queue", headers=b4_headers, json={"categories": ["travel"]})
     assert unblocked.json()["status"] == "matched"
+
+
+@pytest.mark.asyncio
+async def test_blind_chat_ad_bonus_grants_one_extra_match_once_per_day(client):
+    _, headers = await create_user_with_profile(client, "adbonus@example.com")
+
+    limit0 = await client.get("/blind-chat/limit", headers=headers)
+    assert limit0.json() == {
+        "remaining": 5,
+        "limit": 5,
+        "resets_at": None,
+        "unlimited": False,
+        "bonus_available": True,
+    }
+
+    claimed = await client.post("/blind-chat/ad-bonus", headers=headers)
+    assert claimed.json() == {
+        "remaining": 6,
+        "limit": 6,
+        "resets_at": None,
+        "unlimited": False,
+        "bonus_available": False,
+    }
+
+    # Watching a second ad the same day doesn't stack a second bonus.
+    claimed_again = await client.post("/blind-chat/ad-bonus", headers=headers)
+    assert claimed_again.json()["limit"] == 6
+    assert claimed_again.json()["bonus_available"] is False
+
+    limit_after = await client.get("/blind-chat/limit", headers=headers)
+    assert limit_after.json()["limit"] == 6
+    assert limit_after.json()["bonus_available"] is False
 
 
 @pytest.mark.asyncio

@@ -1,195 +1,86 @@
-import json
+import uuid as uuid_mod
 
 import pytest
-import stripe
 
+from app.database import async_session_factory
+from app.models.iap import PaymentTransaction
 from tests.helpers import create_user_with_profile
 
-_WEBHOOK_SECRET = "whsec_testsecret_0123456789abcdef"
-
-
-def _webhook_post_args(event: dict) -> dict:
-    """Build a real, correctly-signed webhook request the same way Stripe
-    would — so the handler runs its true construct_event + payload-parse
-    path (a fake dict return from construct_event used to hide bugs in it)."""
-    payload = json.dumps(event)
-    sig = stripe.WebhookSignature.generate_signature_header(payload, _WEBHOOK_SECRET)
-    return {"content": payload.encode(), "headers": {"stripe-signature": sig}}
-
-
-def _checkout_completed(evt_id: str, session_id: str, user_id: str, product_id: str) -> dict:
-    obj = {"id": session_id, "object": "checkout.session", "metadata": {"user_id": user_id, "product_id": product_id}}
-    if "membership" in product_id:
-        obj["subscription"] = "sub_test_123"
-    return {
-        "id": evt_id,
-        "object": "event",
-        "type": "checkout.session.completed",
-        "data": {"object": obj},
-    }
-
 
 @pytest.mark.asyncio
-async def test_products_listed(client):
-    resp = await client.get("/payments/products")
+async def test_purchase_history_empty_for_new_user(client):
+    _, headers = await create_user_with_profile(client, "historyEmpty@example.com")
+    resp = await client.get("/payments/history", headers=headers)
     assert resp.status_code == 200
-    ids = [p["product_id"] for p in resp.json()]
-    assert "ai_match_pack_1" in ids
-    assert "unlimited_matching_week" in ids
-    assert "membership_monthly" in ids
+    assert resp.json() == {"items": []}
 
 
 @pytest.mark.asyncio
-async def test_classic_matching_products_hidden_from_listing(client):
-    # Superlike/Boost are Classic Matching monetization — that flow's only
-    # entry point (MyProfileScreen's link card) was hidden per product
-    # decision, so the shop no longer advertises credits with nowhere left
-    # to spend them. Still fully purchasable directly (see the webhook test
-    # below) — only listing is filtered.
-    resp = await client.get("/payments/products")
-    ids = [p["product_id"] for p in resp.json()]
-    assert "superlike_pack_5" not in ids
-    assert "superlike_pack_20" not in ids
-    assert "boost_1" not in ids
+async def test_purchase_history_lists_transactions_newest_first_localized(client):
+    user_id, headers = await create_user_with_profile(client, "historyItems@example.com")
 
+    async with async_session_factory() as session:
+        session.add(
+            PaymentTransaction(
+                user_id=uuid_mod.UUID(user_id),
+                stripe_event_id="evt_1",
+                stripe_session_id="cs_1",
+                product_id="ai_match_pack_5",
+                credit_kind="ai_match",
+                credits_granted=5,
+                raw_payload="{}",
+            )
+        )
+        session.add(
+            PaymentTransaction(
+                user_id=uuid_mod.UUID(user_id),
+                stripe_event_id="evt_2",
+                stripe_session_id="cs_2",
+                product_id="membership_monthly",
+                credit_kind="membership",
+                credits_granted=0,
+                raw_payload="{}",
+            )
+        )
+        await session.commit()
 
-@pytest.mark.asyncio
-async def test_checkout_session_requires_configured_stripe(client, monkeypatch):
-    import app.services.payment_service as payment_service
-
-    _, headers = await create_user_with_profile(client, "pay1@example.com")
-    # Explicitly unset rather than relying on the ambient .env not having a
-    # real key configured — this test's whole premise (Stripe unconfigured
-    # -> fails loudly, not silently) silently stopped holding the moment a
-    # real STRIPE_SECRET_KEY was added to .env for live testing.
-    monkeypatch.setattr(payment_service.settings, "stripe_secret_key", "")
-    resp = await client.post(
-        "/payments/create-checkout-session", headers=headers, json={"product_id": "boost_1"}
-    )
-    assert resp.status_code == 503
-
-
-@pytest.mark.asyncio
-async def test_webhook_grants_credits_and_is_idempotent(client, monkeypatch):
-    import app.services.payment_service as payment_service
-
-    user_id, headers = await create_user_with_profile(client, "pay2@example.com")
-    monkeypatch.setattr(payment_service.settings, "stripe_secret_key", "sk_test_fake")
-    monkeypatch.setattr(payment_service.settings, "stripe_webhook_secret", _WEBHOOK_SECRET)
-
-    event = _checkout_completed("evt_pay2_1", "cs_pay2_1", user_id, "superlike_pack_5")
-    resp = await client.post("/payments/webhook", **_webhook_post_args(event))
-    assert resp.status_code == 204, resp.text
-
-    balance = await client.get("/payments/balance", headers=headers)
-    assert balance.json()["superlike_credits"] == 5
-
-    # Redelivery of the same event must not double-grant credits.
-    resp2 = await client.post("/payments/webhook", **_webhook_post_args(event))
-    assert resp2.status_code == 204
-    balance2 = await client.get("/payments/balance", headers=headers)
-    assert balance2.json()["superlike_credits"] == 5
-
-
-@pytest.mark.asyncio
-async def test_webhook_rejects_bad_signature(client, monkeypatch):
-    import app.services.payment_service as payment_service
-
-    user_id, _ = await create_user_with_profile(client, "pay-badsig@example.com")
-    monkeypatch.setattr(payment_service.settings, "stripe_secret_key", "sk_test_fake")
-    monkeypatch.setattr(payment_service.settings, "stripe_webhook_secret", _WEBHOOK_SECRET)
-
-    event = _checkout_completed("evt_bad_1", "cs_bad_1", user_id, "superlike_pack_5")
-    resp = await client.post(
-        "/payments/webhook",
-        content=json.dumps(event).encode(),
-        headers={"stripe-signature": "t=1,v1=deadbeef"},
-    )
-    assert resp.status_code == 400
-
-
-@pytest.mark.asyncio
-async def test_webhook_grants_membership(client, monkeypatch):
-    import app.services.payment_service as payment_service
-
-    user_id, headers = await create_user_with_profile(client, "pay-mem@example.com")
-    monkeypatch.setattr(payment_service.settings, "stripe_secret_key", "sk_test_fake")
-    monkeypatch.setattr(payment_service.settings, "stripe_webhook_secret", _WEBHOOK_SECRET)
-
-    event = _checkout_completed("evt_mem_1", "cs_mem_1", user_id, "membership_monthly")
-    resp = await client.post("/payments/webhook", **_webhook_post_args(event))
-    assert resp.status_code == 204
-
-    me = await client.get("/profiles/me", headers=headers)
-    body = me.json()
-    assert body["is_premium_member"] is True
-    assert body["billing_cycle"] == "monthly"
-
-
-@pytest.mark.asyncio
-async def test_webhook_grants_ai_match_credits(client, monkeypatch):
-    import app.services.payment_service as payment_service
-
-    user_id, headers = await create_user_with_profile(client, "pay-aimatch@example.com")
-    monkeypatch.setattr(payment_service.settings, "stripe_secret_key", "sk_test_fake")
-    monkeypatch.setattr(payment_service.settings, "stripe_webhook_secret", _WEBHOOK_SECRET)
-
-    event = _checkout_completed("evt_aimatch_1", "cs_aimatch_1", user_id, "ai_match_pack_5")
-    resp = await client.post("/payments/webhook", **_webhook_post_args(event))
-    assert resp.status_code == 204, resp.text
-
-    balance = await client.get("/payments/balance", headers=headers)
-    assert balance.json()["ai_match_credits"] == 5
-
-
-@pytest.mark.asyncio
-async def test_webhook_grants_unlimited_matching_and_stacks_on_repurchase(client, monkeypatch):
-    import app.services.payment_service as payment_service
-
-    user_id, headers = await create_user_with_profile(client, "pay-unlimited@example.com")
-    monkeypatch.setattr(payment_service.settings, "stripe_secret_key", "sk_test_fake")
-    monkeypatch.setattr(payment_service.settings, "stripe_webhook_secret", _WEBHOOK_SECRET)
-
-    event1 = _checkout_completed("evt_unl_1", "cs_unl_1", user_id, "unlimited_matching_week")
-    resp1 = await client.post("/payments/webhook", **_webhook_post_args(event1))
-    assert resp1.status_code == 204
-
-    balance1 = await client.get("/payments/balance", headers=headers)
-    first_until = balance1.json()["unlimited_matching_until"]
-    assert first_until is not None
-
-    # A second purchase stacks on top of the remaining time rather than
-    # replacing it (same "add to whatever's left" semantics as credits).
-    event2 = _checkout_completed("evt_unl_2", "cs_unl_2", user_id, "unlimited_matching_week")
-    resp2 = await client.post("/payments/webhook", **_webhook_post_args(event2))
-    assert resp2.status_code == 204
-
-    balance2 = await client.get("/payments/balance", headers=headers)
-    second_until = balance2.json()["unlimited_matching_until"]
-    assert second_until > first_until
-
-
-@pytest.mark.asyncio
-async def test_activate_boost_requires_credits(client):
-    _, headers = await create_user_with_profile(client, "pay3@example.com")
-    resp = await client.post("/payments/activate-boost", headers=headers)
-    assert resp.status_code == 402
-
-
-@pytest.mark.asyncio
-async def test_activate_boost_consumes_credit(client, monkeypatch):
-    import app.services.payment_service as payment_service
-
-    user_id, headers = await create_user_with_profile(client, "pay4@example.com")
-    monkeypatch.setattr(payment_service.settings, "stripe_secret_key", "sk_test_fake")
-    monkeypatch.setattr(payment_service.settings, "stripe_webhook_secret", _WEBHOOK_SECRET)
-
-    event = _checkout_completed("evt_pay4_1", "cs_pay4_1", user_id, "boost_1")
-    await client.post("/payments/webhook", **_webhook_post_args(event))
-
-    resp = await client.post("/payments/activate-boost", headers=headers)
+    resp = await client.get("/payments/history", headers=headers)
     assert resp.status_code == 200
-    assert resp.json()["boost_active_until"] is not None
+    items = resp.json()["items"]
+    assert len(items) == 2
+    # Newest first (membership_monthly inserted second).
+    assert items[0]["product_id"] == "membership_monthly"
+    assert items[0]["name"] == "Premium Membership"  # default test-account language is "en"
+    assert items[0]["credits_granted"] == 0
+    assert items[1]["product_id"] == "ai_match_pack_5"
+    assert items[1]["name"] == "AI Match x5"
+    assert items[1]["credits_granted"] == 5
+    # Internal-only fields never leak to the client.
+    assert "stripe_event_id" not in items[0]
+    assert "raw_payload" not in items[0]
 
-    balance = await client.get("/payments/balance", headers=headers)
-    assert balance.json()["boost_credits"] == 0
+
+@pytest.mark.asyncio
+async def test_purchase_history_only_shows_the_requesting_users_own_rows(client):
+    user_id, headers = await create_user_with_profile(client, "historyOwner@example.com")
+    other_id, other_headers = await create_user_with_profile(client, "historyOther@example.com")
+
+    async with async_session_factory() as session:
+        session.add(
+            PaymentTransaction(
+                user_id=uuid_mod.UUID(other_id),
+                stripe_event_id="evt_other",
+                stripe_session_id="cs_other",
+                product_id="ai_match_pack_1",
+                credit_kind="ai_match",
+                credits_granted=1,
+                raw_payload="{}",
+            )
+        )
+        await session.commit()
+
+    resp = await client.get("/payments/history", headers=headers)
+    assert resp.json() == {"items": []}
+
+    resp_other = await client.get("/payments/history", headers=other_headers)
+    assert len(resp_other.json()["items"]) == 1

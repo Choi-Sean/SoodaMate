@@ -11,6 +11,7 @@ from app.schemas.payment import (
     CreateCheckoutRequest,
     CreateCheckoutResponse,
     ProductOut,
+    PurchaseHistoryOut,
 )
 from app.services import payment_service
 
@@ -62,3 +63,11 @@ async def activate_boost(
 ) -> BoostActivateResponse:
     active_until = await payment_service.activate_boost(db, user.id)
     return BoostActivateResponse(boost_active_until=active_until)
+
+
+@router.get("/history", response_model=PurchaseHistoryOut)
+async def get_purchase_history(
+    db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
+) -> PurchaseHistoryOut:
+    items = await payment_service.get_purchase_history(db, user.id, user.preferred_language)
+    return PurchaseHistoryOut(items=items)

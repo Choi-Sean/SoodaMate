@@ -79,6 +79,14 @@ class Profile(Base):
     unlimited_matching_until: Mapped[datetime | None] = mapped_column(
         "UnlimitedMatchingUntil", DateTime(timezone=True), nullable=True
     )
+    # Rewarded-ad bonus: watching one ad grants +1 blind match for that
+    # calendar day (UTC — see get_blind_chat_limit_status), same
+    # once-per-day date-stamp pattern as free_superlike_used_on above,
+    # deliberately capped at 1/day rather than unlimited re-watches so it
+    # doesn't cannibalize the paid Unlimited Matching product.
+    blind_chat_bonus_ad_watched_on: Mapped[date | None] = mapped_column(
+        "BlindChatBonusAdWatchedOn", Date, nullable=True
+    )
 
     # Phase 18 — incognito + travel mode (free, not paywalled per product decision)
     is_incognito: Mapped[bool] = mapped_column("IsIncognito", Boolean, default=False, nullable=False)

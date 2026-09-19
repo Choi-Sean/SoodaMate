@@ -41,3 +41,20 @@ class BalanceResponse(BaseModel):
     boost_active_until: datetime | None
     ai_match_credits: int
     unlimited_matching_until: datetime | None
+
+
+class PurchaseHistoryItemOut(BaseModel):
+    """One completed Stripe purchase — lets a user confirm a payment
+    actually applied (e.g. after a slow/missed webhook) without digging
+    through their bank statement. Deliberately excludes stripe_event_id/
+    stripe_session_id/raw_payload (internal-only, never client-facing)."""
+
+    product_id: str
+    name: str
+    credit_kind: str
+    credits_granted: int
+    created_at: datetime
+
+
+class PurchaseHistoryOut(BaseModel):
+    items: list[PurchaseHistoryItemOut]

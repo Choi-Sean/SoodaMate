@@ -53,6 +53,13 @@ async def get_limit(db: AsyncSession = Depends(get_db), user: User = Depends(get
     return await blind_chat_service.get_blind_chat_limit_status(db, user.id)
 
 
+@router.post("/ad-bonus", response_model=BlindChatLimitOut)
+async def claim_ad_bonus(
+    db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
+) -> BlindChatLimitOut:
+    return await blind_chat_service.claim_blind_chat_ad_bonus(db, user.id)
+
+
 @router.post("/ai-match", response_model=AiMatchOut)
 async def ai_match(
     body: AiMatchRequest,

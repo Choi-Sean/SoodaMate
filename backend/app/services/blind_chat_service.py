@@ -33,7 +33,7 @@ MBTI_MATCH_CATEGORY = "mbti_match"
 # the sandbox/DB clock skew that ruled out short time-window checks
 # elsewhere in this feature, see BlindChatQueueEntry.matched_id's docstring).
 # Premium members and Unlimited Matching purchasers skip this entirely.
-BLIND_CHAT_FREE_DAILY_LIMIT = 3
+BLIND_CHAT_FREE_DAILY_LIMIT = 5
 
 # A queue entry older than this is treated as abandoned (app closed/crashed/
 # backgrounded without hitting Cancel — there's no client-side cleanup on
@@ -103,7 +103,10 @@ async def get_blind_chat_limit_status(db: AsyncSession, user_id: uuid.UUID) -> B
     if profile is not None and is_unlimited_matching_active(profile):
         return BlindChatLimitOut(remaining=BLIND_CHAT_FREE_DAILY_LIMIT, limit=BLIND_CHAT_FREE_DAILY_LIMIT, unlimited=True)
 
+    today = datetime.now(timezone.utc).date()
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    bonus_claimed_today = profile is not None and profile.blind_chat_bonus_ad_watched_on == today
+    effective_limit = BLIND_CHAT_FREE_DAILY_LIMIT + (1 if bonus_claimed_today else 0)
     count = await db.scalar(
         select(func.count())
         .select_from(Match)
@@ -116,11 +119,33 @@ async def get_blind_chat_limit_status(db: AsyncSession, user_id: uuid.UUID) -> B
             or_(Match.user_a_id == user_id, Match.user_b_id == user_id),
         )
     )
-    remaining = max(0, BLIND_CHAT_FREE_DAILY_LIMIT - (count or 0))
+    remaining = max(0, effective_limit - (count or 0))
     resets_at = None
     if remaining == 0:
         resets_at = today_start + timedelta(days=1)
-    return BlindChatLimitOut(remaining=remaining, limit=BLIND_CHAT_FREE_DAILY_LIMIT, resets_at=resets_at)
+    return BlindChatLimitOut(
+        remaining=remaining,
+        limit=effective_limit,
+        resets_at=resets_at,
+        bonus_available=not bonus_claimed_today,
+    )
+
+
+async def claim_blind_chat_ad_bonus(db: AsyncSession, user_id: uuid.UUID) -> BlindChatLimitOut:
+    """Grants today's +1 rewarded-ad bonus match — called after the client
+    confirms a rewarded ad was watched to completion (EARNED_REWARD), never
+    just for opening/attempting one. Idempotent per day: watching a second
+    ad the same day is harmless, just doesn't stack (see
+    Profile.blind_chat_bonus_ad_watched_on's docstring for why this is
+    capped at 1/day rather than unlimited)."""
+    profile = await db.get(Profile, user_id)
+    if profile is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "complete your profile first")
+    today = datetime.now(timezone.utc).date()
+    if profile.blind_chat_bonus_ad_watched_on != today:
+        profile.blind_chat_bonus_ad_watched_on = today
+        await db.commit()
+    return await get_blind_chat_limit_status(db, user_id)
 
 
 def _compatibility_filters(
