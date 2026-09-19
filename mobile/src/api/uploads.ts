@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { reportError } from "../services/errorReporting";
 
 export interface PresignResult {
   upload_url: string;
@@ -45,6 +46,19 @@ export async function uploadToPresignedUrl(uploadUrl: string, fileUri: string, c
     body: blob,
   });
   if (!putResp.ok) {
-    throw new Error(`upload failed with status ${putResp.status}`);
+    // R2/S3 error bodies are small XML explaining *why* (SignatureDoesNotMatch,
+    // AccessDenied, expired, ...) — surfacing it (not just the bare status)
+    // is the difference between guessing and actually diagnosing a failure
+    // reported from a real device this sandbox can't reproduce directly.
+    const body = await putResp.text().catch(() => "");
+    reportError(new Error(`presigned upload failed: ${putResp.status}`), {
+      status: putResp.status,
+      body: body.slice(0, 1000),
+      objectPath: uploadUrl.split("?")[0],
+      contentType,
+      blobType: blob.type,
+      blobSize: blob.size,
+    });
+    throw new Error(`upload failed with status ${putResp.status}${body ? `: ${body.slice(0, 200)}` : ""}`);
   }
 }
