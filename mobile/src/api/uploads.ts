@@ -38,8 +38,14 @@ export async function presignMomentImage(contentType: string): Promise<PresignRe
 /** Uploads a photo or video's raw bytes directly to R2 via the presigned
  * URL — never routes through our own backend. */
 export async function uploadToPresignedUrl(uploadUrl: string, fileUri: string, contentType: string): Promise<void> {
-  const fileResp = await fetch(fileUri);
-  const blob = await fileResp.blob();
+  let blob: Blob;
+  try {
+    const fileResp = await fetch(fileUri);
+    blob = await fileResp.blob();
+  } catch (e) {
+    reportError(e, { source: "uploadToPresignedUrl:readLocalFile", fileUri });
+    throw e;
+  }
   const putResp = await fetch(uploadUrl, {
     method: "PUT",
     headers: { "Content-Type": contentType },

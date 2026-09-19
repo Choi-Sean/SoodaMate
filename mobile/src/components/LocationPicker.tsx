@@ -11,6 +11,7 @@ import {
   getStateByCodeAndCountry,
   getStatesOfCountry,
 } from "../data/locations";
+import { reportError } from "../services/errorReporting";
 import { colors } from "../theme";
 import { showAlert } from "../utils/alert";
 
@@ -37,14 +38,21 @@ async function reverseGeocode(lat: number, lng: number): Promise<Place | null> {
     const resp = await fetch(
       `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
     );
-    if (!resp.ok) return null;
+    if (!resp.ok) {
+      // Third-party, already degrades gracefully to "no label shown" — worth
+      // knowing about (e.g. if it starts failing consistently) but not at
+      // "error" severity, since it's never our own backend/code at fault.
+      reportError(new Error(`reverseGeocode failed: ${resp.status}`), { status: resp.status }, "warning");
+      return null;
+    }
     const data = await resp.json();
     return {
       city: data.city || data.locality || "",
       region: data.principalSubdivision || "",
       country: data.countryName || "",
     };
-  } catch {
+  } catch (e) {
+    reportError(e, { source: "reverseGeocode" }, "warning");
     return null;
   }
 }
@@ -62,7 +70,15 @@ interface ZipLookup {
 async function lookupUsZip(zip: string): Promise<ZipLookup | null> {
   try {
     const resp = await fetch(`https://api.zippopotam.us/us/${encodeURIComponent(zip)}`);
-    if (!resp.ok) return null;
+    if (!resp.ok) {
+      // 404 is the routine "not a real ZIP" case (already surfaced via
+      // zipError below) — not worth reporting. Anything else (5xx, rate
+      // limited, ...) means the service itself is having a problem.
+      if (resp.status !== 404) {
+        reportError(new Error(`lookupUsZip failed: ${resp.status}`), { status: resp.status }, "warning");
+      }
+      return null;
+    }
     const data = await resp.json();
     const place = data.places?.[0];
     if (!place) return null;
@@ -71,7 +87,8 @@ async function lookupUsZip(zip: string): Promise<ZipLookup | null> {
       lng: Number(place.longitude),
       place: { city: place["place name"], region: place["state abbreviation"], country: "United States" },
     };
-  } catch {
+  } catch (e) {
+    reportError(e, { source: "lookupUsZip" }, "warning");
     return null;
   }
 }

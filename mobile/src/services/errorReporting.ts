@@ -21,10 +21,12 @@ export function initErrorReporting(): void {
   initialized = true;
 }
 
-export function reportError(error: unknown, context?: Record<string, unknown>): void {
+type ReportLevel = "fatal" | "error" | "warning";
+
+export function reportError(error: unknown, context?: Record<string, unknown>, level: ReportLevel = "error"): void {
   if (!env.sentryDsn) {
     if (__DEV__) console.error("[errorReporting]", error, context);
     return;
   }
-  Sentry.captureException(error, context ? { extra: context } : undefined);
+  Sentry.captureException(error, { extra: context, level });
 }
