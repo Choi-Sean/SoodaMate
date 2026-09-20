@@ -648,8 +648,7 @@
     "pets": "🐶 반려동물",
     "books": "📚 책·자기계발",
     "language_exchange": "🗣️ 언어교류",
-    "free_talk": "💬 자유주제",
-    "mbti_match": "🧩 MBTI"
+    "free_talk": "💬 자유주제"
   },
   "blindChat": {
     "title": "블라인드 채팅",
@@ -686,7 +685,11 @@
     "watchAdForBonus": "광고 보고 +1 받기",
     "adBonusTitle": "보너스 매칭",
     "adBonusSuccess": "오늘의 매칭 횟수가 1회 늘었어요!",
-    "adBonusUnavailable": "지금은 광고를 불러올 수 없어요. 잠시 후 다시 시도해주세요."
+    "adBonusUnavailable": "지금은 광고를 불러올 수 없어요. 잠시 후 다시 시도해주세요.",
+    "genderConfirmTitle": "성별 선택 확인",
+    "genderConfirmBody": "프로필에 설정한 관심 성별은 '{{profile}}'인데, 이번 매칭에서는 '{{selected}}'으로 선택하셨어요. 맞나요?",
+    "genderConfirmChange": "다시 선택",
+    "genderConfirmYes": "맞아요"
   },
   "blindFeedback": {
     "menuItem": "상대방 피드백 남기기",

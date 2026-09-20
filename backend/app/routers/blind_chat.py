@@ -67,7 +67,16 @@ async def ai_match(
     user: User = Depends(get_current_user),
 ) -> AiMatchOut:
     viewer_profile = await _require_complete_profile(db, user)
-    match = await blind_chat_service.use_ai_match(db, user, viewer_profile, body.categories)
+    match = await blind_chat_service.use_ai_match(
+        db,
+        user,
+        viewer_profile,
+        body.categories,
+        body.gender,
+        body.min_age,
+        body.max_age,
+        body.max_distance_km,
+    )
     if match is None:
         return AiMatchOut(found=False)
     match_out = await match_service.get_match_out(db, match.id, user.id)

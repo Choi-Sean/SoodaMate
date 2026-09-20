@@ -648,8 +648,7 @@
     "pets": "🐶 ペット",
     "books": "📚 読書・自己啓発",
     "language_exchange": "🗣️ 言語交換",
-    "free_talk": "💬 フリートーク",
-    "mbti_match": "🧩 MBTI"
+    "free_talk": "💬 フリートーク"
   },
   "blindChat": {
     "title": "ブラインドチャット",
@@ -686,7 +685,11 @@
     "watchAdForBonus": "広告を見て+1回もらう",
     "adBonusTitle": "ボーナスマッチング",
     "adBonusSuccess": "本日のマッチング回数が1回増えました！",
-    "adBonusUnavailable": "今は広告を読み込めません。しばらくしてからもう一度お試しください。"
+    "adBonusUnavailable": "今は広告を読み込めません。しばらくしてからもう一度お試しください。",
+    "genderConfirmTitle": "選択の確認",
+    "genderConfirmBody": "プロフィールの興味のある性別は「{{profile}}」ですが、今回のマッチングでは「{{selected}}」を選択しました。よろしいですか？",
+    "genderConfirmChange": "選び直す",
+    "genderConfirmYes": "はい"
   },
   "blindFeedback": {
     "menuItem": "お相手へのフィードバックを送る",

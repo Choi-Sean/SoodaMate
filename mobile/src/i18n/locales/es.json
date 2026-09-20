@@ -648,8 +648,7 @@
     "pets": "🐶 Mascotas",
     "books": "📚 Libros y superación personal",
     "language_exchange": "🗣️ Intercambio de idiomas",
-    "free_talk": "💬 Charla libre",
-    "mbti_match": "🧩 MBTI"
+    "free_talk": "💬 Charla libre"
   },
   "blindChat": {
     "title": "Chat a ciegas",
@@ -686,7 +685,11 @@
     "watchAdForBonus": "Ver un anuncio por +1",
     "adBonusTitle": "Match extra",
     "adBonusSuccess": "¡Tienes 1 match extra hoy!",
-    "adBonusUnavailable": "No hay ningún anuncio disponible ahora. Inténtalo de nuevo en un momento."
+    "adBonusUnavailable": "No hay ningún anuncio disponible ahora. Inténtalo de nuevo en un momento.",
+    "genderConfirmTitle": "Confirma tu elección",
+    "genderConfirmBody": "En tu perfil te interesa «{{profile}}», pero para este match elegiste «{{selected}}». ¿Es correcto?",
+    "genderConfirmChange": "Cambiar",
+    "genderConfirmYes": "Sí, es correcto"
   },
   "blindFeedback": {
     "menuItem": "Dejar comentarios sobre esta persona",

@@ -22,10 +22,12 @@ from app.utils.premium import is_premium
 from app.utils.upsert import try_insert
 from app.ws.connection_manager import manager
 
-# Mobile's BLIND_CHAT_CATEGORY_KEYS entry that opts into MBTI-compatibility
-# filtering below — not a real "topic" category (no conversation-starter
-# meaning), just reuses the same category-picker UI/plumbing.
-MBTI_MATCH_CATEGORY = "mbti_match"
+# Added to the AI Match ranking score when the candidate's MBTI is the
+# viewer's single best-match type (utils.mbti) — comparable in weight to a
+# shared interest/K-content tag (2.0 each), a bit above, since it's a
+# deliberate "compatible personality" signal. Regular (queue) matching never
+# considers MBTI at all; only AI Match does.
+MBTI_COMPATIBILITY_BONUS = 3.0
 
 # Free members get this many blind-chat matches per calendar day (counted
 # from Match rows, same "count real rows in a window" approach as
@@ -162,9 +164,12 @@ def _compatibility_filters(
     ordering differs.
 
     gender/min_age/max_age/max_distance_km are this VIEWER's optional
-    per-session overrides (see BlindChatQueueRequest), narrowing (never
-    widening) their own profile-level defaults for this call only. The
-    candidate side of every comparison below must instead read from
+    per-session choices (see BlindChatQueueRequest) and take precedence over
+    their own profile-level defaults for this call only — including
+    "all"/a different gender than the profile's interested_in, since the
+    choice made on the match screen (which the client defaults to the profile
+    value and confirms when it differs) is what the user actually wants for
+    this session. The candidate side of every comparison below must instead read from
     BlindChatQueueEntry's own stored *_filter columns (falling back to the
     candidate's profile default via COALESCE when they didn't set one) —
     never straight from Profile — because the candidate already committed
@@ -176,9 +181,10 @@ def _compatibility_filters(
     categories is NOT a hard filter here — with a small early user base,
     requiring an overlapping topic left most queues matching nobody at all.
     It's still used to compute blind_categories (shared-topic display in the
-    match) and find_ai_match's scoring, and MBTI_MATCH_CATEGORY below is the
-    one exception: that's a real compatibility gate (must match the
-    opposite-typed MBTI), not a conversation topic, so it stays enforced."""
+    match) and find_ai_match's scoring. MBTI is deliberately NOT a filter
+    either (it used to be, via an "mbti_match" category — two same-type
+    testers could never match): regular matching ignores MBTI entirely, and
+    only AI Match weighs it (see _compatibility_score / llm_match_service)."""
     lo, hi = min_age or viewer_profile.min_age_pref, max_age or viewer_profile.max_age_pref
     viewer_min_birth, viewer_max_birth = _age_to_birth_date_bounds(lo, hi)
     viewer_age = _age(viewer_profile.birth_date)
@@ -199,17 +205,6 @@ def _compatibility_filters(
         )
     ).exists()
 
-    # Only when the viewer opted into MBTI_MATCH_CATEGORY *and* has their own
-    # MBTI set (nothing to compute compatibility against otherwise) — degrades
-    # to no extra constraint rather than matching no one, since the mobile
-    # queue screen already disables that chip until profile.mbti is set, this
-    # is defense-in-depth, not the primary UX gate.
-    mbti_filters = []
-    if MBTI_MATCH_CATEGORY in categories:
-        matches = compatible_types(viewer_profile.mbti)
-        if matches:
-            mbti_filters = [Profile.mbti.in_(matches)]
-
     return [
         BlindChatQueueEntry.user_id != user_id,
         BlindChatQueueEntry.matched_id.is_(None),
@@ -223,7 +218,6 @@ def _compatibility_filters(
         candidate_min_age <= viewer_age,
         candidate_max_age >= viewer_age,
         ~blocked_either_direction,
-        *mbti_filters,
     ]
 
 
@@ -290,13 +284,17 @@ def _compatibility_score(viewer_profile: Profile, candidate_profile: Profile, sh
     approach as icebreaker_service.get_icebreaker. Weighted sum of shared
     tag counts (K-content/interests/languages count double — a stronger
     day-to-day compatibility signal than a shared blind-chat category alone)
-    plus bonuses for age and distance proximity."""
+    plus an MBTI-compatibility bonus and bonuses for age and distance
+    proximity."""
     score = len(shared_categories) * 1.0
     score += len(_shared_tags(viewer_profile.k_content_tags, candidate_profile.k_content_tags)) * 2.0
     score += len(_shared_tags(viewer_profile.interests, candidate_profile.interests)) * 2.0
     score += len(_shared_tags(viewer_profile.languages, candidate_profile.languages)) * 1.5
     if viewer_profile.open_to_language_exchange and candidate_profile.open_to_language_exchange:
         score += 1.0
+    candidate_mbti = (candidate_profile.mbti or "").upper()
+    if candidate_mbti and candidate_mbti in compatible_types(viewer_profile.mbti):
+        score += MBTI_COMPATIBILITY_BONUS
 
     age_gap = abs(_age(viewer_profile.birth_date) - _age(candidate_profile.birth_date))
     score += max(0.0, 3.0 - age_gap * 0.3)
@@ -319,7 +317,14 @@ def _compatibility_score(viewer_profile: Profile, candidate_profile: Profile, sh
 
 
 async def find_ai_match(
-    db: AsyncSession, user: User, viewer_profile: Profile, categories: list[str]
+    db: AsyncSession,
+    user: User,
+    viewer_profile: Profile,
+    categories: list[str],
+    gender: str | None = None,
+    min_age: int | None = None,
+    max_age: int | None = None,
+    max_distance_km: int | None = None,
 ) -> tuple[BlindChatQueueEntry, Profile] | None:
     """Consumes 1 ai_match_credit (checked by the router before calling this)
     to instantly pair with the best currently-waiting candidate, rather than
@@ -335,8 +340,11 @@ async def find_ai_match(
     shot at re-ranking just that shortlist using profile text, the viewer's
     own message tone, and candidates' past-partner feedback — signals the
     tag-overlap score can't see at all."""
-    filters = _compatibility_filters(user.id, viewer_profile, categories, None, None, None)
-    filters += _distance_filters(viewer_profile, None)
+    # Same session-level gender/age/distance choices as a regular queue join
+    # (they take precedence over the profile defaults) — the AI only picks
+    # among candidates who already pass the exact same hard filters.
+    filters = _compatibility_filters(user.id, viewer_profile, categories, gender, min_age, max_age)
+    filters += _distance_filters(viewer_profile, max_distance_km)
     stmt = (
         select(BlindChatQueueEntry, Profile)
         .join(Profile, Profile.user_id == BlindChatQueueEntry.user_id)
@@ -471,7 +479,14 @@ async def cancel_queue(db: AsyncSession, user_id: uuid.UUID) -> bool:
 
 
 async def use_ai_match(
-    db: AsyncSession, user: User, viewer_profile: Profile, categories: list[str]
+    db: AsyncSession,
+    user: User,
+    viewer_profile: Profile,
+    categories: list[str],
+    gender: str | None = None,
+    min_age: int | None = None,
+    max_age: int | None = None,
+    max_distance_km: int | None = None,
 ) -> Match | None:
     """Router-facing entry point: consumes 1 ai_match_credit and returns the
     freshly created Match, or returns None (credit left untouched — see
@@ -481,7 +496,9 @@ async def use_ai_match(
     if viewer_profile.ai_match_credits <= 0:
         raise HTTPException(status.HTTP_402_PAYMENT_REQUIRED, "no AI match credits left")
 
-    found = await find_ai_match(db, user, viewer_profile, categories)
+    found = await find_ai_match(
+        db, user, viewer_profile, categories, gender, min_age, max_age, max_distance_km
+    )
     if found is None:
         return None
 

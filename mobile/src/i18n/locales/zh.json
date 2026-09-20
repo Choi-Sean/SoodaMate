@@ -648,8 +648,7 @@
     "pets": "🐶 宠物",
     "books": "📚 读书·自我提升",
     "language_exchange": "🗣️ 语言交流",
-    "free_talk": "💬 自由聊天",
-    "mbti_match": "🧩 MBTI"
+    "free_talk": "💬 自由聊天"
   },
   "blindChat": {
     "title": "盲聊",
@@ -686,7 +685,11 @@
     "watchAdForBonus": "看广告 +1 次",
     "adBonusTitle": "额外匹配",
     "adBonusSuccess": "今天多获得了1次匹配机会！",
-    "adBonusUnavailable": "暂时无法加载广告，请稍后再试。"
+    "adBonusUnavailable": "暂时无法加载广告，请稍后再试。",
+    "genderConfirmTitle": "确认你的选择",
+    "genderConfirmBody": "你在个人资料里设置的意向性别是“{{profile}}”，但这次匹配你选择了“{{selected}}”。没错吗？",
+    "genderConfirmChange": "重新选择",
+    "genderConfirmYes": "没错"
   },
   "blindFeedback": {
     "menuItem": "给对方留下反馈",

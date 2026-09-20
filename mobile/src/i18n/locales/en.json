@@ -648,8 +648,7 @@
     "pets": "🐶 Pets",
     "books": "📚 Books & Self-improvement",
     "language_exchange": "🗣️ Language exchange",
-    "free_talk": "💬 Free talk",
-    "mbti_match": "🧩 MBTI"
+    "free_talk": "💬 Free talk"
   },
   "blindChat": {
     "title": "Blind Chat",
@@ -686,7 +685,11 @@
     "watchAdForBonus": "Watch an ad for +1",
     "adBonusTitle": "Bonus match",
     "adBonusSuccess": "You've got 1 extra match today!",
-    "adBonusUnavailable": "No ad available right now. Try again in a bit."
+    "adBonusUnavailable": "No ad available right now. Try again in a bit.",
+    "genderConfirmTitle": "Confirm your choice",
+    "genderConfirmBody": "Your profile says you're interested in '{{profile}}', but you picked '{{selected}}' for this match. Is that right?",
+    "genderConfirmChange": "Change it",
+    "genderConfirmYes": "Yes, that's right"
   },
   "blindFeedback": {
     "menuItem": "Leave feedback on this person",

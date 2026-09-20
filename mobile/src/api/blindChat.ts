@@ -23,8 +23,8 @@ export async function getBlindChatLimit(): Promise<BlindChatLimit> {
   return resp.data;
 }
 
-export async function requestAiMatch(categories: string[]): Promise<AiMatchResult> {
-  const resp = await apiClient.post<AiMatchResult>("/blind-chat/ai-match", { categories });
+export async function requestAiMatch(categories: string[], filters?: BlindChatFilters): Promise<AiMatchResult> {
+  const resp = await apiClient.post<AiMatchResult>("/blind-chat/ai-match", { categories, ...filters });
   return resp.data;
 }
 

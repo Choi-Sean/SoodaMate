@@ -16,7 +16,7 @@ import {
 } from "../../api/blindChat";
 import { getMatches } from "../../api/matches";
 import { getMyProfile } from "../../api/profiles";
-import { BLIND_CHAT_CATEGORY_KEYS } from "../../constants/blindChatCategories";
+import { BLIND_CHAT_CATEGORY_KEYS, knownBlindChatCategories } from "../../constants/blindChatCategories";
 import AdCard from "../../components/AdCard";
 import ChipSelect from "../../components/ChipSelect";
 import MultiChipSelect from "../../components/MultiChipSelect";
@@ -115,10 +115,22 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
   useEffect(() => {
     if (route.params?.initialCategories) return;
     if (selected.length > 0) return;
-    if (profile?.preferred_categories && profile.preferred_categories.length > 0) {
-      setSelected(profile.preferred_categories);
-    }
+    const saved = knownBlindChatCategories(profile?.preferred_categories);
+    if (saved.length > 0) setSelected(saved);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile]);
+
+  // The gender chip starts on the profile's own "interested in" so what's
+  // shown is exactly what gets used (previously it started empty and
+  // silently fell back to the profile value). Once only — never overwrites a
+  // choice the user has already changed. Choosing something different for
+  // this match is allowed and wins over the profile, after a confirmation
+  // (see confirmGenderChoice).
+  const genderDefaulted = useRef(false);
+  useEffect(() => {
+    if (genderDefaulted.current || !profile) return;
+    genderDefaulted.current = true;
+    if ((GENDER_OPTIONS as readonly string[]).includes(profile.interested_in)) setGender(profile.interested_in);
   }, [profile]);
 
   const { data: status } = useQuery({
@@ -218,8 +230,28 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
     return true;
   }
 
-  async function handleStart() {
+  // The pick wins over the profile's "interested in", but a stray tap
+  // shouldn't silently override it — so when they differ, name both and ask.
+  function confirmGenderChoice(): Promise<boolean> {
+    if (!profile || !gender || gender === profile.interested_in) return Promise.resolve(true);
+    return new Promise((resolve) => {
+      showAlert(
+        t("blindChat.genderConfirmTitle"),
+        t("blindChat.genderConfirmBody", {
+          profile: t(`profileSetup.${profile.interested_in}`),
+          selected: t(`profileSetup.${gender}`),
+        }),
+        [
+          { text: t("blindChat.genderConfirmChange"), style: "cancel", onPress: () => resolve(false) },
+          { text: t("blindChat.genderConfirmYes"), onPress: () => resolve(true) },
+        ]
+      );
+    });
+  }
+
+  async function handleStart(options?: { confirmed?: boolean }) {
     if (selected.length === 0 || !requireVerified()) return;
+    if (!options?.confirmed && !(await confirmGenderChoice())) return;
     setStarting(true);
     // Shown immediately, before the network call resolves — a match that's
     // already waiting can come back instantly, and it still needs to land
@@ -251,9 +283,12 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
       showAlert(t("blindChat.aiMatchTitle"), t("blindChat.aiMatchNoCredits"));
       return;
     }
+    if (!(await confirmGenderChoice())) return;
     setAiMatching(true);
     try {
-      const result = await requestAiMatch(selected);
+      // Same match-time gender/age/distance as a regular start — the AI match
+      // follows what's picked on this screen, not just the profile defaults.
+      const result = await requestAiMatch(selected, currentFilters());
       if (result.found && result.match) {
         await goToMatch(result.match.id);
       } else {
@@ -314,7 +349,7 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
             <Ionicons name="hourglass-outline" size={36} color={colors.muted} />
             <Text style={styles.waitingTitle}>{t("blindChat.queueTimeoutTitle")}</Text>
             <Text style={styles.queueTimeoutBody}>{t("blindChat.queueTimeoutBody")}</Text>
-            <Pressable style={styles.retryButton} onPress={handleStart} disabled={starting}>
+            <Pressable style={styles.retryButton} onPress={() => handleStart({ confirmed: true })} disabled={starting}>
               {starting ? <ActivityIndicator color="#fff" /> : <Text style={styles.retryButtonText}>{t("common.tryAgain")}</Text>}
             </Pressable>
           </>
@@ -417,7 +452,7 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
 
       <Pressable
         style={[styles.startButton, selected.length === 0 && styles.startButtonDisabled]}
-        onPress={handleStart}
+        onPress={() => handleStart()}
         disabled={selected.length === 0 || starting || aiMatching}
       >
         {starting ? <ActivityIndicator color="#fff" /> : <Text style={styles.startButtonText}>{t("blindChat.start")}</Text>}

@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.models.message import Message
 from app.models.profile import Profile
+from app.utils.mbti import compatible_types
 
 CLAUDE_API_URL = "https://api.anthropic.com/v1/messages"
 # Haiku, not Sonnet/Opus — this runs synchronously inside an AI Match request
@@ -83,9 +84,17 @@ async def pick_best_candidate(
         )
         candidate_lines.append(f"[{i}] {_profile_summary(profile)}{feedback_bit}")
 
+    mbti_types = compatible_types(viewer_profile.mbti)
+    mbti_hint = (
+        f"Viewer's most MBTI-compatible type: {mbti_types[0]} "
+        "(a positive signal to weigh, not a hard rule)\n"
+        if mbti_types
+        else ""
+    )
     user_prompt = (
         f"Viewer profile: {_profile_summary(viewer_profile)}\n"
-        f"Viewer's recent chat messages (writing style/tone sample):\n"
+        + mbti_hint
+        + "Viewer's recent chat messages (writing style/tone sample):\n"
         + "\n".join(f"- {m}" for m in tone[:MAX_TONE_MESSAGES])
         + "\n\nCandidates:\n"
         + "\n".join(candidate_lines)
@@ -94,10 +103,10 @@ async def pick_best_candidate(
     system_prompt = (
         "You are picking the single best-compatibility match for a dating app's anonymous "
         "'blind chat' feature, from a shortlist that already passed hard filters (age/gender/"
-        "distance/block). Judge personality and conversational fit from the profile details and "
-        "the viewer's own message tone versus each candidate's profile and any past-partner "
-        "feedback. Respond with ONLY a JSON object of the form {\"index\": N} where N is the "
-        "candidate's [N] number. No other text."
+        "distance/block). Judge personality and conversational fit from the profile details "
+        "(including MBTI compatibility when known) and the viewer's own message tone versus each "
+        "candidate's profile and any past-partner feedback. Respond with ONLY a JSON object of "
+        "the form {\"index\": N} where N is the candidate's [N] number. No other text."
     )
 
     try:

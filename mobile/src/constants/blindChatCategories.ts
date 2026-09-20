@@ -18,10 +18,18 @@ export const BLIND_CHAT_CATEGORY_KEYS = [
   "gaming",
   "kpop",
   "free_talk",
-  // Not a conversation topic like the ones above — opts into MBTI-
-  // compatibility filtering on the backend (see blind_chat_service.py's
-  // MBTI_MATCH_CATEGORY) rather than a shared-interest tag. Reuses this
-  // same array/picker deliberately, so it's available at both signup and
-  // in the queue screen without any new UI plumbing.
-  "mbti_match",
+  // No "mbti_match" any more: regular matching ignores MBTI entirely (it
+  // used to be a hard filter opted into via this picker — two same-type
+  // users could never pair). Only AI Match weighs MBTI, automatically, from
+  // the profile — nothing to pick here. Profiles/queue entries saved before
+  // this may still hold the old key; callers drop unknown keys (see
+  // knownBlindChatCategories).
 ] as const;
+
+/** Drops any saved category key that's no longer in the picker (e.g. the
+ * retired "mbti_match") so it can't linger as an unrenderable chip or get
+ * re-sent to the backend. */
+export function knownBlindChatCategories(keys: readonly string[] | null | undefined): string[] {
+  const known = new Set<string>(BLIND_CHAT_CATEGORY_KEYS);
+  return (keys ?? []).filter((k) => known.has(k));
+}

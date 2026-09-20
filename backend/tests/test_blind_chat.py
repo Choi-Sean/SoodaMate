@@ -467,6 +467,89 @@ async def test_ai_match_picks_the_higher_compatibility_candidate(client):
     assert low_view.json()["status"] == "waiting"
 
 
+async def _set_profile(user_id: str, **fields):
+    import uuid as uuid_mod
+
+    from app.database import async_session_factory
+    from app.models.profile import Profile
+
+    async with async_session_factory() as session:
+        profile = await session.get(Profile, uuid_mod.UUID(user_id))
+        for name, value in fields.items():
+            setattr(profile, name, value)
+        await session.commit()
+
+
+@pytest.mark.asyncio
+async def test_regular_queue_matching_ignores_mbti(client):
+    # Both ENTP (ENTP is only "compatible" with INTJ) and one even opts into
+    # the retired "mbti_match" category — regular matching must not care.
+    a_id, a_headers = await create_user_with_profile(client, "mbtiIgnoreA@example.com", gender="male", interested_in="female")
+    b_id, b_headers = await create_user_with_profile(client, "mbtiIgnoreB@example.com", gender="female", interested_in="male")
+    await _set_profile(a_id, mbti="ENTP")
+    await _set_profile(b_id, mbti="ENTP")
+
+    await client.post("/blind-chat/queue", headers=a_headers, json={"categories": ["travel", "mbti_match"]})
+    r = await client.post("/blind-chat/queue", headers=b_headers, json={"categories": ["travel", "mbti_match"]})
+    assert r.json()["status"] == "matched"
+
+
+@pytest.mark.asyncio
+async def test_session_gender_choice_overrides_profile_interest(client):
+    # Both profiles say "interested in female", but both chose "male" on the
+    # match screen for this session — the match-time choice wins, so they pair.
+    _, a_headers = await create_user_with_profile(client, "sessionWinsA@example.com", gender="male", interested_in="female")
+    _, b_headers = await create_user_with_profile(client, "sessionWinsB@example.com", gender="male", interested_in="female")
+
+    await client.post("/blind-chat/queue", headers=a_headers, json={"categories": ["travel"], "gender": "male"})
+    r = await client.post("/blind-chat/queue", headers=b_headers, json={"categories": ["travel"], "gender": "male"})
+    assert r.json()["status"] == "matched"
+
+
+@pytest.mark.asyncio
+async def test_ai_match_follows_the_gender_chosen_at_match_time(client):
+    user_id, headers = await create_user_with_profile(client, "aiGenderA@example.com", gender="male", interested_in="female")
+    await _set_profile(user_id, ai_match_credits=1)
+    _, cand_headers = await create_user_with_profile(client, "aiGenderB@example.com", gender="male", interested_in="male")
+    await client.post("/blind-chat/queue", headers=cand_headers, json={"categories": ["travel"], "gender": "male"})
+
+    # Profile default (female) excludes the waiting male candidate...
+    none = await client.post("/blind-chat/ai-match", headers=headers, json={"categories": ["travel"]})
+    assert none.json()["found"] is False
+
+    # ...but choosing male on the match screen for this AI match finds them.
+    found = await client.post("/blind-chat/ai-match", headers=headers, json={"categories": ["travel"], "gender": "male"})
+    assert found.json()["found"] is True
+    balance = await client.get("/payments/balance", headers=headers)
+    assert balance.json()["ai_match_credits"] == 0
+
+
+@pytest.mark.asyncio
+async def test_ai_match_prefers_the_mbti_compatible_candidate(client):
+    user_id, headers = await create_user_with_profile(client, "aiMbtiA@example.com", gender="male", interested_in="female")
+    await _set_profile(user_id, ai_match_credits=1, mbti="INTJ")
+
+    # Joins first (would win on plain FIFO) but isn't INTJ's compatible type.
+    other_id, other_headers = await create_user_with_profile(
+        client, "aiMbtiOther@example.com", gender="female", interested_in="male"
+    )
+    await _set_profile(other_id, mbti="ISFP")
+    await client.post("/blind-chat/queue", headers=other_headers, json={"categories": ["travel"]})
+
+    # Joins second, ENTP = INTJ's single best-match type.
+    compat_id, compat_headers = await create_user_with_profile(
+        client, "aiMbtiCompat@example.com", gender="female", interested_in="male"
+    )
+    await _set_profile(compat_id, mbti="ENTP")
+    await client.post("/blind-chat/queue", headers=compat_headers, json={"categories": ["travel"]})
+
+    resp = await client.post("/blind-chat/ai-match", headers=headers, json={"categories": ["travel"]})
+    assert resp.json()["found"] is True
+
+    assert (await client.get("/blind-chat/queue", headers=compat_headers)).json()["status"] == "matched"
+    assert (await client.get("/blind-chat/queue", headers=other_headers)).json()["status"] == "waiting"
+
+
 @pytest.mark.asyncio
 async def test_blind_feedback_submit_then_resubmit_upserts(client):
     _, a_headers, _, _, match_id = await _paired_couple(client, "fbA", "fbB")

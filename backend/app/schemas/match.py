@@ -56,12 +56,14 @@ class SwipeLimitOut(BaseModel):
 
 class BlindChatQueueRequest(BaseModel):
     categories: list[str] = Field(min_length=1, max_length=10)
-    # Optional per-session narrowing, layered on top of the profile's own
-    # stored gender/age compatibility rules (never widens past them) — None
-    # means "use my profile defaults," same convention as the Basic filters'
-    # optional fields in profiles.py. max_distance_km of 0/None means no
-    # distance cap for this session.
-    gender: str | None = None  # 'male' | 'female' | 'other', restricts the candidate's gender
+    # Optional per-session choices that TAKE PRECEDENCE over the profile's own
+    # stored gender/age preferences for this queue session (the client
+    # defaults them to the profile's values, so a value that differs from the
+    # profile is a deliberate override) — None means "use my profile
+    # defaults," same convention as the Basic filters' optional fields in
+    # profiles.py. max_distance_km of 0/None means no distance cap for this
+    # session.
+    gender: str | None = None  # 'male' | 'female' | 'other' | 'all', the candidate gender wanted
     min_age: int | None = None
     max_age: int | None = None
     max_distance_km: int | None = None
@@ -92,6 +94,13 @@ class BlindChatLimitOut(BaseModel):
 
 class AiMatchRequest(BaseModel):
     categories: list[str] = Field(min_length=1, max_length=10)
+    # Same per-session choices as BlindChatQueueRequest — the AI match must
+    # honor the gender/age/distance picked on the match screen, not silently
+    # fall back to the profile defaults.
+    gender: str | None = None
+    min_age: int | None = None
+    max_age: int | None = None
+    max_distance_km: int | None = None
 
 
 class AiMatchOut(BaseModel):
