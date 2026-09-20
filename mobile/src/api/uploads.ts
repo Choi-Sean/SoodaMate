@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { putFileToUrl, type PutFileResult } from "./putFile";
 import { reportError } from "../services/errorReporting";
 
 export interface PresignResult {
@@ -38,33 +39,25 @@ export async function presignMomentImage(contentType: string): Promise<PresignRe
 /** Uploads a photo or video's raw bytes directly to R2 via the presigned
  * URL — never routes through our own backend. */
 export async function uploadToPresignedUrl(uploadUrl: string, fileUri: string, contentType: string): Promise<void> {
-  let blob: Blob;
+  const objectPath = uploadUrl.split("?")[0];
+  let result: PutFileResult;
   try {
-    const fileResp = await fetch(fileUri);
-    blob = await fileResp.blob();
+    result = await putFileToUrl(uploadUrl, fileUri, contentType);
   } catch (e) {
-    reportError(e, { source: "uploadToPresignedUrl:readLocalFile", fileUri });
+    reportError(e, { source: "uploadToPresignedUrl", objectPath, contentType, fileUri });
     throw e;
   }
-  const putResp = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: { "Content-Type": contentType },
-    body: blob,
-  });
-  if (!putResp.ok) {
+  if (result.status < 200 || result.status >= 300) {
     // R2/S3 error bodies are small XML explaining *why* (SignatureDoesNotMatch,
-    // AccessDenied, expired, ...) — surfacing it (not just the bare status)
-    // is the difference between guessing and actually diagnosing a failure
-    // reported from a real device this sandbox can't reproduce directly.
-    const body = await putResp.text().catch(() => "");
-    reportError(new Error(`presigned upload failed: ${putResp.status}`), {
-      status: putResp.status,
-      body: body.slice(0, 1000),
-      objectPath: uploadUrl.split("?")[0],
+    // AccessDenied, expired, ...). Keyed "errorResponse", not "body" —
+    // Sentry's default scrubber masks any field named "body" as [Filtered],
+    // which is exactly what hid this text the first time it was reported.
+    reportError(new Error(`presigned upload failed: ${result.status}`), {
+      status: result.status,
+      errorResponse: result.body.slice(0, 1000),
+      objectPath,
       contentType,
-      blobType: blob.type,
-      blobSize: blob.size,
     });
-    throw new Error(`upload failed with status ${putResp.status}${body ? `: ${body.slice(0, 200)}` : ""}`);
+    throw new Error(`upload failed with status ${result.status}${result.body ? `: ${result.body.slice(0, 200)}` : ""}`);
   }
 }
