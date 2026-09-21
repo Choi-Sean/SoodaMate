@@ -114,8 +114,19 @@
         ? "http://localhost:8001"
         : "https://soodamate-production.up.railway.app");
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("token") || sessionStorage.getItem("sooda_token");
+    // The app hands the token over in the URL fragment (#token=...), which is never
+    // sent to a server and so can't land in hosting/proxy logs. ?token= is still
+    // read for app builds that predate this.
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const token = hashParams.get("token") || params.get("token") || sessionStorage.getItem("sooda_token");
     if (token) sessionStorage.setItem("sooda_token", token);
+    // Scrub the token out of the address bar / browser history straight away.
+    if (hashParams.has("token") || params.has("token")) {
+      const rest = new URLSearchParams(window.location.search);
+      rest.delete("token");
+      const qs = rest.toString();
+      history.replaceState(null, "", window.location.pathname + (qs ? "?" + qs : ""));
+    }
     // Set when a "promo" push notification deep-links here (see mobile's
     // openShopForProduct) — highlights and scrolls to that one product card
     // so the discount that was just advertised is easy to find among the
@@ -226,13 +237,16 @@
           // is always visible instead.
           throw new Error("expired");
         }
+        if (resp.status === 409) throw new Error("member");
         if (!resp.ok) throw new Error("checkout session failed");
         const data = await resp.json();
         window.location.href = data.checkout_url;
       } catch (e) {
         btn.disabled = false;
         btn.textContent = tr("shop.buyLabel");
-        checkoutErrorEl.textContent = tr(e.message === "expired" ? "shop.sessionExpired" : "shop.checkoutError");
+        checkoutErrorEl.textContent = tr(
+          e.message === "expired" ? "shop.sessionExpired" : e.message === "member" ? "shop.alreadyMember" : "shop.checkoutError"
+        );
         checkoutErrorEl.style.display = "block";
       }
     }
