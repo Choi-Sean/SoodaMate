@@ -11,6 +11,7 @@ from app.models.user import User
 from app.schemas.match import MatchOut, SwipeLimitOut, SwipeResponse
 from app.services import push_service
 from app.services.storage_service import build_public_url
+from app.utils.db_retry import run_with_deadlock_retry
 from app.utils.premium import is_premium
 from app.ws.connection_manager import manager
 
@@ -94,19 +95,25 @@ async def record_swipe(
             },
         )
 
-    if action == "superlike":
-        await _consume_superlike_allowance(db, from_user_id)
+    async def _swipe_transaction():
+        if action == "superlike":
+            await _consume_superlike_allowance(db, from_user_id)
 
-    # The core swipe/match transaction lives in sp_RecordSwipe (see
-    # infra/mssql/stored_procedures.sql) — upserts the Swipe row, checks for
-    # a reciprocal like/superlike, and on mutual match creates the Match row
-    # with the Phase 14 Bumble first-message restriction computed inline.
-    result = await db.execute(
-        text("EXEC sp_RecordSwipe @FromUserId=:from_id, @ToUserId=:to_id, @Action=:action"),
-        {"from_id": from_user_id, "to_id": to_user_id, "action": action},
-    )
-    row = result.fetchone()
-    await db.commit()
+        # The core swipe/match transaction lives in sp_RecordSwipe (see
+        # infra/mssql/stored_procedures.sql) — upserts the Swipe row, checks for
+        # a reciprocal like/superlike, and on mutual match creates the Match row
+        # with the Phase 14 Bumble first-message restriction computed inline.
+        result = await db.execute(
+            text("EXEC sp_RecordSwipe @FromUserId=:from_id, @ToUserId=:to_id, @Action=:action"),
+            {"from_id": from_user_id, "to_id": to_user_id, "action": action},
+        )
+        swipe_row = result.fetchone()
+        await db.commit()
+        return swipe_row
+
+    # A swipe racing a block/other swipe between the same people can be chosen as
+    # a deadlock victim by SQL Server; redoing the whole transaction is the fix.
+    row = await run_with_deadlock_retry(db, _swipe_transaction)
 
     if row.Blocked:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "cannot interact with this user")
@@ -131,6 +138,9 @@ def _mask_display_name(name: str) -> str:
     blind-chat match's name reveals nothing beyond "starts with this
     character" until blind_revealed flips."""
     return f"{name[0].upper()}***" if name else "?***"
+
+
+mask_display_name = _mask_display_name  # public alias: chat push notifications mask the same way
 
 
 def _build_match_out(

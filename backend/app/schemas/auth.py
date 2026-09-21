@@ -4,25 +4,25 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class SignupRequest(BaseModel):
-    email: EmailStr
+    email: EmailStr = Field(max_length=254)
     password: str = Field(min_length=8, max_length=128)
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
+    email: EmailStr = Field(max_length=254)
+    password: str = Field(min_length=1, max_length=128)
 
 
 class GoogleAuthRequest(BaseModel):
-    id_token: str
+    id_token: str = Field(min_length=1, max_length=8192)
 
 
 class AppleAuthRequest(BaseModel):
-    identity_token: str
+    identity_token: str = Field(min_length=1, max_length=8192)
 
 
 class RefreshRequest(BaseModel):
-    refresh_token: str
+    refresh_token: str = Field(min_length=1, max_length=2048)
 
 
 class PhoneAuthStartRequest(BaseModel):

@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -63,7 +64,7 @@ async def _get_verification_or_404(db: AsyncSession, verification_id) -> FaceVer
 
 @router.post("/face-verifications/{verification_id}/approve", status_code=204)
 async def approve_face_verification(
-    verification_id,
+    verification_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
 ) -> None:
@@ -83,7 +84,7 @@ async def approve_face_verification(
 
 @router.post("/face-verifications/{verification_id}/reject", status_code=204)
 async def reject_face_verification(
-    verification_id,
+    verification_id: uuid.UUID,
     body: FaceVerificationRejectRequest,
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
@@ -141,7 +142,7 @@ async def _get_report_or_404(db: AsyncSession, report_id) -> Report:
 
 @router.get("/reports/{report_id}/conversation", response_model=list[ConversationMessageOut])
 async def get_report_conversation(
-    report_id,
+    report_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
 ) -> list[ConversationMessageOut]:
@@ -182,7 +183,7 @@ async def get_report_conversation(
 
 @router.post("/reports/{report_id}/action", status_code=204)
 async def act_on_report(
-    report_id,
+    report_id: uuid.UUID,
     body: ReportActionRequest,
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
@@ -230,7 +231,7 @@ async def list_inquiries(
 
 @router.post("/inquiries/{inquiry_id}/read", status_code=204)
 async def mark_inquiry_read(
-    inquiry_id,
+    inquiry_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
 ) -> None:
@@ -244,7 +245,7 @@ async def mark_inquiry_read(
 
 @router.post("/inquiries/{inquiry_id}/resolve", status_code=204)
 async def resolve_inquiry(
-    inquiry_id,
+    inquiry_id: uuid.UUID,
     body: InquiryResolveRequest,
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
@@ -384,7 +385,7 @@ async def create_promotion(
 
 @router.post("/promotions/{promotion_id}/deactivate", status_code=204)
 async def deactivate_promotion(
-    promotion_id,
+    promotion_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
 ) -> None:

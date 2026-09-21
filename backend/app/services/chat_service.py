@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.interaction import Match
 from app.models.message import Message
+from app.utils.db_retry import run_with_deadlock_retry
 
 REPLY_WINDOW = timedelta(hours=24)
 
@@ -88,23 +89,30 @@ async def persist_message(
     translated_content: str | None = None,
     translated_language: str | None = None,
 ) -> Message:
-    message = Message(
-        match_id=match.id,
-        sender_id=sender_id,
-        content=content,
-        message_type=message_type,
-        image_object_path=image_object_path,
-        original_language=original_language,
-        translated_content=translated_content,
-        translated_language=translated_language,
-    )
-    db.add(message)
-    if not match.first_message_sent:
-        match.first_message_sent = True
-    match.last_activity_at = datetime.now(timezone.utc)
-    await db.commit()
-    await db.refresh(message)
-    return message
+    async def _store() -> Message:
+        message = Message(
+            match_id=match.id,
+            sender_id=sender_id,
+            content=content,
+            message_type=message_type,
+            image_object_path=image_object_path,
+            original_language=original_language,
+            translated_content=translated_content,
+            translated_language=translated_language,
+        )
+        db.add(message)
+        if not match.first_message_sent:
+            match.first_message_sent = True
+        match.last_activity_at = datetime.now(timezone.utc)
+        await db.commit()
+        await db.refresh(message)
+        return message
+
+    # Inserting a message updates the match row too; a block / expiry sweep / another
+    # message touching the same match can make SQL Server pick this transaction as a
+    # deadlock victim (1205). Redoing it is the documented fix, and dropping the
+    # message silently is the alternative.
+    return await run_with_deadlock_retry(db, _store)
 
 
 async def mark_read(db: AsyncSession, match_id: uuid.UUID, reader_id: uuid.UUID) -> None:

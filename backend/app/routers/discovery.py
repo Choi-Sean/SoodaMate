@@ -3,6 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import rate_limit
 from app.database import get_db
 from app.deps import get_current_user
 from app.models.profile import Profile
@@ -75,7 +76,7 @@ async def _require_complete_profile(db: AsyncSession, user: User) -> Profile:
     return viewer_profile
 
 
-@router.get("/candidates", response_model=list[CandidateOut])
+@router.get("/candidates", response_model=list[CandidateOut], dependencies=[Depends(rate_limit.limit_user("discovery", 120, 600))])
 async def candidates(
     limit: int = Query(default=20, ge=1, le=50),
     db: AsyncSession = Depends(get_db),

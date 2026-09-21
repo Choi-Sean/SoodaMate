@@ -1,12 +1,19 @@
 import json
 import uuid
 from datetime import date, datetime, timezone
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
+from annotated_types import MaxLen
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, computed_field, field_validator, model_validator
 
 from app.schemas.moment import MomentOut
 from app.services.storage_service import build_public_url
 from app.utils.premium import is_premium
+
+# List-valued profile fields (interests, languages, filters...) are stored
+# comma-joined, so an item can't contain a comma, and each one is short.
+_ListItem = Annotated[str, StringConstraints(max_length=50, pattern=r"^[^,]*$")]
+_FilterList = Annotated[list[_ListItem], MaxLen(20)]
 
 
 class PhotoOut(BaseModel):
@@ -30,13 +37,13 @@ class PremiumFilters(BaseModel):
     (see Profile.height_filter_min/max + BasicFilters below) with its own
     dedicated columns, not this JSON blob."""
 
-    political_view_filter: list[str] = []
-    exercise_frequency_filter: list[str] = []
-    smoking_filter: list[str] = []
-    cannabis_filter: list[str] = []
-    relationship_goal_filter: list[str] = []
-    wants_kids_filter: list[str] = []
-    has_kids_filter: list[str] = []
+    political_view_filter: _FilterList = []
+    exercise_frequency_filter: _FilterList = []
+    smoking_filter: _FilterList = []
+    cannabis_filter: _FilterList = []
+    relationship_goal_filter: _FilterList = []
+    wants_kids_filter: _FilterList = []
+    has_kids_filter: _FilterList = []
 
 
 class ProfileUpdate(BaseModel):
@@ -64,8 +71,8 @@ class ProfileUpdate(BaseModel):
     bio: str | None = Field(default=None, max_length=1000)
     bio2: str | None = Field(default=None, max_length=1000)
     bio3: str | None = Field(default=None, max_length=1000)
-    location_lat: float | None = None
-    location_lng: float | None = None
+    location_lat: float | None = Field(default=None, ge=-90, le=90, allow_inf_nan=False)
+    location_lng: float | None = Field(default=None, ge=-180, le=180, allow_inf_nan=False)
     min_age_pref: int = Field(default=18, ge=18, le=99)
     max_age_pref: int = Field(default=99, ge=18, le=99)
     max_distance_km: int = Field(default=50, ge=1, le=500)
@@ -82,13 +89,15 @@ class ProfileUpdate(BaseModel):
     relationship_goal: str | None = Field(default=None, max_length=30)
     wants_kids: str | None = Field(default=None, max_length=30)
     has_kids: str | None = Field(default=None, max_length=30)
-    interests: list[str] = Field(default_factory=list)
-    languages: list[str] = Field(default_factory=list)
-    k_content_tags: list[str] = Field(default_factory=list)
+    # Stored comma-joined, so items can't contain commas; capped so one profile
+    # write can't persist a multi-megabyte list.
+    interests: list[_ListItem] = Field(default_factory=list, max_length=50)
+    languages: list[_ListItem] = Field(default_factory=list, max_length=20)
+    k_content_tags: list[_ListItem] = Field(default_factory=list, max_length=50)
     # Subset of BLIND_CHAT_CATEGORY_KEYS — required at signup client-side
     # (see ProfileUpdate's own docstring convention above), same
     # comma-separated storage as interests/languages.
-    preferred_categories: list[str] = Field(default_factory=list)
+    preferred_categories: list[_ListItem] = Field(default_factory=list, max_length=20)
     mbti: str | None = Field(default=None, pattern="^[EI][SN][TF][JP]$")
 
     @model_validator(mode="after")
@@ -263,14 +272,14 @@ class PremiumFilterUpdate(BaseModel):
     # blob (Profile.premium_filters_json) — see that column's comment for
     # why. race_filter/height moved to BasicFilterUpdate below — they're
     # free now.
-    religion_filter: list[str] = Field(default_factory=list)
-    political_view_filter: list[str] = Field(default_factory=list)
-    exercise_frequency_filter: list[str] = Field(default_factory=list)
-    smoking_filter: list[str] = Field(default_factory=list)
-    cannabis_filter: list[str] = Field(default_factory=list)
-    relationship_goal_filter: list[str] = Field(default_factory=list)
-    wants_kids_filter: list[str] = Field(default_factory=list)
-    has_kids_filter: list[str] = Field(default_factory=list)
+    religion_filter: _FilterList = Field(default_factory=list)
+    political_view_filter: _FilterList = Field(default_factory=list)
+    exercise_frequency_filter: _FilterList = Field(default_factory=list)
+    smoking_filter: _FilterList = Field(default_factory=list)
+    cannabis_filter: _FilterList = Field(default_factory=list)
+    relationship_goal_filter: _FilterList = Field(default_factory=list)
+    wants_kids_filter: _FilterList = Field(default_factory=list)
+    has_kids_filter: _FilterList = Field(default_factory=list)
 
 
 class AgeFilterUpdate(BaseModel):
@@ -293,12 +302,12 @@ class BasicFilterUpdate(BaseModel):
     endpoint (AgeFilterUpdate/set_age_filter) and isn't repeated here."""
 
     max_distance_km: int = Field(default=50, ge=1, le=500)
-    race_filter: list[str] = Field(default_factory=list)
+    race_filter: _FilterList = Field(default_factory=list)
     height_min: int | None = Field(default=None, ge=50, le=272)
     height_max: int | None = Field(default=None, ge=50, le=272)
-    languages_filter: list[str] = Field(default_factory=list)
-    interests_filter: list[str] = Field(default_factory=list)
-    k_content_filter: list[str] = Field(default_factory=list)
+    languages_filter: _FilterList = Field(default_factory=list)
+    interests_filter: _FilterList = Field(default_factory=list)
+    k_content_filter: _FilterList = Field(default_factory=list)
     verified_only: bool = False
     language_exchange_only: bool = False
     expand_distance_if_low: bool = True

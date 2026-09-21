@@ -1,4 +1,5 @@
 import json
+import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -8,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
+from app.core.user_lock import user_lock
 from app.models.iap import PaymentTransaction
 from app.models.profile import Profile
 from app.models.promotion import Promotion
@@ -172,12 +174,13 @@ def _localized_product_name(product_id: str, product: dict, language: str) -> st
 # sees a payment form. See https://docs.stripe.com/tax/tax-categories.
 _SAAS_PERSONAL_USE_TAX_CODE = "txcd_10103000"
 
+logger = logging.getLogger(__name__)
+
 BOOST_DURATION_MINUTES = 30
-# checkout.session.completed only fires once, at subscription creation — a
-# real renewal charge is a separate invoice.payment_succeeded event this app
-# doesn't handle (no live Stripe test account to exercise it against this
-# session), so premium_until is approximated as now + one billing period
-# rather than read from Stripe's own current_period_end.
+# checkout.session.completed only fires once, at subscription creation; renewals arrive
+# as invoice.paid events (handled in _handle_subscription_invoice_paid), which set
+# premium_until from the invoice's real period end. At creation time premium_until is
+# approximated as now + one billing period.
 CYCLE_DAYS = {"monthly": 30, "yearly": 365}
 
 
@@ -242,6 +245,21 @@ async def create_checkout_session(
     if product is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "unknown product_id")
 
+    if product["credit_kind"] == "membership":
+        # A second subscription for the same plan would just bill the customer
+        # twice for one benefit (double-tap on Buy, or buying again from a stale
+        # page). Switching to the other billing cycle is still allowed — the
+        # webhook cancels the superseded subscription so it can't keep billing.
+        profile = await db.get(Profile, user_id)
+        if (
+            profile is not None
+            and profile.stripe_subscription_id
+            and not profile.cancel_at_period_end
+            and is_premium(profile.premium_until)
+            and profile.billing_cycle == product["billing_cycle"]
+        ):
+            raise HTTPException(status.HTTP_409_CONFLICT, "you already have an active membership")
+
     discounts = await get_active_discounts(db)
     unit_amount = _discounted_cents(product["price_usd_cents"], discounts.get(product_id))
 
@@ -271,6 +289,11 @@ async def create_checkout_session(
 
 async def handle_webhook_event(db: AsyncSession, payload: bytes, sig_header: str | None) -> None:
     stripe_client = _get_stripe()
+    if not settings.stripe_webhook_secret:
+        # With no signing secret configured a signature can be forged with an
+        # empty key, so an unconfigured endpoint must refuse everything rather
+        # than "verify" against nothing.
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "webhook is not configured")
     try:
         stripe_client.Webhook.construct_event(payload, sig_header, settings.stripe_webhook_secret)
     except (ValueError, stripe.SignatureVerificationError) as exc:
@@ -283,8 +306,19 @@ async def handle_webhook_event(db: AsyncSession, payload: bytes, sig_header: str
     # it straight to a plain dict and work with that.
     event = json.loads(payload)
 
+    # A membership is a recurring Stripe subscription: checkout.session.completed
+    # only fires for the FIRST charge. Every later billing cycle arrives as an
+    # invoice event, and without handling it Stripe keeps charging the customer
+    # while premium quietly lapses after one period. (Requires these events to be
+    # enabled on the webhook endpoint in the Stripe dashboard.)
+    if event["type"] in ("invoice.paid", "invoice.payment_succeeded"):
+        await _handle_subscription_invoice_paid(db, event, payload)
+        return
+    if event["type"] == "customer.subscription.deleted":
+        await _handle_subscription_deleted(db, event)
+        return
     if event["type"] != "checkout.session.completed":
-        return  # not a purchase event we act on (e.g. subscription renewals — not used here)
+        return  # not an event we act on
 
     session_obj = event["data"]["object"]
     metadata = session_obj.get("metadata") or {}
@@ -293,9 +327,14 @@ async def handle_webhook_event(db: AsyncSession, payload: bytes, sig_header: str
     if not user_id_str or product_id not in PRODUCTS:
         return
 
+    try:
+        purchaser_id = uuid.UUID(str(user_id_str))
+    except ValueError:
+        return  # malformed metadata: acknowledge (200) so Stripe doesn't retry forever, grant nothing
+
     product = PRODUCTS[product_id]
     transaction = PaymentTransaction(
-        user_id=uuid.UUID(user_id_str),
+        user_id=purchaser_id,
         stripe_event_id=event["id"],
         stripe_session_id=session_obj["id"],
         product_id=product_id,
@@ -310,36 +349,124 @@ async def handle_webhook_event(db: AsyncSession, payload: bytes, sig_header: str
     if not inserted:
         return  # webhook redelivery of an event we already processed — no-op, never double-grant
 
-    profile = await db.get(Profile, uuid.UUID(user_id_str))
-    if profile is None:
+    superseded_subscription: str | None = None
+    # Grants and spends of the same user's credits are serialized (see
+    # core/user_lock.py) so a webhook can't interleave with a spend and lose an update.
+    async with user_lock(f"credits:{purchaser_id}"):
+        profile = await db.get(Profile, purchaser_id)
+        if profile is None:
+            await db.commit()
+            return
+        if product["credit_kind"] == "superlike":
+            profile.superlike_credits += product["credits"]
+        elif product["credit_kind"] == "boost":
+            profile.boost_credits += product["credits"]
+        elif product["credit_kind"] == "ai_match":
+            profile.ai_match_credits += product["credits"]
+        elif product["credit_kind"] == "unlimited_matching_days":
+            # Stacks on top of remaining time, same as superlike/boost credits —
+            # unlike membership below, this isn't a subscription that replaces
+            # what was there.
+            base = profile.unlimited_matching_until
+            if base is not None and base.tzinfo is None:
+                base = base.replace(tzinfo=timezone.utc)
+            start = max(base, datetime.now(timezone.utc)) if base else datetime.now(timezone.utc)
+            profile.unlimited_matching_until = start + timedelta(days=product["days"])
+        elif product["credit_kind"] == "membership":
+            # A fresh subscription, not a top-up — no stacking on remaining
+            # time (that made sense for the old one-time-purchase model, not a
+            # recurring one), and the new billing_cycle/price/subscription-id
+            # fully replace whatever was there before (e.g. a prior canceled
+            # plan).
+            superseded_subscription = profile.stripe_subscription_id
+            profile.premium_until = datetime.now(timezone.utc) + timedelta(days=CYCLE_DAYS[product["billing_cycle"]])
+            profile.billing_cycle = product["billing_cycle"]
+            profile.subscription_price_cents = product["price_usd_cents"]
+            profile.stripe_subscription_id = session_obj.get("subscription")
+            profile.cancel_at_period_end = False
         await db.commit()
+
+    new_subscription = session_obj.get("subscription")
+    if superseded_subscription and new_subscription and superseded_subscription != new_subscription:
+        # The customer switched plans: the previous subscription would otherwise
+        # keep billing forever, out of reach of the in-app cancel button (which
+        # only knows the latest subscription id).
+        try:
+            stripe_client.Subscription.cancel(superseded_subscription)
+        except Exception:  # noqa: BLE001 - never fail the webhook over this; it is logged for follow-up
+            logger.exception("could not cancel superseded subscription %s", superseded_subscription)
+
+
+def _invoice_subscription_id(invoice: dict) -> str | None:
+    """The subscription an invoice belongs to — top-level `subscription` on older
+    Stripe API versions, `parent.subscription_details.subscription` on newer ones."""
+    sub = invoice.get("subscription")
+    if isinstance(sub, dict):
+        sub = sub.get("id")
+    if not sub:
+        sub = ((invoice.get("parent") or {}).get("subscription_details") or {}).get("subscription")
+    return sub if isinstance(sub, str) and sub else None
+
+
+def _invoice_period_end(invoice: dict) -> datetime | None:
+    ends = []
+    for line in (invoice.get("lines") or {}).get("data", []) or []:
+        end = (line.get("period") or {}).get("end") if isinstance(line, dict) else None
+        if isinstance(end, (int, float)):
+            ends.append(end)
+    return datetime.fromtimestamp(max(ends), tz=timezone.utc) if ends else None
+
+
+async def _handle_subscription_invoice_paid(db: AsyncSession, event: dict, payload: bytes) -> None:
+    invoice = event["data"]["object"]
+    subscription_id = _invoice_subscription_id(invoice)
+    period_end = _invoice_period_end(invoice)
+    if not subscription_id or period_end is None:
         return
-    if product["credit_kind"] == "superlike":
-        profile.superlike_credits += product["credits"]
-    elif product["credit_kind"] == "boost":
-        profile.boost_credits += product["credits"]
-    elif product["credit_kind"] == "ai_match":
-        profile.ai_match_credits += product["credits"]
-    elif product["credit_kind"] == "unlimited_matching_days":
-        # Stacks on top of remaining time, same as superlike/boost credits —
-        # unlike membership below, this isn't a subscription that replaces
-        # what was there.
-        base = profile.unlimited_matching_until
-        if base is not None and base.tzinfo is None:
-            base = base.replace(tzinfo=timezone.utc)
-        start = max(base, datetime.now(timezone.utc)) if base else datetime.now(timezone.utc)
-        profile.unlimited_matching_until = start + timedelta(days=product["days"])
-    elif product["credit_kind"] == "membership":
-        # A fresh subscription, not a top-up — no stacking on remaining
-        # time (that made sense for the old one-time-purchase model, not a
-        # recurring one), and the new billing_cycle/price/subscription-id
-        # fully replace whatever was there before (e.g. a prior canceled
-        # plan).
-        profile.premium_until = datetime.now(timezone.utc) + timedelta(days=CYCLE_DAYS[product["billing_cycle"]])
-        profile.billing_cycle = product["billing_cycle"]
-        profile.subscription_price_cents = product["price_usd_cents"]
-        profile.stripe_subscription_id = session_obj.get("subscription")
-        profile.cancel_at_period_end = False
+    profile = await db.scalar(select(Profile).where(Profile.stripe_subscription_id == subscription_id))
+    if profile is None:
+        # The very first invoice can arrive before checkout.session.completed has
+        # stored the subscription id; that handler covers the first period.
+        return
+    purchaser_id = profile.user_id
+    cycle_product = f"membership_{profile.billing_cycle}"
+    transaction = PaymentTransaction(
+        user_id=purchaser_id,
+        stripe_event_id=event["id"],
+        stripe_session_id=str(invoice.get("id") or "invoice"),
+        product_id=cycle_product if cycle_product in PRODUCTS else "membership_monthly",
+        credit_kind="membership",
+        credits_granted=0,
+        raw_payload=payload.decode("utf-8", "replace"),
+    )
+    if not await try_insert(db, transaction):
+        return  # redelivery of an event we already processed
+    async with user_lock(f"credits:{purchaser_id}"):
+        current = await db.get(Profile, purchaser_id)
+        if current is None:
+            await db.commit()
+            return
+        existing = current.premium_until
+        if existing is not None and existing.tzinfo is None:
+            existing = existing.replace(tzinfo=timezone.utc)
+        if existing is None or period_end > existing:
+            current.premium_until = period_end
+        await db.commit()
+
+
+async def _handle_subscription_deleted(db: AsyncSession, event: dict) -> None:
+    subscription_id = (event["data"]["object"] or {}).get("id")
+    if not isinstance(subscription_id, str) or not subscription_id:
+        return
+    profile = await db.scalar(select(Profile).where(Profile.stripe_subscription_id == subscription_id))
+    if profile is None:
+        return
+    # Ended (canceled at period end, or Stripe gave up after failed payments).
+    # premium_until is left alone: whatever was paid for stays valid until then,
+    # but the stale id must go or the in-app cancel button would try to modify a
+    # subscription that no longer exists.
+    profile.stripe_subscription_id = None
+    profile.cancel_at_period_end = False
     await db.commit()
 
 

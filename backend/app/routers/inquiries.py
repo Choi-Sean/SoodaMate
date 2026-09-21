@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import rate_limit
 from app.database import get_db
 from app.deps import get_current_user
 from app.models.inquiry import ContactInquiry
@@ -10,7 +11,7 @@ from app.schemas.inquiry import InquiryCreateRequest
 router = APIRouter(prefix="/inquiries", tags=["inquiries"])
 
 
-@router.post("", status_code=204)
+@router.post("", status_code=204, dependencies=[Depends(rate_limit.limit_user("inquiry", 5, 3600))])
 async def create_inquiry(
     body: InquiryCreateRequest, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
 ) -> None:

@@ -87,15 +87,31 @@ async def login_or_signup_with_provider(
             raise HTTPException(status.HTTP_403_FORBIDDEN, "account disabled")
         return issue_tokens(user.id)
 
-    # New identity. If the provider gave us an email that already belongs to
-    # an existing user, link this provider to that account instead of
-    # creating a duplicate user.
+    # New identity. Only merge into an existing account when BOTH sides of the
+    # match are trustworthy: the provider vouches for the email
+    # (identity.email_verified) AND that account's email itself came from a
+    # verified provider (it already has a Google/Apple link). An email that was
+    # merely typed into PUT /account/email (or an email sign-up) proves nothing,
+    # and merging on it would let anyone squat a victim's address and later
+    # receive the victim's own Google/Apple sign-in into their account.
     user = None
+    email_in_use = False
     if identity.email:
-        user = await db.scalar(select(User).where(User.email == identity.email))
+        existing = await db.scalar(select(User).where(User.email == identity.email))
+        if existing is not None:
+            email_in_use = True
+            vouched = await db.scalar(
+                select(AuthProvider.provider).where(
+                    AuthProvider.user_id == existing.id, AuthProvider.provider.in_(("google", "apple"))
+                ).limit(1)
+            )
+            if identity.email_verified and vouched is not None:
+                user = existing
 
     if user is None:
-        user = User(email=identity.email)
+        # users.email is unique: if the address is taken by an account we
+        # refused to merge into, this one is created without an email.
+        user = User(email=None if email_in_use else identity.email)
         db.add(user)
         await db.flush()
 
@@ -183,7 +199,10 @@ async def refresh_access_token(db: AsyncSession, refresh_token: str) -> TokenRes
     if payload.get("type") != "refresh":
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "not a refresh token")
 
-    user_id = uuid.UUID(payload["sub"])
+    try:
+        user_id = uuid.UUID(payload["sub"])
+    except (KeyError, ValueError, TypeError, AttributeError) as exc:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid refresh token") from exc
     user = await db.get(User, user_id)
     if user is None or not user.is_active or user.is_banned:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "user not found or inactive")

@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import rate_limit
+from app.core.user_lock import user_lock
 from app.database import get_db
 from app.deps import get_current_user
 from app.models.user import User
@@ -17,22 +19,27 @@ async def swipe_limit(
     return await get_swipe_limit_status(db, user.id)
 
 
-@router.post("/like", response_model=SwipeResponse)
+@router.post("/like", response_model=SwipeResponse, dependencies=[Depends(rate_limit.limit_user("swipe", 600, 600))])
 async def like(
     body: SwipeRequest, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
 ) -> SwipeResponse:
-    return await record_swipe(db, user.id, body.to_user_id, "like")
+    async with user_lock(f"swipe:{user.id}"):
+        return await record_swipe(db, user.id, body.to_user_id, "like")
 
 
-@router.post("/pass", response_model=SwipeResponse)
+@router.post("/pass", response_model=SwipeResponse, dependencies=[Depends(rate_limit.limit_user("swipe", 600, 600))])
 async def pass_(
     body: SwipeRequest, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
 ) -> SwipeResponse:
-    return await record_swipe(db, user.id, body.to_user_id, "pass")
+    async with user_lock(f"swipe:{user.id}"):
+        return await record_swipe(db, user.id, body.to_user_id, "pass")
 
 
-@router.post("/superlike", response_model=SwipeResponse)
+@router.post("/superlike", response_model=SwipeResponse, dependencies=[Depends(rate_limit.limit_user("swipe", 600, 600))])
 async def superlike(
     body: SwipeRequest, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
 ) -> SwipeResponse:
-    return await record_swipe(db, user.id, body.to_user_id, "superlike")
+    # Lock order is always swipe -> credits, so this can never deadlock against
+    # a webhook grant (which only takes the credits lock).
+    async with user_lock(f"swipe:{user.id}"), user_lock(f"credits:{user.id}"):
+        return await record_swipe(db, user.id, body.to_user_id, "superlike")

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import rate_limit
 from app.database import get_db
 from app.deps import get_current_user
 from app.models.user import User
@@ -10,7 +11,7 @@ from app.schemas.device import DeviceRegisterRequest
 router = APIRouter(prefix="/devices", tags=["devices"])
 
 
-@router.post("/register", status_code=204)
+@router.post("/register", status_code=204, dependencies=[Depends(rate_limit.limit_user("device", 60, 3600))])
 async def register_device(
     body: DeviceRegisterRequest,
     db: AsyncSession = Depends(get_db),

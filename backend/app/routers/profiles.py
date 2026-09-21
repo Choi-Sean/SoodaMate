@@ -1,6 +1,7 @@
 import json
 import asyncio
 import logging
+import uuid
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -125,8 +126,11 @@ async def confirm_photo(
     # The path comes from the client, so make sure it points into the caller's
     # own storage folder (what /uploads/presign hands out), not at someone
     # else's file.
-    if not body.gcs_object_path.startswith(f"users/{user.id}/"):
+    if not storage_service.is_valid_user_object_path(body.gcs_object_path, user.id, "photos"):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid object path")
+    problem = await asyncio.to_thread(storage_service.check_uploaded_object, body.gcs_object_path)
+    if problem:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, problem)
 
     media_type = storage_service.media_type_from_object_path(body.gcs_object_path)
 
@@ -194,7 +198,7 @@ async def reorder_photos(
 
 @router.delete("/me/photos/{photo_id}", status_code=204)
 async def delete_photo(
-    photo_id,
+    photo_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> None:

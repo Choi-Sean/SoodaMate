@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.models.blind_chat import BlindChatQueueEntry
 from app.models.blind_chat_feedback import BlindChatFeedback
 from app.models.interaction import Block, Match
@@ -143,6 +144,11 @@ async def claim_blind_chat_ad_bonus(db: AsyncSession, user_id: uuid.UUID) -> Bli
     profile = await db.get(Profile, user_id)
     if profile is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "complete your profile first")
+    if settings.ad_bonus_requires_ssv:
+        # The bonus is granted only by AdMob's signed callback (routers/ads.py);
+        # a client saying "I watched it" proves nothing, so this is now just a
+        # status read the app can poll while the callback is in flight.
+        return await get_blind_chat_limit_status(db, user_id)
     today = datetime.now(timezone.utc).date()
     if profile.blind_chat_bonus_ad_watched_on != today:
         profile.blind_chat_bonus_ad_watched_on = today

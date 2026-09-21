@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from app.core import rate_limit
 from app.deps import get_current_user
 from app.models.user import User
 from app.schemas.message import ImagePresignRequest
@@ -9,7 +10,7 @@ from app.services import storage_service
 router = APIRouter(prefix="/uploads", tags=["uploads"])
 
 
-@router.post("/presign", response_model=PresignResponse)
+@router.post("/presign", response_model=PresignResponse, dependencies=[Depends(rate_limit.limit_user("presign", 120, 3600))])
 async def presign_upload(
     body: PresignRequest, user: User = Depends(get_current_user)
 ) -> PresignResponse:
@@ -18,7 +19,7 @@ async def presign_upload(
     return PresignResponse(upload_url=upload_url, gcs_object_path=object_path)
 
 
-@router.post("/presign-chat-image", response_model=PresignResponse)
+@router.post("/presign-chat-image", response_model=PresignResponse, dependencies=[Depends(rate_limit.limit_user("presign", 120, 3600))])
 async def presign_chat_image(
     body: ImagePresignRequest, user: User = Depends(get_current_user)
 ) -> PresignResponse:
@@ -31,7 +32,7 @@ async def presign_chat_image(
     return PresignResponse(upload_url=upload_url, gcs_object_path=object_path)
 
 
-@router.post("/presign-story-image", response_model=PresignResponse)
+@router.post("/presign-story-image", response_model=PresignResponse, dependencies=[Depends(rate_limit.limit_user("presign", 120, 3600))])
 async def presign_story_image(
     body: ImagePresignRequest, user: User = Depends(get_current_user)
 ) -> PresignResponse:
@@ -42,7 +43,7 @@ async def presign_story_image(
     return PresignResponse(upload_url=upload_url, gcs_object_path=object_path)
 
 
-@router.post("/presign-moment-image", response_model=PresignResponse)
+@router.post("/presign-moment-image", response_model=PresignResponse, dependencies=[Depends(rate_limit.limit_user("presign", 120, 3600))])
 async def presign_moment_image(
     body: ImagePresignRequest, user: User = Depends(get_current_user)
 ) -> PresignResponse:

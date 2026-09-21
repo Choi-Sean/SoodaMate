@@ -52,6 +52,7 @@ class AppleVerifier(OAuthProviderVerifier):
             provider_user_id=claims["sub"],
             email=claims.get("email"),
             raw_claims=claims,
+            email_verified=claims.get("email_verified") in (True, "true"),
         )
 
 

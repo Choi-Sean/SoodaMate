@@ -1,4 +1,5 @@
 import json
+import math
 import uuid
 from datetime import date, datetime, timedelta, timezone
 
@@ -109,6 +110,42 @@ def _haversine_km(lat1, lng1, lat2, lng2):
     return r * 2 * func.asin(func.sqrt(a))
 
 
+# Anyone can move their OWN location anywhere (profile update / travel mode), so
+# an exact distance to someone is enough to pin that person down: report it from
+# three self-chosen points and the three circles intersect at their home
+# (trilateration — the classic dating-app location leak). The defence is to snap
+# the OTHER person to a coarse grid before measuring, then round the answer to
+# whole kilometres: no matter how many points an attacker probes from, all they
+# can ever learn is which ~2 km cell someone is in.
+_LOCATION_GRID_DEGREES = 0.02  # ~2.2 km of latitude
+
+
+def _coarse(value: float) -> float:
+    return round(round(value / _LOCATION_GRID_DEGREES) * _LOCATION_GRID_DEGREES, 6)
+
+
+def _display_distance_km(raw_km: float | None) -> float | None:
+    if raw_km is None:
+        return None
+    return float(max(1, round(raw_km)))
+
+
+def _haversine_py(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Great-circle km, computed in Python. The candidate list used to ask the
+    database for this one row at a time (one round trip per candidate, dozens per
+    request); it is plain arithmetic, so there is no reason to leave the process."""
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    a = math.sin((p2 - p1) / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(math.radians(lng2 - lng1) / 2) ** 2
+    return 6371.0 * 2 * math.asin(math.sqrt(a))
+
+
+async def _distance_to(db: AsyncSession, viewer_lat, viewer_lng, other: Profile) -> float | None:
+    other_lat, other_lng = _effective_location(other)
+    if viewer_lat is None or viewer_lng is None or other_lat is None or other_lng is None:
+        return None
+    return _display_distance_km(_haversine_py(viewer_lat, viewer_lng, _coarse(other_lat), _coarse(other_lng)))
+
+
 def _effective_location(profile: Profile) -> tuple[float | None, float | None]:
     """Phase 18 travel mode: an active (non-expired) travel override replaces
     the profile's real location for discovery purposes, for both directions
@@ -197,12 +234,7 @@ async def _with_distance(
     viewer_lat, viewer_lng = _effective_location(viewer_profile)
     out: list[tuple[Profile, float | None, bool]] = []
     for profile, is_superliker in pool:
-        distance_km = None
-        candidate_lat, candidate_lng = _effective_location(profile)
-        if viewer_lat is not None and viewer_lng is not None and candidate_lat is not None and candidate_lng is not None:
-            d = await db.scalar(select(_haversine_km(viewer_lat, viewer_lng, candidate_lat, candidate_lng)))
-            distance_km = float(d) if d is not None else None
-        out.append((profile, distance_km, is_superliker))
+        out.append((profile, await _distance_to(db, viewer_lat, viewer_lng, profile), is_superliker))
     return out
 
 
@@ -346,12 +378,7 @@ async def get_users_who_liked_me(
     viewer_lat, viewer_lng = _effective_location(viewer_profile)
     results: list[tuple[Profile, float | None, bool]] = []
     for profile, action in rows:
-        distance_km = None
-        candidate_lat, candidate_lng = _effective_location(profile)
-        if viewer_lat is not None and viewer_lng is not None and candidate_lat is not None and candidate_lng is not None:
-            d = await db.scalar(select(_haversine_km(viewer_lat, viewer_lng, candidate_lat, candidate_lng)))
-            distance_km = float(d) if d is not None else None
-        results.append((profile, distance_km, action == "superlike"))
+        results.append((profile, await _distance_to(db, viewer_lat, viewer_lng, profile), action == "superlike"))
 
     return results
 

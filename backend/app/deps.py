@@ -26,7 +26,11 @@ async def get_current_user(
     if payload.get("type") != "access":
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "not an access token")
 
-    user = await db.get(User, uuid.UUID(payload["sub"]))
+    try:
+        user_id = uuid.UUID(payload["sub"])
+    except (KeyError, ValueError, TypeError, AttributeError) as exc:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid token subject") from exc
+    user = await db.get(User, user_id)
     if user is None or not user.is_active or user.is_banned:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "user not found or inactive")
 

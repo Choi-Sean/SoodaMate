@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import rate_limit
 from app.database import get_db
 from app.deps import get_current_user
 from app.models.profile import FaceVerification
@@ -24,7 +25,7 @@ from app.services.sms.twilio_verify import sms_verifier
 router = APIRouter(prefix="/verification", tags=["verification"])
 
 
-@router.post("/start", status_code=204)
+@router.post("/start", status_code=204, dependencies=[Depends(rate_limit.limit_user("verify_email_start", 5, 600))])
 async def start_verification(
     body: VerificationStartRequest,
     db: AsyncSession = Depends(get_db),
@@ -33,7 +34,7 @@ async def start_verification(
     await verification_service.start_verification(db, email_sender, user.id, body.kind, body.email)
 
 
-@router.post("/confirm", status_code=204)
+@router.post("/confirm", status_code=204, dependencies=[Depends(rate_limit.limit_user("verify_email_confirm", 10, 600))])
 async def confirm_verification(
     body: VerificationConfirmRequest,
     db: AsyncSession = Depends(get_db),
@@ -42,7 +43,7 @@ async def confirm_verification(
     await verification_service.confirm_verification(db, user.id, body.kind, body.code)
 
 
-@router.post("/phone/start", status_code=204)
+@router.post("/phone/start", status_code=204, dependencies=[Depends(rate_limit.limit_user("verify_phone_start", 5, 600))])
 async def start_phone_verification(
     body: PhoneVerificationStartRequest,
     db: AsyncSession = Depends(get_db),
@@ -51,7 +52,7 @@ async def start_phone_verification(
     await sms_verification_service.start_phone_verification(db, sms_verifier, user.id, body.phone_number)
 
 
-@router.post("/phone/confirm", status_code=204)
+@router.post("/phone/confirm", status_code=204, dependencies=[Depends(rate_limit.limit_user("verify_phone_confirm", 10, 600))])
 async def confirm_phone_verification(
     body: PhoneVerificationConfirmRequest,
     db: AsyncSession = Depends(get_db),
@@ -60,7 +61,7 @@ async def confirm_phone_verification(
     await sms_verification_service.confirm_phone_verification(db, sms_verifier, user.id, body.phone_number, body.code)
 
 
-@router.post("/face/presign")
+@router.post("/face/presign", dependencies=[Depends(rate_limit.limit_user("face_presign", 20, 3600))])
 async def presign_face_photo(
     body: FacePresignRequest,
     user: User = Depends(get_current_user),
@@ -72,7 +73,7 @@ async def presign_face_photo(
     }
 
 
-@router.post("/face/submit", response_model=FaceVerificationStatusOut, status_code=201)
+@router.post("/face/submit", response_model=FaceVerificationStatusOut, status_code=201, dependencies=[Depends(rate_limit.limit_user("face_submit", 10, 3600))])
 async def submit_face_verification(
     body: FaceVerificationSubmitRequest,
     db: AsyncSession = Depends(get_db),

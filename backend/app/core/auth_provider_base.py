@@ -9,6 +9,9 @@ class ExternalIdentity:
     provider_user_id: str
     email: str | None
     raw_claims: dict
+    # True only when the provider itself vouches that the user controls `email`.
+    # An unverified email must never be used to find (and merge into) an account.
+    email_verified: bool = False
 
 
 class OAuthProviderVerifier(ABC):

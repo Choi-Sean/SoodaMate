@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 from datetime import datetime
 
@@ -5,13 +6,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import rate_limit
 from app.database import get_db
 from app.deps import get_current_user
 from app.models.couple_story import CoupleStory
 from app.models.profile import Profile
 from app.models.user import User
 from app.schemas.couple_story import CoupleStoryCreate, CoupleStoryOut, CoupleStoryReportCreate
-from app.services import couple_story_service, push_service
+from app.services import couple_story_service, push_service, storage_service
 
 router = APIRouter(prefix="/couple-stories", tags=["couple-stories"])
 
@@ -34,15 +36,19 @@ async def _to_out(db: AsyncSession, story: CoupleStory) -> CoupleStoryOut:
     )
 
 
-@router.post("", response_model=CoupleStoryOut, status_code=201)
+@router.post("", response_model=CoupleStoryOut, status_code=201, dependencies=[Depends(rate_limit.limit_user("story", 10, 3600))])
 async def create_story(
     body: CoupleStoryCreate, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
 ) -> CoupleStoryOut:
     match = await couple_story_service.get_match_for_participant(db, body.match_id, user.id)
     if match is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "match not found")
-    if body.photo_object_path and not body.photo_object_path.startswith(f"users/{user.id}/stories/"):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid object path")
+    if body.photo_object_path:
+        if not storage_service.is_valid_user_object_path(body.photo_object_path, user.id, "stories"):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid object path")
+        problem = await asyncio.to_thread(storage_service.check_uploaded_object, body.photo_object_path)
+        if problem:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, problem)
 
     existing = await db.scalar(select(CoupleStory).where(CoupleStory.match_id == body.match_id))
     if existing is not None:

@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import rate_limit
+from app.core.user_lock import user_lock
 from app.database import get_db
 from app.deps import get_current_user
 from app.models.profile import Profile
@@ -24,7 +26,7 @@ async def get_products(db: AsyncSession = Depends(get_db)) -> list[ProductOut]:
     return [ProductOut(**p) for p in payment_service.list_products(discounts)]
 
 
-@router.post("/create-checkout-session", response_model=CreateCheckoutResponse)
+@router.post("/create-checkout-session", response_model=CreateCheckoutResponse, dependencies=[Depends(rate_limit.limit_user("checkout", 20, 3600))])
 async def create_checkout_session(
     body: CreateCheckoutRequest,
     db: AsyncSession = Depends(get_db),
@@ -61,7 +63,8 @@ async def get_balance(
 async def activate_boost(
     db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
 ) -> BoostActivateResponse:
-    active_until = await payment_service.activate_boost(db, user.id)
+    async with user_lock(f"credits:{user.id}"):
+        active_until = await payment_service.activate_boost(db, user.id)
     return BoostActivateResponse(boost_active_until=active_until)
 
 
