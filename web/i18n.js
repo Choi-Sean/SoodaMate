@@ -347,11 +347,11 @@ const translations = {
   },
   "safety.4.title": { ko: "만 18세 이상만 이용", en: "18+ only", es: "Solo mayores de 18 años", zh: "仅限18岁以上使用", ja: "18歳以上のみ利用可能" },
   "safety.4.body": {
-    ko: "모든 회원은 가입 시 생년월일 확인을 거쳐요.",
-    en: "Every member's birth date is checked at sign-up.",
-    es: "Se verifica la fecha de nacimiento de cada miembro al registrarse.",
-    zh: "所有会员注册时均需核实出生日期。",
-    ja: "すべての会員は登録時に生年月日の確認を行います。",
+    ko: "가입할 때 만 18세 이상임을 직접 확인하고 생년월일을 입력해야 해요. 만 18세 미만이면 가입이 바로 차단돼요.",
+    en: "Every member confirms they're 18+ and enters a birth date at sign-up. Anyone under 18 is blocked on the spot.",
+    es: "Cada miembro confirma que tiene 18 años o más e indica su fecha de nacimiento al registrarse. Los menores de 18 quedan bloqueados al instante.",
+    zh: "每位会员注册时都必须确认已年满18周岁并填写出生日期，未满18周岁者会被当场拦截。",
+    ja: "すべての会員は登録時に18歳以上であることを確認し、生年月日を入力します。18歳未満の方はその場でブロックされます。",
   },
   "safety.card.title": { ko: "안전이 먼저입니다", en: "Safety comes first", es: "La seguridad es lo primero", zh: "安全第一", ja: "安全を第一に" },
   "safety.card.body": {
@@ -390,7 +390,7 @@ const translations = {
   "footer.deleteAccount": { ko: "계정 삭제", en: "Delete Account", es: "Eliminar cuenta", zh: "删除账户", ja: "アカウント削除" },
 
   "legal.back": { ko: "← 홈으로", en: "← Home", es: "← Inicio", zh: "← 返回首页", ja: "← ホームへ" },
-  "legal.updated": { ko: "최종 수정일: 2026년 9월 4일", en: "Last updated: September 4, 2026", es: "Última actualización: 4 de septiembre de 2026", zh: "最后更新：2026年9月4日", ja: "最終更新日：2026年9月4日" },
+  "legal.updated": { ko: "최종 수정일: 2026년 9월 21일", en: "Last updated: September 21, 2026", es: "Última actualización: 21 de septiembre de 2026", zh: "最后更新：2026年9月21日", ja: "最終更新日：2026年9月21日" },
 
   "privacy.title": { ko: "개인정보처리방침", en: "Privacy Policy", es: "Política de privacidad", zh: "隐私政策", ja: "プライバシーポリシー" },
   "privacy.intro": {
@@ -471,11 +471,11 @@ const translations = {
   "privacy.s4.li4": { ko: "<strong>Google AdMob</strong> — 앱 내 광고 게재 (광고 식별자 기반 맞춤 광고 포함 가능)", en: "<strong>Google AdMob</strong> — in-app advertising (may include ad-ID-based personalized ads)", es: "<strong>Google AdMob</strong> — publicidad dentro de la app (puede incluir anuncios personalizados basados en el ID de publicidad)", zh: "<strong>谷歌 AdMob</strong> — 应用内广告投放（可能包含基于广告标识符的个性化广告）", ja: "<strong>Google AdMob</strong> — アプリ内広告配信（広告識別子に基づくパーソナライズ広告を含む場合があります）" },
   "privacy.h5": { ko: "5. 이용자의 권리", en: "5. Your Rights", es: "5. Tus derechos", zh: "5. 用户的权利", ja: "5. 利用者の権利" },
   "privacy.s5": {
-    ko: "이용자는 언제든지 앱 내에서 본인의 프로필 정보를 열람·수정할 수 있으며, 계정 삭제를 통해 개인정보 처리 정지 및 삭제를 요청할 수 있습니다. 만 18세 미만은 서비스를 이용할 수 없습니다.",
-    en: "You can view and edit your profile information in the app at any time, and can request that we stop processing and delete your personal data by deleting your account. Anyone under 18 may not use the Service.",
-    es: "Puedes ver y editar la información de tu perfil en la app en cualquier momento, y puedes solicitar que dejemos de procesar y eliminemos tus datos personales eliminando tu cuenta. Los menores de 18 años no pueden usar el Servicio.",
-    zh: "用户可随时在应用内查看、修改本人的个人主页信息，并可通过删除账户要求停止处理及删除个人信息。未满18岁者不得使用本服务。",
-    ja: "利用者はいつでもアプリ内で自身のプロフィール情報を閲覧・修正でき、アカウント削除により個人情報の処理停止および削除を要求できます。満18歳未満の方は本サービスをご利用いただけません。",
+    ko: "이용자는 언제든지 앱 내에서 본인의 프로필 정보를 열람·수정할 수 있으며, 계정 삭제를 통해 개인정보 처리 정지 및 삭제를 요청할 수 있습니다. 만 18세 미만은 서비스를 이용할 수 없으며, 가입 과정에서 만 18세 미만으로 확인되면 계정을 비활성화하고 재가입 시도를 막기 위한 목적으로만 해당 전화번호를 계속 보관합니다.",
+    en: "You can view and edit your profile information in the app at any time, and can request that we stop processing and delete your personal data by deleting your account. Anyone under 18 may not use the Service. If a sign-up is found to be under 18, we disable the account and keep only the phone number on file, solely to prevent re-registration.",
+    es: "Puedes ver y editar la información de tu perfil en la app en cualquier momento, y puedes solicitar que dejemos de procesar y eliminemos tus datos personales eliminando tu cuenta. Los menores de 18 años no pueden usar el Servicio. Si se detecta que un registro corresponde a un menor de 18 años, desactivamos la cuenta y conservamos únicamente el número de teléfono, con el único fin de impedir un nuevo registro.",
+    zh: "用户可随时在应用内查看、修改本人的个人主页信息，并可通过删除账户要求停止处理及删除个人信息。未满18岁者不得使用本服务。若发现注册者未满18岁，我们将停用该账户，并仅为防止其重新注册而继续保留其手机号码。",
+    ja: "利用者はいつでもアプリ内で自身のプロフィール情報を閲覧・修正でき、アカウント削除により個人情報の処理停止および削除を要求できます。満18歳未満の方は本サービスをご利用いただけません。登録時に満18歳未満と判明した場合、アカウントを無効化し、再登録を防ぐ目的に限り電話番号のみを保管します。",
   },
   "privacy.h6": { ko: "6. 문의처", en: "6. Contact", es: "6. Contacto", zh: "6. 联系方式", ja: "6. お問い合わせ" },
   "privacy.s6": {
@@ -568,11 +568,11 @@ const translations = {
   },
   "terms.a2.title": { ko: "제2조 (이용 자격)", en: "Article 2 (Eligibility)", es: "Artículo 2 (Requisitos de uso)", zh: "第2条（使用资格）", ja: "第2条（利用資格）" },
   "terms.a2.body": {
-    ko: "서비스는 만 18세 이상만 이용할 수 있습니다. 가입 시 제공한 생년월일이 사실과 다른 경우 회사는 이용을 제한할 수 있습니다.",
-    en: "The Service is available only to those 18 or older. If the birth date provided at sign-up is false, the Company may restrict use.",
-    es: "El Servicio está disponible solo para mayores de 18 años. Si la fecha de nacimiento indicada en el registro es falsa, la Empresa puede restringir el uso.",
-    zh: "本服务仅限满18岁人士使用。若注册时提供的出生日期不实，公司可限制其使用。",
-    ja: "本サービスは満18歳以上のみご利用いただけます。登録時に提供した生年月日が事実と異なる場合、当社は利用を制限することがあります。",
+    ko: "서비스는 만 18세 이상만 이용할 수 있습니다. 가입 시 만 18세 이상임을 확인하고 생년월일을 입력해야 하며, 만 18세 미만으로 입력한 경우 가입이 즉시 차단되고 해당 계정은 비활성화됩니다. 가입 시 제공한 생년월일이 사실과 다른 경우 회사는 이용을 제한할 수 있습니다.",
+    en: "The Service is available only to those 18 or older. At sign-up, users must confirm that they are 18 or older and enter their birth date; if the date entered shows the user is under 18, registration is blocked immediately and the account is disabled. If the birth date provided at sign-up is false, the Company may restrict use.",
+    es: "El Servicio está disponible solo para mayores de 18 años. Al registrarse, los usuarios deben confirmar que tienen 18 años o más e indicar su fecha de nacimiento; si la fecha indicada muestra que el usuario es menor de 18 años, el registro se bloquea de inmediato y la cuenta se desactiva. Si la fecha de nacimiento indicada en el registro es falsa, la Empresa puede restringir el uso.",
+    zh: "本服务仅限满18岁人士使用。注册时，用户须确认已年满18周岁并填写出生日期；若所填日期显示用户未满18周岁，注册将被立即阻止，且该账户将被停用。若注册时提供的出生日期不实，公司可限制其使用。",
+    ja: "本サービスは満18歳以上のみご利用いただけます。登録時に、利用者は満18歳以上であることを確認し、生年月日を入力する必要があります。入力された日付から18歳未満と判明した場合、登録は直ちにブロックされ、当該アカウントは無効化されます。登録時に提供した生年月日が事実と異なる場合、当社は利用を制限することがあります。",
   },
   "terms.a3.title": { ko: "제3조 (계정 및 보안)", en: "Article 3 (Account and Security)", es: "Artículo 3 (Cuenta y seguridad)", zh: "第3条（账户与安全）", ja: "第3条（アカウントおよびセキュリティ）" },
   "terms.a3.li1": { ko: "이용자는 본인의 계정 정보를 안전하게 관리할 책임이 있습니다.", en: "Users are responsible for keeping their account information secure.", es: "Los usuarios son responsables de mantener segura la información de su cuenta.", zh: "用户有责任妥善保管本人账户信息。", ja: "利用者は自身のアカウント情報を安全に管理する責任を負います。" },
@@ -660,11 +660,11 @@ const translations = {
   },
   "childSafety.s2.title": { ko: "2. 예방 조치", en: "2. Prevention Measures", es: "2. Medidas de prevención", zh: "2. 预防措施", ja: "2. 予防措置" },
   "childSafety.s2.li1": {
-    ko: "가입 시 생년월일 입력을 필수로 하며, 만 18세 미만은 서버에서 가입이 거부됩니다.",
-    en: "Birth date is required at signup, and the server rejects registration for anyone under 18.",
-    es: "La fecha de nacimiento es obligatoria al registrarse, y el servidor rechaza el registro de cualquier persona menor de 18 años.",
-    zh: "注册时必须填写出生日期，未满18周岁的用户注册请求将被服务器拒绝。",
-    ja: "登録時に生年月日の入力が必須で、満18歳未満の場合はサーバー側で登録が拒否されます。",
+    ko: "가입 시 만 18세 이상임을 확인하고 생년월일을 입력해야 합니다. 만 18세 미만으로 입력하면 가입이 즉시 차단되고 계정이 비활성화되어 같은 전화번호로 다시 시도할 수 없으며, 서버도 만 18세 미만의 프로필 생성을 독립적으로 거부합니다.",
+    en: "At sign-up every user must confirm they are 18 or older and enter their birth date. A birth date under 18 blocks registration immediately and disables the account so the same phone number cannot try again; the server also independently rejects profile creation for anyone under 18.",
+    es: "Al registrarse, todos los usuarios deben confirmar que tienen 18 años o más e indicar su fecha de nacimiento. Una fecha de nacimiento de menor de 18 años bloquea el registro de inmediato y desactiva la cuenta, de modo que el mismo número de teléfono no puede intentarlo de nuevo; además, el servidor rechaza por su cuenta la creación de perfiles de menores de 18 años.",
+    zh: "注册时，所有用户都必须确认已年满18周岁并填写出生日期。若出生日期显示未满18周岁，注册将被立即阻止且账户被停用，同一手机号无法再次尝试；服务器也会独立拒绝为未满18周岁者创建个人资料。",
+    ja: "登録時に、すべての利用者は満18歳以上であることを確認し、生年月日を入力する必要があります。18歳未満の生年月日を入力すると登録は直ちにブロックされ、アカウントが無効化されるため、同じ電話番号で再試行することはできません。サーバー側でも、18歳未満のプロフィール作成は独立して拒否されます。",
   },
   "childSafety.s2.li2": {
     ko: "얼굴 인증을 통과한 회원만 블라인드 채팅(익명 채팅) 기능을 이용할 수 있습니다.",
