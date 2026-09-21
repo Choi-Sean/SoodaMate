@@ -938,3 +938,29 @@ def saf_003(c):
         _t.sleep(2)
     hist = [m["content"] for m in tc.get(f"/matches/{mid}/messages", headers=a.h).json()]
     c.ok("post-block message not stored", "harassment after block" not in hist, hist)
+
+
+@case("AGE-001", "Account", "Under-18 age gate", "App reports an under-18 birth date: the account is switched off for good and the same phone number cannot retry",
+      "POST /account/age-restricted -> 204; the old token stops working; logging in again with the same phone number -> 403 (account disabled); anonymous call -> 401/403",
+      "phone signup -> age-restricted -> token check -> phone re-login")
+def age_001(c):
+    phone = f"+8210{uuid.uuid4().int % 10**8:08d}"
+    u = H.signup_phone(phone)
+    c.ok("anonymous call refused", tc.post("/account/age-restricted").status_code in (401, 403))
+    c.eq("report under-18", tc.post("/account/age-restricted", headers=u.h).status_code, 204)
+    c.ok("old token no longer works", tc.get("/account/me", headers=u.h).status_code in (401, 403))
+    r = tc.post("/auth/phone/confirm", json={"phone_number": phone, "code": "123456"})
+    c.eq("same number cannot log in again", r.status_code, 403)
+    c.eq("detail", r.json().get("detail"), "account disabled")
+
+
+@case("AGE-002", "Account", "Under-18 age gate", "Server independently rejects an under-18 birth date on profile creation; exactly 18 is accepted; birth date is mandatory to become discoverable",
+      "17-year-old -> 422; 18-year-old -> 200; a profile-less account cannot browse or queue (400)",
+      "PUT /profiles/me with ages 5, 17, 18; discovery/queue without a profile")
+def age_002(c):
+    u = H.signup_email(f"qa-age2-{uuid.uuid4().hex[:6]}@example.com")
+    c.eq("5 years old", tc.put("/profiles/me", headers=u.h, json=H.profile_body(age=5)).status_code, 422)
+    c.eq("17 years old", tc.put("/profiles/me", headers=u.h, json=H.profile_body(age=17)).status_code, 422)
+    c.eq("no profile -> discovery blocked", tc.get("/discovery/candidates", headers=u.h).status_code, 400)
+    c.eq("no profile -> blind queue blocked", tc.post("/blind-chat/queue", headers=u.h, json={"categories": ["hobby"]}).status_code, 400)
+    c.eq("18 years old", tc.put("/profiles/me", headers=u.h, json=H.profile_body(age=18)).status_code, 200)

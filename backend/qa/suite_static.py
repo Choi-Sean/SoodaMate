@@ -401,3 +401,15 @@ def web_005(c):
     blob = (WEB / "i18n.js").read_text(encoding="utf-8") + "".join(f.read_text(encoding="utf-8") for f in WEB.glob("*.html"))
     for bad in ("数搭", "数多メイト", "수다 메이트"):
         c.eq(f"occurrences of {bad}", blob.count(bad), 0)
+
+
+@case("WEB-006", "Website", "Policy consistency", "Terms, privacy policy, child-safety page and the safety card all describe the same 18+ gate in all 5 languages",
+      "each of terms.a2.body, privacy.s5, childSafety.s2.li1, safety.4.body mentions 18 and (for the first three) the blocked/disabled outcome in every language",
+      "inspect the translations")
+def web_006(c):
+    t = load_web()
+    for key in ("terms.a2.body", "privacy.s5", "childSafety.s2.li1", "safety.4.body"):
+        for l in LANGS:
+            c.ok(f"{key} [{l}] mentions 18", "18" in t[key][l])
+    c.ok("privacy discloses the retained phone number (en)", "phone number" in t["privacy.s5"]["en"] and "re-registration" in t["privacy.s5"]["en"])
+    c.ok("legal pages carry the new 'last updated' date", "September 21, 2026" in t["legal.updated"]["en"])
