@@ -15,6 +15,7 @@
     "logout": "로그아웃",
     "loading": "불러오는 중...",
     "somethingWentWrong": "문제가 발생했어요. 다시 시도해주세요.",
+    "tooManyRequests": "시도 횟수가 너무 많아요. 몇 분 뒤에 다시 시도해 주세요.",
     "tryAgain": "다시 시도"
   },
   "errorBoundary": {
@@ -210,6 +211,9 @@
     "blockConfirm": "차단",
     "errorGeneric": "문제가 발생했어요. 나중에 다시 시도해주세요.",
     "firstMessageRestricted": "지금은 상대방이 먼저 메시지를 보낼 차례예요.",
+    "messageTooLong": "메시지가 너무 길어요. 2,000자 이내로 보내주세요.",
+    "rateLimited": "메시지를 너무 빠르게 보내고 있어요. 조금만 천천히 보내주세요.",
+    "invalidImage": "사진을 보내지 못했어요. 다른 사진으로 다시 시도해 주세요.",
     "restrictedBanner": "24시간 안에 상대방이 먼저 메시지를 보내지 않으면 이 매칭은 만료돼요.",
     "sendImage": "사진 보내기",
     "imagePermission": "사진을 보내려면 사진 라이브러리 접근 권한이 필요해요",
@@ -697,6 +701,7 @@
     "adBonusTitle": "보너스 매칭",
     "adBonusSuccess": "오늘의 매칭 횟수가 1회 늘었어요!",
     "adBonusUnavailable": "지금은 광고를 불러올 수 없어요. 잠시 후 다시 시도해주세요.",
+    "adBonusPending": "시청해 주셔서 감사해요! 보너스 매칭을 확인하는 중이에요. 몇 초 뒤에 반영돼요.",
     "genderConfirmTitle": "성별 선택 확인",
     "genderConfirmBody": "프로필에 설정한 관심 성별은 '{{profile}}'인데, 이번 매칭에서는 '{{selected}}'으로 선택하셨어요. 맞나요?",
     "genderConfirmChange": "다시 선택",

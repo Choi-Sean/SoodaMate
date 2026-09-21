@@ -67,6 +67,15 @@ module.exports = {
     // only appears in the expo.dev dashboard URL.
     slug: "suda-mate",
     scheme: "soodamate",
+    // Translated iOS permission prompts (ATT / location / photos / camera) — the
+    // English defaults live in the plugin config below; each file only overrides
+    // them for that language. Needs a native build (they end up in Info.plist).
+    locales: {
+      ko: "./locales/ko.json",
+      es: "./locales/es.json",
+      "zh-Hans": "./locales/zh-Hans.json",
+      ja: "./locales/ja.json",
+    },
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
@@ -79,6 +88,9 @@ module.exports = {
       // with Apple" capability on the App ID in the developer portal.
       usesAppleSignIn: true,
       infoPlist: {
+        // Lets the translated permission prompts in ./locales/*.json (see
+        // `locales` below) be used instead of always showing English.
+        CFBundleAllowMixedLocalizations: true,
         // The app only uses standard HTTPS/TLS (no custom/proprietary
         // encryption) — declaring this avoids App Store Connect's export
         // compliance question blocking every single build submission.
@@ -129,12 +141,12 @@ module.exports = {
           // Best practice per Google's own docs: don't start collecting
           // measurement data before the user has answered the ATT prompt.
           delayAppMeasurementInit: true,
-          // Google's own AdMob SKAdNetwork identifier (iOS 14+ ad
-          // attribution) — the full recommended list (50+ entries, mostly
-          // other mediation networks this app doesn't use) is at
-          // https://developers.google.com/admob/ios/ios14#skadnetwork;
-          // add more here only if real mediation partners are added later.
-          skAdNetworkItems: ["cstr6suwn9.skadnetwork"],
+          // SKAdNetwork ids of every ad buyer that bids through Google (iOS 14+
+          // install attribution). Advertisers whose id is missing can't attribute
+          // installs to this app, so they bid less — Google's docs say to list all of
+          // them. Copied from https://developers.google.com/admob/ios/quick-start
+          // ("Update your Info.plist"); re-sync when Google updates the list.
+          skAdNetworkItems: require("./skadnetwork-ids.json"),
         },
       ],
       [

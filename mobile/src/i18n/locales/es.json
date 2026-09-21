@@ -15,6 +15,7 @@
     "logout": "Cerrar sesión",
     "loading": "Cargando...",
     "somethingWentWrong": "Algo salió mal. Inténtalo de nuevo.",
+    "tooManyRequests": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
     "tryAgain": "Reintentar"
   },
   "errorBoundary": {
@@ -210,6 +211,9 @@
     "blockConfirm": "Bloquear",
     "errorGeneric": "Algo salió mal. Inténtalo más tarde.",
     "firstMessageRestricted": "Ahora le toca a la otra persona enviar el primer mensaje.",
+    "messageTooLong": "Ese mensaje es demasiado largo. Máximo 2000 caracteres.",
+    "rateLimited": "Estás enviando mensajes demasiado rápido. Ve un poco más despacio.",
+    "invalidImage": "No se pudo enviar esa foto. Prueba con otra.",
     "restrictedBanner": "Este match expira si no envía el primer mensaje en 24 horas.",
     "sendImage": "Enviar foto",
     "imagePermission": "Se necesita permiso de acceso a fotos para enviar una foto",
@@ -697,6 +701,7 @@
     "adBonusTitle": "Match extra",
     "adBonusSuccess": "¡Tienes 1 match extra hoy!",
     "adBonusUnavailable": "No hay ningún anuncio disponible ahora. Inténtalo de nuevo en un momento.",
+    "adBonusPending": "¡Gracias por verlo! Estamos confirmando tu match extra; aparecerá en unos segundos.",
     "genderConfirmTitle": "Confirma tu elección",
     "genderConfirmBody": "En tu perfil te interesa «{{profile}}», pero para este match elegiste «{{selected}}». ¿Es correcto?",
     "genderConfirmChange": "Cambiar",

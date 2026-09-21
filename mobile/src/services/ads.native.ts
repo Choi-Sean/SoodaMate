@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 import { getTrackingPermissionsAsync, requestTrackingPermissionsAsync, PermissionStatus } from "expo-tracking-transparency";
-import mobileAds from "react-native-google-mobile-ads";
+import mobileAds, { MaxAdContentRating } from "react-native-google-mobile-ads";
 
 // This file only ever gets bundled for ios/android (Metro's platform
 // extension resolution) — react-native-google-mobile-ads has no web build
@@ -27,6 +27,15 @@ export async function initAds(): Promise<void> {
       await requestTrackingPermissionsAsync();
     }
   }
+
+  // Adults-only dating app: never treat it as child-directed, cap ad content at
+  // Teen so mature/adult-oriented creatives never appear next to profile-style
+  // cards, and apply it before the SDK starts requesting anything.
+  await mobileAds().setRequestConfiguration({
+    maxAdContentRating: MaxAdContentRating.T,
+    tagForChildDirectedTreatment: false,
+    tagForUnderAgeOfConsent: false,
+  });
 
   await mobileAds().initialize();
   initialized = true;

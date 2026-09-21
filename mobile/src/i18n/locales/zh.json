@@ -15,6 +15,7 @@
     "logout": "退出登录",
     "loading": "加载中...",
     "somethingWentWrong": "出错了，请重试。",
+    "tooManyRequests": "尝试次数过多，请等待几分钟后再试。",
     "tryAgain": "重试"
   },
   "errorBoundary": {
@@ -210,6 +211,9 @@
     "blockConfirm": "拉黑",
     "errorGeneric": "出错了，请稍后再试。",
     "firstMessageRestricted": "现在轮到对方先发消息。",
+    "messageTooLong": "消息太长了，请控制在2000字以内。",
+    "rateLimited": "你发送消息太快了，请稍微慢一点。",
+    "invalidImage": "这张照片无法发送，请换一张试试。",
     "restrictedBanner": "如果对方24小时内未发送第一条消息，此配对将失效。",
     "sendImage": "发送照片",
     "imagePermission": "发送照片需要相册访问权限",
@@ -697,6 +701,7 @@
     "adBonusTitle": "额外匹配",
     "adBonusSuccess": "今天多获得了1次匹配机会！",
     "adBonusUnavailable": "暂时无法加载广告，请稍后再试。",
+    "adBonusPending": "感谢观看！正在确认你的额外匹配，几秒后就会到账。",
     "genderConfirmTitle": "确认你的选择",
     "genderConfirmBody": "你在个人资料里设置的意向性别是“{{profile}}”，但这次匹配你选择了“{{selected}}”。没错吗？",
     "genderConfirmChange": "重新选择",

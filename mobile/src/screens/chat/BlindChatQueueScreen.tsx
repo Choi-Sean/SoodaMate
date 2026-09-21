@@ -23,6 +23,7 @@ import MultiChipSelect from "../../components/MultiChipSelect";
 import RangeSlider from "../../components/RangeSlider";
 import SingleSlider from "../../components/SingleSlider";
 import { showRewardedAd } from "../../services/rewardedAd";
+import { useAuthStore } from "../../store/authStore";
 import { showAlert } from "../../utils/alert";
 import { calculateProfileCompleteness, MIN_COMPLETENESS_FOR_ACTIVE } from "../../utils/profileCompleteness";
 import { formatDistanceKm } from "../../utils/units";
@@ -68,6 +69,7 @@ const QUEUE_TIMEOUT_MS = 20000;
 export default function BlindChatQueueScreen({ navigation, route }: Props) {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
+  const userId = useAuthStore((s) => s.userId);
   const isFocused = useIsFocused();
   const useImperial = i18n.language === "en";
 
@@ -197,8 +199,18 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
   }, [status]);
 
   function explainError(e: any): string {
-    if (e?.response?.status === 429) return t("blindChat.dailyLimitReached");
-    return e?.response?.data?.detail ?? e?.message ?? "";
+    const detail = e?.response?.data?.detail;
+    if (e?.response?.status === 429) {
+      // 429 means two different things here: the API's per-minute rate limit
+      // (plain string, backend/app/core/rate_limit.py) or the daily match limit.
+      return typeof detail === "string" && detail.startsWith("too many requests")
+        ? t("common.tooManyRequests")
+        : t("blindChat.dailyLimitReached");
+    }
+    if (e?.response?.status === 403 && detail === "identity verification required") {
+      return t("blindChat.verificationRequiredBody");
+    }
+    return detail ?? e?.message ?? "";
   }
 
   // Defense-in-depth — CustomTabBar's center button already blocks getting
@@ -308,14 +320,23 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
   async function handleWatchAdForBonus() {
     setClaimingBonus(true);
     try {
-      const earned = await showRewardedAd();
+      const earned = await showRewardedAd(userId);
       if (!earned) {
         showAlert(t("blindChat.adBonusTitle"), t("blindChat.adBonusUnavailable"));
         return;
       }
-      await claimBlindChatAdBonus();
+      let limit = await claimBlindChatAdBonus();
+      // With server-side ad verification the bonus lands when AdMob's callback
+      // reaches the backend (usually 1-3 s after the ad closes), so poll briefly.
+      for (let i = 0; i < 6 && limit.bonus_available; i++) {
+        await new Promise((r) => setTimeout(r, 1500));
+        limit = await getBlindChatLimit();
+      }
       await queryClient.invalidateQueries({ queryKey: ["blindChatLimit"] });
-      showAlert(t("blindChat.adBonusTitle"), t("blindChat.adBonusSuccess"));
+      showAlert(
+        t("blindChat.adBonusTitle"),
+        limit.bonus_available ? t("blindChat.adBonusPending") : t("blindChat.adBonusSuccess")
+      );
     } catch (e: any) {
       showAlert(t("common.somethingWentWrong"), explainError(e));
     } finally {

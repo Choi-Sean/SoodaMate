@@ -13,13 +13,20 @@ const EXPECTED_STATUS_LEVEL: Record<number, "warning"> = { 402: "warning", 429: 
 
 function reportApiError(error: AxiosError) {
   const status = error.response?.status;
+  const detail = (error.response?.data as { detail?: unknown } | undefined)?.detail;
+  // Deliberately NOT the AxiosError itself: it carries config.headers.Authorization
+  // (a live bearer token) and config.data (phone numbers, SMS codes, passwords),
+  // and Sentry would serialise all of it. Send a plain Error plus a few safe fields.
+  const safeError = new Error(
+    `API ${(error.config?.method ?? "?").toUpperCase()} ${error.config?.url ?? "?"} failed: ${status ?? "no response"}`
+  );
   reportError(
-    error,
+    safeError,
     {
       method: error.config?.method,
       url: error.config?.url,
       status: status ?? "no response",
-      responseData: error.response?.data,
+      detail: typeof detail === "string" ? detail : undefined,
     },
     (status && EXPECTED_STATUS_LEVEL[status]) || "error"
   );

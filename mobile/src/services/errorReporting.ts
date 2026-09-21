@@ -17,6 +17,24 @@ export function initErrorReporting(): void {
     // (readable file/line instead of a minified frame) by uploading source
     // maps at build time.
     tracesSampleRate: 0.2,
+    sendDefaultPii: false,
+    // Last line of defence: whatever a caller attaches, never ship credentials.
+    beforeSend(event) {
+      if (event.request?.headers) {
+        for (const key of Object.keys(event.request.headers)) {
+          if (/authorization|cookie|token/i.test(key)) event.request.headers[key] = "[redacted]";
+        }
+      }
+      if (event.request?.url) event.request.url = event.request.url.replace(/([?&#]token=)[^&#]*/gi, "$1[redacted]");
+      return event;
+    },
+    beforeBreadcrumb(breadcrumb) {
+      const url = (breadcrumb.data as { url?: unknown } | undefined)?.url;
+      if (typeof url === "string" && /token=/i.test(url) && breadcrumb.data) {
+        breadcrumb.data.url = url.replace(/([?&#]token=)[^&#]*/gi, "$1[redacted]");
+      }
+      return breadcrumb;
+    },
   });
   initialized = true;
 }

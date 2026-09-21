@@ -15,6 +15,7 @@
     "logout": "ログアウト",
     "loading": "読み込み中...",
     "somethingWentWrong": "問題が発生しました。もう一度お試しください。",
+    "tooManyRequests": "試行回数が多すぎます。数分待ってからもう一度お試しください。",
     "tryAgain": "再試行"
   },
   "errorBoundary": {
@@ -210,6 +211,9 @@
     "blockConfirm": "ブロック",
     "errorGeneric": "問題が発生しました。しばらくしてから再度お試しください。",
     "firstMessageRestricted": "今は相手が先にメッセージを送る番です。",
+    "messageTooLong": "メッセージが長すぎます。2,000文字以内で送ってください。",
+    "rateLimited": "メッセージを送る速度が速すぎます。少しゆっくりお願いします。",
+    "invalidImage": "この写真は送信できませんでした。別の写真をお試しください。",
     "restrictedBanner": "24時間以内に相手が最初のメッセージを送らない場合、このマッチは無効になります。",
     "sendImage": "写真を送る",
     "imagePermission": "写真を送るには写真ライブラリへのアクセス許可が必要です",
@@ -697,6 +701,7 @@
     "adBonusTitle": "ボーナスマッチング",
     "adBonusSuccess": "本日のマッチング回数が1回増えました！",
     "adBonusUnavailable": "今は広告を読み込めません。しばらくしてからもう一度お試しください。",
+    "adBonusPending": "ご視聴ありがとうございます！ボーナスマッチを確認中です。数秒後に反映されます。",
     "genderConfirmTitle": "選択の確認",
     "genderConfirmBody": "プロフィールの興味のある性別は「{{profile}}」ですが、今回のマッチングでは「{{selected}}」を選択しました。よろしいですか？",
     "genderConfirmChange": "選び直す",

@@ -72,7 +72,18 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
               style={styles.tabButton}
               onPress={() => {
                 const event = navigation.emit({ type: "tabPress", target: route.key, canPreventDefault: true });
-                if (!focused && !event.defaultPrevented) navigation.navigate(route.name);
+                if (event.defaultPrevented) return;
+                // Chat always lands on the conversation LIST — otherwise the tab
+                // resumes wherever its stack was left (e.g. the room a blind match
+                // just opened) and the list is unreachable. Tapping the tab you're
+                // already on also pops it back to its first screen.
+                if (route.name === "Chat") {
+                  navigation.navigate("Chat", { screen: "ChatList" } as never);
+                } else if (focused) {
+                  navigation.navigate(route.name, { screen: "MyProfile" } as never);
+                } else {
+                  navigation.navigate(route.name);
+                }
               }}
             >
               <View style={[styles.iconBubble, focused && styles.iconBubbleActive]}>

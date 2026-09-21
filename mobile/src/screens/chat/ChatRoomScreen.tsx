@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -76,6 +76,16 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
+  // KeyboardAvoidingView measures its frame relative to its *parent*, but the
+  // keyboard's position is in window coordinates. The native header (and status
+  // bar) sit above this screen, so without their height as the offset the input
+  // bar ends up that far underneath the keyboard. Measure it instead of
+  // hard-coding a header height so it holds on every device / text size.
+  const wrapRef = useRef<View>(null);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const measureKeyboardOffset = useCallback(() => {
+    wrapRef.current?.measureInWindow((_x, y) => setKeyboardOffset((prev) => (Math.abs(prev - y) < 0.5 ? prev : y)));
+  }, []);
   const [bioExpanded, setBioExpanded] = useState(false);
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const otherBioLines = [match?.other_bio, match?.other_bio2, match?.other_bio3].filter(
@@ -92,10 +102,17 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
 
   const handleSocketError = useCallback(
     (err: ChatSocketError) => {
-      if (err.code === "first_message_restricted") {
-        // Roll back the optimistic local echo of whatever we just tried to send.
+      // Roll back the optimistic local echo of whatever we just tried to send.
+      const rejection: Record<string, string> = {
+        first_message_restricted: "chat.firstMessageRestricted",
+        message_too_long: "chat.messageTooLong",
+        rate_limited: "chat.rateLimited",
+        invalid_image: "chat.invalidImage",
+      };
+      const key = rejection[err.code];
+      if (key) {
         setMessages((prev) => prev.filter((m) => !m.id.startsWith("local-")));
-        showAlert(t("common.somethingWentWrong"), t("chat.firstMessageRestricted"));
+        showAlert(t("common.somethingWentWrong"), t(key));
       }
     },
     [t]
@@ -284,113 +301,120 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      {historyLoading ? (
-        <View style={styles.loadingCenter}>
-          <ActivityIndicator size="large" color={colors.accent} />
-        </View>
-      ) : (
-        <FlatList
-          data={messages}
-          keyExtractor={(m) => m.id}
-          renderItem={({ item }) => <ChatBubble message={item} isMine={item.sender_id === userId} />}
-          contentContainerStyle={styles.list}
-        />
-      )}
-      {otherBioLines.length > 0 && (
-        <Pressable style={styles.bioCard} onPress={() => setBioExpanded((v) => !v)}>
-          <View style={styles.bioCardHeader}>
-            <Text style={styles.bioCardLabel}>{t("chat.aboutThem", { name: otherDisplayName })}</Text>
-            <Ionicons name={bioExpanded ? "chevron-up" : "chevron-down"} size={16} color={colors.muted} />
+    <View ref={wrapRef} style={styles.container} onLayout={measureKeyboardOffset}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={keyboardOffset}
+      >
+        {historyLoading ? (
+          <View style={styles.loadingCenter}>
+            <ActivityIndicator size="large" color={colors.accent} />
           </View>
-          {bioExpanded && (
-            <View style={styles.bioCardBody}>
-              {otherBioLines.map((line, i) => (
-                <Text key={i} style={styles.bioCardText}>
-                  {line}
-                </Text>
-              ))}
+        ) : (
+          <FlatList
+            data={messages}
+            keyExtractor={(m) => m.id}
+            renderItem={({ item }) => <ChatBubble message={item} isMine={item.sender_id === userId} />}
+            contentContainerStyle={styles.list}
+          />
+        )}
+        {otherBioLines.length > 0 && (
+          <Pressable style={styles.bioCard} onPress={() => setBioExpanded((v) => !v)}>
+            <View style={styles.bioCardHeader}>
+              <Text style={styles.bioCardLabel}>{t("chat.aboutThem", { name: otherDisplayName })}</Text>
+              <Ionicons name={bioExpanded ? "chevron-up" : "chevron-down"} size={16} color={colors.muted} />
             </View>
-          )}
-        </Pressable>
-      )}
-      {!historyLoading && messages.length === 0 && icebreakerText && !composerLocked && (
-        <Pressable style={styles.icebreakerChip} onPress={() => setInput(icebreakerText)}>
-          <Text style={styles.icebreakerChipLabel}>{t("chat.icebreakerLabel")}</Text>
-          <Text style={styles.icebreakerChipText}>{icebreakerText}</Text>
-        </Pressable>
-      )}
-      {match?.is_blind && !match.blind_revealed && (
-        <View style={styles.blindBanner}>
-          {match.blind_categories.length > 0 && (
-            <Text style={styles.blindBannerCategories}>
-              {t("blindChat.matchedOn", {
-                categories: match.blind_categories.map((c) => t(`blindChatCategories.${c}`)).join(", "),
-              })}
-            </Text>
-          )}
-          {match.has_incoming_reveal_request ? (
-            <>
-              <Text style={styles.blindBannerText}>{t("blindChat.incomingRevealRequest", { name: otherDisplayName })}</Text>
-              <Pressable style={styles.blindBannerButton} onPress={handleAcceptReveal}>
-                <Text style={styles.blindBannerButtonText}>{t("blindChat.acceptReveal")}</Text>
-              </Pressable>
-            </>
-          ) : match.reveal_requested_by_me ? (
-            <Text style={styles.blindBannerText}>{t("blindChat.revealPending")}</Text>
-          ) : (
-            match.can_request_reveal && (
-              <Pressable style={styles.blindBannerButton} onPress={handleRequestReveal}>
-                <Text style={styles.blindBannerButtonText}>{t("blindChat.requestReveal")}</Text>
-              </Pressable>
-            )
-          )}
-        </View>
-      )}
-      {isExpired ? (
-        <View style={styles.expiredBanner}>
-          <Text style={styles.expiredBannerText}>{t("chat.expiredBanner")}</Text>
-        </View>
-      ) : (
-        mustWaitForPeer && (
-          <View style={styles.restrictedBanner}>
-            <Text style={styles.restrictedBannerText}>{t("chat.restrictedBanner")}</Text>
-          </View>
-        )
-      )}
-      {!isExpired && (
-        <View style={styles.inputBar}>
-          <Pressable
-            style={[styles.imageButton, composerLocked && styles.sendButtonDisabled]}
-            onPress={handleSendImage}
-            disabled={composerLocked || sendingImage}
-          >
-            {sendingImage ? (
-              <ActivityIndicator size="small" color={colors.accentDark} />
-            ) : (
-              <Ionicons name="image-outline" size={22} color={colors.accentDark} />
+            {bioExpanded && (
+              <View style={styles.bioCardBody}>
+                {otherBioLines.map((line, i) => (
+                  <Text key={i} style={styles.bioCardText}>
+                    {line}
+                  </Text>
+                ))}
+              </View>
             )}
           </Pressable>
-          <TextInput
-            style={styles.input}
-            value={input}
-            onChangeText={setInput}
-            placeholder={t("chat.messagePlaceholder")}
-            multiline
-            editable={!composerLocked}
-          />
-          <Pressable style={[styles.sendButton, composerLocked && styles.sendButtonDisabled]} onPress={handleSend} disabled={composerLocked}>
-            <Text style={styles.sendButtonText}>{t("chat.send")}</Text>
+        )}
+        {!historyLoading && messages.length === 0 && icebreakerText && !composerLocked && (
+          <Pressable style={styles.icebreakerChip} onPress={() => setInput(icebreakerText)}>
+            <Text style={styles.icebreakerChipLabel}>{t("chat.icebreakerLabel")}</Text>
+            <Text style={styles.icebreakerChipText}>{icebreakerText}</Text>
           </Pressable>
-        </View>
-      )}
-      <BlindChatFeedbackModal
-        visible={feedbackModalVisible}
-        otherDisplayName={otherDisplayName}
-        onCancel={() => setFeedbackModalVisible(false)}
-        onSubmit={handleSubmitFeedback}
-      />
-    </KeyboardAvoidingView>
+        )}
+        {match?.is_blind && !match.blind_revealed && (
+          <View style={styles.blindBanner}>
+            {match.blind_categories.length > 0 && (
+              <Text style={styles.blindBannerCategories}>
+                {t("blindChat.matchedOn", {
+                  categories: match.blind_categories.map((c) => t(`blindChatCategories.${c}`)).join(", "),
+                })}
+              </Text>
+            )}
+            {match.has_incoming_reveal_request ? (
+              <>
+                <Text style={styles.blindBannerText}>{t("blindChat.incomingRevealRequest", { name: otherDisplayName })}</Text>
+                <Pressable style={styles.blindBannerButton} onPress={handleAcceptReveal}>
+                  <Text style={styles.blindBannerButtonText}>{t("blindChat.acceptReveal")}</Text>
+                </Pressable>
+              </>
+            ) : match.reveal_requested_by_me ? (
+              <Text style={styles.blindBannerText}>{t("blindChat.revealPending")}</Text>
+            ) : (
+              match.can_request_reveal && (
+                <Pressable style={styles.blindBannerButton} onPress={handleRequestReveal}>
+                  <Text style={styles.blindBannerButtonText}>{t("blindChat.requestReveal")}</Text>
+                </Pressable>
+              )
+            )}
+          </View>
+        )}
+        {isExpired ? (
+          <View style={styles.expiredBanner}>
+            <Text style={styles.expiredBannerText}>{t("chat.expiredBanner")}</Text>
+          </View>
+        ) : (
+          mustWaitForPeer && (
+            <View style={styles.restrictedBanner}>
+              <Text style={styles.restrictedBannerText}>{t("chat.restrictedBanner")}</Text>
+            </View>
+          )
+        )}
+        {!isExpired && (
+          <View style={styles.inputBar}>
+            <Pressable
+              style={[styles.imageButton, composerLocked && styles.sendButtonDisabled]}
+              onPress={handleSendImage}
+              disabled={composerLocked || sendingImage}
+            >
+              {sendingImage ? (
+                <ActivityIndicator size="small" color={colors.accentDark} />
+              ) : (
+                <Ionicons name="image-outline" size={22} color={colors.accentDark} />
+              )}
+            </Pressable>
+            <TextInput
+              style={styles.input}
+              value={input}
+              onChangeText={setInput}
+              placeholder={t("chat.messagePlaceholder")}
+              multiline
+              maxLength={2000}
+              editable={!composerLocked}
+            />
+            <Pressable style={[styles.sendButton, composerLocked && styles.sendButtonDisabled]} onPress={handleSend} disabled={composerLocked}>
+              <Text style={styles.sendButtonText}>{t("chat.send")}</Text>
+            </Pressable>
+          </View>
+        )}
+        <BlindChatFeedbackModal
+          visible={feedbackModalVisible}
+          otherDisplayName={otherDisplayName}
+          onCancel={() => setFeedbackModalVisible(false)}
+          onSubmit={handleSubmitFeedback}
+        />
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 

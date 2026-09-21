@@ -1,0 +1,9 @@
+{
+  "ios": {
+    "NSUserTrackingUsageDescription": "Lo usamos para mostrarte anuncios más relevantes y mantener las funciones gratuitas de la app.",
+    "NSLocationWhenInUseUsageDescription": "Usamos tu ubicación para mostrarte la distancia a otros usuarios y encontrar coincidencias cerca de ti.",
+    "NSLocationAlwaysAndWhenInUseUsageDescription": "Usamos tu ubicación para mostrarte la distancia a otros usuarios y encontrar coincidencias cerca de ti.",
+    "NSPhotoLibraryUsageDescription": "Permite que SooDaMate acceda a tus fotos para que puedas añadirlas a tu perfil.",
+    "NSCameraUsageDescription": "Permite que SooDaMate acceda a tu cámara para que puedas hacerte una foto de perfil."
+  }
+}

@@ -12,6 +12,9 @@ import { openExternalUrl } from "./openExternalUrl";
  * usePurchaseReturnWatch. Replaces the three near-identical inline
  * openShop() functions that used to live in MyProfileScreen / LikesScreen /
  * FilterModal. */
+// The access token rides in the URL FRAGMENT (#token=), not the query string: a
+// fragment is never sent to a server, so it can't end up in Vercel/proxy request
+// logs (web/shop.html reads it and scrubs it from the address bar).
 export function openShop(queryClient: QueryClient): void {
   const token = useAuthStore.getState().accessToken ?? "";
   const profile = queryClient.getQueryData<Profile>(["myProfile"]);
@@ -24,7 +27,7 @@ export function openShop(queryClient: QueryClient): void {
       unlimitedMatchingActive: profile.is_unlimited_matching_active,
     });
   }
-  openExternalUrl(`${env.marketingSiteUrl}/shop.html?token=${encodeURIComponent(token)}`);
+  openExternalUrl(`${env.marketingSiteUrl}/shop.html#token=${encodeURIComponent(token)}`);
 }
 
 /** Same shop page, but scrolled to and highlighting one product — used by a
@@ -37,6 +40,6 @@ export function openShop(queryClient: QueryClient): void {
 export function openShopForProduct(productId: string): void {
   const token = useAuthStore.getState().accessToken ?? "";
   openExternalUrl(
-    `${env.marketingSiteUrl}/shop.html?token=${encodeURIComponent(token)}&highlight=${encodeURIComponent(productId)}`
+    `${env.marketingSiteUrl}/shop.html?highlight=${encodeURIComponent(productId)}#token=${encodeURIComponent(token)}`
   );
 }

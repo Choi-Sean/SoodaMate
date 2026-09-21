@@ -8,6 +8,8 @@ const KNOWN_DETAILS: Record<string, string> = {
   "incorrect or expired code": "phoneAuth.incorrectCode",
   "account disabled": "phoneAuth.accountDisabled",
   "failed to send verification code": "phoneAuth.sendFailed",
+  // backend/app/core/rate_limit.py::TOO_MANY
+  "too many requests, please try again later": "common.tooManyRequests",
 };
 
 /** User-facing message for a failed phone start/confirm call. The backend
