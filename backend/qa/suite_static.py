@@ -290,7 +290,9 @@ def _app_facts():
     pkg = (ROOT / "mobile" / "package.json").read_text(encoding="utf-8")
     auth_stack = (MOBILE / "navigation" / "AuthStack.tsx").read_text(encoding="utf-8")
     chat_room = (MOBILE / "screens" / "chat" / "ChatRoomScreen.tsx").read_text(encoding="utf-8")
-    blind = (ROOT / "backend" / "app" / "services" / "blind_chat_service.py").read_text(encoding="utf-8")
+    blind = (ROOT / "backend" / "app" / "services" / "blind_chat_service.py").read_text(encoding="utf-8") + (
+        ROOT / "backend" / "app" / "routers" / "blind_chat.py"
+    ).read_text(encoding="utf-8")  # the identity gate lives in the router's _require_complete_profile
     facts = {
         "phone_only_signup": "PhoneAuth" in auth_stack and "Signup" not in auth_stack and "Login" not in auth_stack,
         "video_call_ui": "webrtc" in pkg.lower() or "call_offer" in chat_room or "startCall" in chat_room,

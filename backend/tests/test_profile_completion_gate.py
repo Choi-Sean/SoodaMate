@@ -50,7 +50,7 @@ async def test_blank_core_field_keeps_profile_incomplete_even_with_a_photo(clien
     photo = await client.post(
         "/profiles/me/photos/confirm",
         headers=headers,
-        json={"gcs_object_path": f"users/{uid}/photos/0.jpg", "position": 0},
+        json={"gcs_object_path": f"users/{uid}/photos/{uuid.uuid4()}.jpg", "position": 0},
     )
     assert photo.status_code == 201
 

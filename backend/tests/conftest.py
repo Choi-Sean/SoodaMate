@@ -16,6 +16,13 @@ if sys.platform == "win32":
 
 os.environ.setdefault("SECRET_KEY", "test-secret-key")
 os.environ["APP_ENV"] = "test"
+# Security switches that get in the way of bulk fixture setup (dedicated tests turn
+# each one back on where they exercise it): no rate limiting, no face-verification
+# gate, email sign-up allowed, placeholder upload paths accepted.
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
+os.environ.setdefault("REQUIRE_VERIFIED_ACCOUNTS", "false")
+os.environ.setdefault("ENABLE_LEGACY_AUTH", "true")
+os.environ.setdefault("VERIFY_UPLOADED_OBJECTS", "false")
 
 # Loads backend/.env's real DATABASE_URL (the user's hosted MSSQL instance —
 # there is no separate local/container test database; this project has only

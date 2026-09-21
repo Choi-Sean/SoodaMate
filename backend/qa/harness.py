@@ -12,6 +12,12 @@ import io
 import json
 import os
 import sys
+
+try:  # results contain Korean/emoji; a redirected Windows console defaults to cp1252 and would crash the run
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:  # noqa: BLE001
+    pass
 import time
 import traceback
 import uuid
@@ -169,8 +175,36 @@ def install_stubs():
     phone_screening._lookup_line_type = _no_lookup  # no billed Lookup unless a case opts in
 
 
+# Switches introduced by the security hardening. The general suites run with
+# them relaxed (they create email accounts without phone/face verification and
+# hammer the same endpoints thousands of times); suite_security switches each one
+# on for exactly the cases that test it. object.__setattr__ so this also works
+# against an older checkout where the setting does not exist yet.
+RELAXED_FLAGS = {"rate_limit_enabled": False, "require_verified_accounts": False, "enable_legacy_auth": True, "verify_uploaded_objects": False}
+
+
+def set_flag(name, value):
+    object.__setattr__(settings, name, value)
+
+
+class flag:
+    """with H.flag("rate_limit_enabled", True): ...   (restores the relaxed value)"""
+
+    def __init__(self, name, value):
+        self.name, self.value = name, value
+
+    def __enter__(self):
+        set_flag(self.name, self.value)
+        return self
+
+    def __exit__(self, *exc):
+        set_flag(self.name, RELAXED_FLAGS.get(self.name, getattr(settings, self.name, None)))
+
+
 def start():
     global tc
+    for _n, _v in RELAXED_FLAGS.items():
+        set_flag(_n, _v)
     install_stubs()
     tc = TestClient(app)
     tc.__enter__()
@@ -242,7 +276,7 @@ def complete_profile(u: U, name="QA User", age=25, gender="male", interested_in=
         p = tc.post(
             "/profiles/me/photos/confirm",
             headers=u.h,
-            json={"gcs_object_path": f"users/{u.id}/photos/0.jpg", "position": 0},
+            json={"gcs_object_path": f"users/{u.id}/photos/{uuid.uuid4()}.jpg", "position": 0},
         )
         assert p.status_code == 201, p.text
     return r.json()

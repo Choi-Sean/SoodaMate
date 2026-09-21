@@ -52,10 +52,12 @@ async def test_presign_accepts_video_mp4(client, monkeypatch):
 async def test_confirm_photo_derives_media_type_from_extension(client):
     uid, headers = await create_user_with_profile(client, "uploader4@example.com")
 
+    photo_path = f"users/{uid}/photos/{uuid.uuid4()}.jpg"
+    video_path = f"users/{uid}/photos/{uuid.uuid4()}.mp4"
     photo_confirm = await client.post(
         "/profiles/me/photos/confirm",
         headers=headers,
-        json={"gcs_object_path": f"users/{uid}/photos/a.jpg", "position": 1},
+        json={"gcs_object_path": photo_path, "position": 1},
     )
     assert photo_confirm.status_code == 201
     assert photo_confirm.json()["media_type"] == "photo"
@@ -63,15 +65,15 @@ async def test_confirm_photo_derives_media_type_from_extension(client):
     video_confirm = await client.post(
         "/profiles/me/photos/confirm",
         headers=headers,
-        json={"gcs_object_path": f"users/{uid}/photos/b.mp4", "position": 2},
+        json={"gcs_object_path": video_path, "position": 2},
     )
     assert video_confirm.status_code == 201
     assert video_confirm.json()["media_type"] == "video"
 
     me = await client.get("/profiles/me", headers=headers)
     media_types = {p["gcs_object_path"]: p["media_type"] for p in me.json()["photos"]}
-    assert media_types[f"users/{uid}/photos/a.jpg"] == "photo"
-    assert media_types[f"users/{uid}/photos/b.mp4"] == "video"
+    assert media_types[photo_path] == "photo"
+    assert media_types[video_path] == "video"
 
 
 @pytest.mark.asyncio
@@ -112,7 +114,7 @@ async def test_reorder_photos(client):
         resp = await client.post(
             "/profiles/me/photos/confirm",
             headers=headers,
-            json={"gcs_object_path": f"users/{uid}/photos/{pos}.jpg", "position": pos},
+            json={"gcs_object_path": f"users/{uid}/photos/{uuid.uuid4()}.jpg", "position": pos},
         )
         ids.append(resp.json()["id"])
 

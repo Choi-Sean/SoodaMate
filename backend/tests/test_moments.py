@@ -1,10 +1,15 @@
+import uuid
 import pytest
 
 from tests.helpers import create_user_with_profile
 
 
+def _moment_name(n):
+    return uuid.UUID(int=n + 1)
+
+
 def _path(uid, n):
-    return f"users/{uid}/moments/img{n}.jpg"
+    return f"users/{uid}/moments/{_moment_name(n)}.jpg"
 
 
 @pytest.mark.asyncio
@@ -41,8 +46,8 @@ async def test_moments_are_a_rolling_window_of_six(client):
     listing = await client.get("/moments/me", headers=headers)
     paths = [m["image_url"].split("/")[-1] for m in listing.json()]
     assert len(paths) == 6
-    # Newest first, oldest two (img0, img1) pruned.
-    assert paths == ["img7.jpg", "img6.jpg", "img5.jpg", "img4.jpg", "img3.jpg", "img2.jpg"]
+    # Newest first, oldest two (0 and 1) pruned.
+    assert paths == [f"{_moment_name(i)}.jpg" for i in (7, 6, 5, 4, 3, 2)]
 
 
 @pytest.mark.asyncio

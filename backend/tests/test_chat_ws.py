@@ -1,3 +1,4 @@
+import uuid
 from datetime import date
 
 from starlette.testclient import TestClient
@@ -29,7 +30,7 @@ def _signup_and_complete_profile(client: TestClient, email: str, gender: str, in
     client.post(
         "/profiles/me/photos/confirm",
         headers=headers,
-        json={"gcs_object_path": f"users/{tokens['user_id']}/photos/0.jpg", "position": 0},
+        json={"gcs_object_path": f"users/{tokens['user_id']}/photos/{uuid.uuid4()}.jpg", "position": 0},
     )
     return tokens["user_id"], tokens["access_token"]
 

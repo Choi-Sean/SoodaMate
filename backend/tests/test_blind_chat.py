@@ -1,3 +1,4 @@
+import uuid
 import pytest
 
 from tests.helpers import create_user_with_profile
@@ -213,7 +214,7 @@ def test_blind_chat_messaging_open_immediately_no_first_message_gate():
         client.post(
             "/profiles/me/photos/confirm",
             headers=headers,
-            json={"gcs_object_path": f"users/{tokens['user_id']}/photos/0.jpg", "position": 0},
+            json={"gcs_object_path": f"users/{tokens['user_id']}/photos/{uuid.uuid4()}.jpg", "position": 0},
         )
         return tokens["user_id"], tokens["access_token"]
 

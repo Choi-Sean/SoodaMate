@@ -285,7 +285,7 @@ def prof_001(c):
                                                                   preferred_categories=["hobby", "food"]))
     c.eq("put status", r.status_code, 200)
     c.eq("complete before photo", r.json()["is_profile_complete"], False)
-    p = tc.post("/profiles/me/photos/confirm", headers=u.h, json={"gcs_object_path": f"users/{u.id}/photos/0.jpg", "position": 0})
+    p = tc.post("/profiles/me/photos/confirm", headers=u.h, json={"gcs_object_path": f"users/{u.id}/photos/{uuid.uuid4()}.jpg", "position": 0})
     c.eq("photo confirm", p.status_code, 201)
     me = tc.get("/profiles/me", headers=u.h).json()
     c.eq("complete after photo", me["is_profile_complete"], True)
@@ -369,9 +369,9 @@ def prof_006(c):
 def prof_007(c):
     u = H.make_user("photos")
     for pos in range(1, 7):
-        r = tc.post("/profiles/me/photos/confirm", headers=u.h, json={"gcs_object_path": f"users/{u.id}/photos/{pos}.jpg", "position": pos})
+        r = tc.post("/profiles/me/photos/confirm", headers=u.h, json={"gcs_object_path": f"users/{u.id}/photos/{uuid.uuid4()}.jpg", "position": pos})
         c.eq(f"slot {pos}", r.status_code, 201)
-    c.eq("slot 7", tc.post("/profiles/me/photos/confirm", headers=u.h, json={"gcs_object_path": f"users/{u.id}/photos/7.jpg", "position": 7}).status_code, 422)
+    c.eq("slot 7", tc.post("/profiles/me/photos/confirm", headers=u.h, json={"gcs_object_path": f"users/{u.id}/photos/{uuid.uuid4()}.jpg", "position": 7}).status_code, 422)
     photos = sorted(tc.get("/profiles/me", headers=u.h).json()["photos"], key=lambda p: p["position"])
     ids = [p["id"] for p in photos]
     c.eq("7 photos stored", len(ids), 7)

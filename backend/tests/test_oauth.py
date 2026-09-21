@@ -66,18 +66,45 @@ async def test_apple_login_invalid_token_rejected(client, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_google_and_email_signup_with_same_address_link_to_one_account(client, monkeypatch):
+async def test_google_login_never_merges_into_an_unverified_email_account(client, monkeypatch):
+    """The email on an email sign-up (or PUT /account/email) is unverified, so a
+    provider identity carrying the same address must NOT be merged into it —
+    otherwise anyone could squat a victim's address and later receive the
+    victim's own Google sign-in into their account."""
     signup = await client.post("/auth/signup", json={"email": "shared@example.com", "password": "password123"})
     email_user_id = signup.json()["user_id"]
 
     async def fake_verify(token: str) -> ExternalIdentity:
-        return ExternalIdentity(provider_user_id="google-uid-2", email="shared@example.com", raw_claims={})
+        return ExternalIdentity(
+            provider_user_id="google-uid-2", email="shared@example.com", raw_claims={}, email_verified=True
+        )
 
     monkeypatch.setattr(auth_router.google_verifier, "verify", fake_verify)
 
     resp = await client.post("/auth/google", json={"id_token": "whatever"})
     assert resp.status_code == 200
-    assert resp.json()["user_id"] == email_user_id
+    assert resp.json()["user_id"] != email_user_id
+
+
+@pytest.mark.asyncio
+async def test_verified_provider_identities_with_the_same_email_link_to_one_account(client, monkeypatch):
+    async def google_verify(token: str) -> ExternalIdentity:
+        return ExternalIdentity(
+            provider_user_id="google-uid-9", email="both@example.com", raw_claims={}, email_verified=True
+        )
+
+    async def apple_verify(token: str) -> ExternalIdentity:
+        return ExternalIdentity(
+            provider_user_id="apple-uid-9", email="both@example.com", raw_claims={}, email_verified=True
+        )
+
+    monkeypatch.setattr(auth_router.google_verifier, "verify", google_verify)
+    monkeypatch.setattr(auth_router.apple_verifier, "verify", apple_verify)
+
+    first = await client.post("/auth/google", json={"id_token": "x"})
+    second = await client.post("/auth/apple", json={"identity_token": "y"})
+    assert first.status_code == second.status_code == 200
+    assert first.json()["user_id"] == second.json()["user_id"]
 
 
 @pytest.mark.asyncio

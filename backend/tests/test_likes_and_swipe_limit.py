@@ -72,4 +72,4 @@ async def test_matches_include_other_users_photo_url(client):
     assert matches[0]["other_photo_url"] is not None
     # Full host depends on R2_PUBLIC_URL, which isn't set in the test env —
     # just confirm the object path landed in the URL.
-    assert "photos/0.jpg" in matches[0]["other_photo_url"]
+    assert "/photos/" in matches[0]["other_photo_url"]

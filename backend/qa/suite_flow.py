@@ -482,14 +482,15 @@ def chat_002(c):
 
 
 @case("CHAT-003", "Chat", "Input handling", "Empty, whitespace-only, very long, emoji/RTL/HTML messages",
-      "empty and whitespace ignored (not stored); 5000-char message stored intact; emoji/RTL/HTML stored verbatim (clients escape); connection stays alive",
+      "empty and whitespace ignored (not stored); a 2000-char message (the cap) stored intact; a 2500-char one refused; emoji/RTL/HTML stored verbatim (clients escape); connection stays alive",
       "send edge-case messages")
 def chat_003(c):
     a, b, _ = pair("c3")
     mid = H.mutual_match(a, b)
-    long_text = "가" * 5000
+    long_text = "가" * 2000
+    too_long = "나" * 2500
     with tc.websocket_connect(f"/ws/chat?token={b.token}") as wb, tc.websocket_connect(f"/ws/chat?token={a.token}") as wa:
-        for txt in ["", "   ", long_text, "مرحبا 🇰🇷 <script>alert(1)</script>"]:
+        for txt in ["", "   ", long_text, too_long, "مرحبا 🇰🇷 <script>alert(1)</script>"]:
             wb.send_json({"type": "message", "match_id": mid, "content": txt})
         got = [ws_recv(wa, 6), ws_recv(wa, 6)]
         c.eq("long message delivered intact", got[0] and got[0]["content"], long_text)
@@ -554,7 +555,10 @@ def chat_006(c):
         for frame in ({"type": "weird"}, {"type": "message"}, {"type": "message", "match_id": "not-uuid", "content": "x"}, {"type": "read", "match_id": None}, {"type": "call_answer", "call_id": "x"}):
             wb.send_json(frame)
         wb.send_json({"type": "message", "match_id": mid, "content": "after garbage"})
-        time.sleep(1)
+        # each frame is handled one by one against a remote database - wait until it lands instead of a fixed sleep
+        deadline = time.time() + 30
+        while time.time() < deadline and "after garbage" not in [m["content"] for m in tc.get(f"/matches/{mid}/messages", headers=a.h).json()]:
+            time.sleep(1)
     c.eq("API healthy", tc.get("/health").status_code, 200)
     c.ok("valid message after garbage stored", "after garbage" in [m["content"] for m in tc.get(f"/matches/{mid}/messages", headers=a.h).json()])
     survived = True
@@ -593,7 +597,9 @@ def chat_008(c):
         for i in range(5):
             wb.send_json({"type": "message", "match_id": mid, "content": f"p{i}"})
             time.sleep(0.4)
-        time.sleep(1.5)
+        deadline = time.time() + 40
+        while time.time() < deadline and len(tc.get(f"/matches/{mid}/messages", headers=a.h).json()) < 5:
+            time.sleep(1)
     page = tc.get(f"/matches/{mid}/messages?limit=2", headers=a.h).json()
     c.eq("limit 2", len(page), 2)
     oldest = min(m["sent_at"] for m in page)

@@ -1,3 +1,4 @@
+import uuid
 from datetime import date
 
 from starlette.testclient import TestClient
@@ -31,7 +32,7 @@ def _signup_and_complete_profile(
     client.post(
         "/profiles/me/photos/confirm",
         headers=headers,
-        json={"gcs_object_path": f"users/{tokens['user_id']}/photos/0.jpg", "position": 0},
+        json={"gcs_object_path": f"users/{tokens['user_id']}/photos/{uuid.uuid4()}.jpg", "position": 0},
     )
     if preferred_language:
         client.put("/account/language", headers=headers, json={"language": preferred_language})

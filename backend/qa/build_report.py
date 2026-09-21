@@ -20,7 +20,7 @@ KR_CAT = {
     "Auth": "인증/가입", "Profile": "프로필", "Upload": "업로드(R2 실제)", "Verification": "인증(얼굴·전화·재직)",
     "Safety": "안전(차단·신고)", "Admin": "관리자", "Discovery": "탐색(디스커버)", "Matching": "스와이프·매칭",
     "Chat": "채팅·통화", "Blind chat": "블라인드 채팅·AI매칭", "Moments": "모먼트", "Couple stories": "커플 스토리",
-    "Payments": "결제", "Push": "푸시·기기", "Account": "계정", "Security": "보안", "i18n": "다국어(i18n)",
+    "Payments": "결제", "Push": "푸시·기기", "Account": "계정", "Security": "보안", "Ads": "광고", "i18n": "다국어(i18n)",
     "Website": "웹사이트", "Website vs App": "웹↔앱 일치", "UI: App": "화면(앱)", "UI: Admin": "화면(관리자)",
     "UI: Website": "화면(웹사이트)", "Regression (pytest)": "기존 자동회귀(pytest)",
 }
@@ -39,11 +39,11 @@ def by_id(rows):
 
 
 final = OrderedDict()
-for f in ("results_core.json", "results_core_only.json", "results_flow.json", "results_static.json"):
+for f in ("results_core.json", "results_core_only.json", "results_flow.json", "results_static.json", "results_flow_only.json", "results_security2.json", "results_security2_only.json"):
     final.update(by_id(load(f)["results"]))
 
 baseline = OrderedDict()
-for f in ("baseline_core.json", "baseline_flow.json"):
+for f in ("baseline_core.json", "baseline_flow.json", "baseline_security.json"):
     baseline.update(by_id(load(f)["results"]))
 # static baseline = first run (before the website/claim fixes)
 STATIC_BASE = {"CLAIM-001": 50.0, "CLAIM-002": 0.0, "CLAIM-003": 0.0, "CLAIM-005": 50.0}

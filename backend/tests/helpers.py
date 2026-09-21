@@ -91,7 +91,7 @@ async def create_user_with_profile(
     photo_resp = await client.post(
         "/profiles/me/photos/confirm",
         headers=headers,
-        json={"gcs_object_path": f"users/{tokens['user_id']}/photos/0.jpg", "position": 0},
+        json={"gcs_object_path": f"users/{tokens['user_id']}/photos/{uuid.uuid4()}.jpg", "position": 0},
     )
     assert photo_resp.status_code == 201, photo_resp.text
 
