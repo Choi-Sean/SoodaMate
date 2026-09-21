@@ -114,3 +114,27 @@ async def test_phone_verification_works_before_any_profile_exists(client, monkey
 
     me_after = await client.get("/account/me", headers=headers)
     assert me_after.json()["phone_verified"] is True
+
+
+@pytest.mark.asyncio
+async def test_attaching_a_voip_number_to_an_account_is_rejected(client, monkeypatch):
+    import app.routers.verification as verification_router
+    from app.config import settings
+    from app.services import phone_screening
+
+    fake = FakeSmsVerifier()
+    monkeypatch.setattr(verification_router, "sms_verifier", fake)
+
+    async def _voip(_phone_number):
+        return "nonFixedVoip"
+
+    monkeypatch.setattr(phone_screening, "_lookup_line_type", _voip)
+    monkeypatch.setattr(settings, "twilio_account_sid", "ACtest")
+    monkeypatch.setattr(settings, "twilio_auth_token", "token")
+    monkeypatch.setattr(settings, "block_voip_phone_numbers", True)
+
+    _, headers = await create_user_with_profile(client, "phoneverify-voip@example.com")
+    resp = await client.post("/verification/phone/start", headers=headers, json={"phone_number": "+12135550143"})
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == phone_screening.VIRTUAL_NUMBER_DETAIL
+    assert fake.started == []

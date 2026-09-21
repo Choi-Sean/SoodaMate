@@ -88,6 +88,13 @@ class Settings(BaseSettings):
     dev_phone_bypass_numbers: str = ""
     dev_phone_bypass_code: str = ""
 
+    # Rejects internet/VoIP/virtual numbers (Google Voice, TextNow, 070, ...)
+    # at signup via Twilio Lookup Line Type Intelligence (~$0.008 per new
+    # number — see services/phone_screening.py). Escape hatch if it ever
+    # misclassifies real carriers: set BLOCK_VOIP_PHONE_NUMBERS=false. The
+    # free Korean prefix check (+82 must be a 01x mobile) stays on regardless.
+    block_voip_phone_numbers: bool = True
+
     # Claude API (console.anthropic.com > API Keys) — powers LLM-assisted AI
     # Match ranking (llm_match_service.py). Empty means find_ai_match falls
     # back to the deterministic tag-overlap score only, same "degrade, don't

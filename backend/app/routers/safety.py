@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import text
+from sqlalchemy import and_, or_, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.deps import get_current_user
-from app.models.interaction import Report
+from app.models.interaction import Match, Report
 from app.models.user import User
 from app.schemas.safety import BlockRequest, ReportRequest
 
@@ -27,6 +27,21 @@ async def block_user(
     await db.execute(
         text("EXEC sp_UpsertBlock @BlockerId=:blocker_id, @BlockedId=:blocked_id"),
         {"blocker_id": user.id, "blocked_id": body.user_id},
+    )
+    # Blocking must also end any conversation that already exists between the
+    # two — otherwise the blocked person could keep messaging (or calling)
+    # through the old match. chat_service only lets people send into active
+    # matches, so deactivating is enough; list_matches hides blocked pairs.
+    await db.execute(
+        update(Match)
+        .where(
+            or_(
+                and_(Match.user_a_id == user.id, Match.user_b_id == body.user_id),
+                and_(Match.user_a_id == body.user_id, Match.user_b_id == user.id),
+            ),
+            Match.is_active,
+        )
+        .values(is_active=False)
     )
     await db.commit()
 

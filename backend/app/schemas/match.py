@@ -68,6 +68,12 @@ class BlindChatQueueRequest(BaseModel):
     max_age: int | None = None
     max_distance_km: int | None = None
 
+    @model_validator(mode="after")
+    def _age_range_must_be_ordered(self) -> "BlindChatQueueRequest":
+        if self.min_age is not None and self.max_age is not None and self.min_age > self.max_age:
+            raise ValueError("min_age cannot be greater than max_age")
+        return self
+
 
 class BlindChatQueueStatusOut(BaseModel):
     """status is "waiting" (still in the queue), "matched" (paired within
@@ -101,6 +107,12 @@ class AiMatchRequest(BaseModel):
     min_age: int | None = None
     max_age: int | None = None
     max_distance_km: int | None = None
+
+    @model_validator(mode="after")
+    def _age_range_must_be_ordered(self) -> "AiMatchRequest":
+        if self.min_age is not None and self.max_age is not None and self.min_age > self.max_age:
+            raise ValueError("min_age cannot be greater than max_age")
+        return self
 
 
 class AiMatchOut(BaseModel):

@@ -23,6 +23,8 @@ async def my_moments(
 async def create_moment(
     body: MomentCreate, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
 ) -> MomentOut:
+    if not body.image_object_path.startswith(f"users/{user.id}/moments/"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid object path")
     return await moment_service.create_moment(db, user.id, body.image_object_path, body.caption)
 
 

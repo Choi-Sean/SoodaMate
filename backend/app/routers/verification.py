@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -79,6 +81,10 @@ async def submit_face_verification(
     for path in (body.selfie_object_path, body.id_photo_object_path):
         if not path.startswith(f"verifications/{user.id}/"):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid object path")
+        # ...and the file must really be in storage, otherwise the reviewer
+        # would see broken images and the user would sit in "pending" forever.
+        if not await asyncio.to_thread(storage_service.object_exists, path):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "photo was not uploaded")
 
     # A fresh submission always resets to pending, including re-submitting
     # after a rejection — one row per user, not an accumulating history.

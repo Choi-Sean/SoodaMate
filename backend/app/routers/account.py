@@ -1,3 +1,5 @@
+import asyncio
+import logging
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -11,9 +13,11 @@ from app.deps import get_current_user
 from app.models.couple_story import CoupleStoryReport
 from app.models.interaction import Block, Match, Report, Swipe
 from app.models.user import User
-from app.services import payment_service
+from app.services import payment_service, storage_service
 
 router = APIRouter(prefix="/account", tags=["account"])
+
+logger = logging.getLogger(__name__)
 
 
 class CancelSubscriptionOut(BaseModel):
@@ -111,5 +115,17 @@ async def delete_my_account(
     await db.execute(delete(Block).where(or_(Block.blocker_id == user.id, Block.blocked_id == user.id)))
     await db.execute(delete(Report).where(or_(Report.reporter_id == user.id, Report.reported_id == user.id)))
     await db.execute(delete(CoupleStoryReport).where(CoupleStoryReport.reporter_id == user.id))
+    user_id = user.id
     await db.delete(user)
     await db.commit()
+
+    # The delete-account page promises photos are permanently removed, and
+    # face-verification selfies / ID photos are the most sensitive files we
+    # hold - so wipe the user's whole storage folders too (profile photos,
+    # chat images, moments, story photos, verification uploads). Best-effort:
+    # the account is already gone, so a storage hiccup must not fail the request.
+    for prefix in (f"users/{user_id}/", f"verifications/{user_id}/"):
+        try:
+            await asyncio.to_thread(storage_service.delete_prefix, prefix)
+        except Exception:  # noqa: BLE001
+            logger.error("could not delete stored files under %s after account deletion", prefix, exc_info=True)

@@ -98,3 +98,41 @@ def build_admin_view_url(object_path: str) -> str:
         Params={"Bucket": settings.r2_bucket_name, "Key": object_path},
         ExpiresIn=10 * 60,
     )
+
+
+def object_exists(object_path: str) -> bool:
+    """True if the object is really in the bucket - used to reject a
+    submission that references a file the client never actually uploaded."""
+    from botocore.exceptions import ClientError
+
+    try:
+        _get_client().head_object(Bucket=settings.r2_bucket_name, Key=object_path)
+        return True
+    except ClientError as exc:
+        if exc.response.get("Error", {}).get("Code") in ("404", "NoSuchKey", "NotFound"):
+            return False
+        raise
+
+
+def delete_object(object_path: str) -> None:
+    _get_client().delete_object(Bucket=settings.r2_bucket_name, Key=object_path)
+
+
+def delete_prefix(prefix: str) -> int:
+    """Deletes every object under `prefix` (e.g. "users/<id>/"). Used when an
+    account is deleted so profile photos and face-verification ID photos don't
+    outlive the user. Returns how many objects were removed."""
+    client = _get_client()
+    deleted = 0
+    token = None
+    while True:
+        kwargs = {"Bucket": settings.r2_bucket_name, "Prefix": prefix}
+        if token:
+            kwargs["ContinuationToken"] = token
+        resp = client.list_objects_v2(**kwargs)
+        for obj in resp.get("Contents", []) or []:
+            client.delete_object(Bucket=settings.r2_bucket_name, Key=obj["Key"])
+            deleted += 1
+        if not resp.get("IsTruncated"):
+            return deleted
+        token = resp.get("NextContinuationToken")

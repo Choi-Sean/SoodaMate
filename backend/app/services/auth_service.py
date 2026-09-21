@@ -13,6 +13,7 @@ from app.core.security import create_token, decode_token, hash_password, verify_
 from app.core.sms_verifier_base import SmsVerifier
 from app.models.user import AuthProvider, User
 from app.schemas.auth import TokenResponse
+from app.services import phone_screening
 
 
 def _is_dev_bypass_number(phone_number: str) -> bool:
@@ -104,14 +105,23 @@ async def login_or_signup_with_provider(
     return issue_tokens(user.id)
 
 
-async def start_phone_auth(verifier: SmsVerifier, phone_number: str) -> None:
+async def start_phone_auth(db: AsyncSession, verifier: SmsVerifier, phone_number: str) -> None:
     """Unauthenticated — unlike sms_verification_service.start_phone_verification
     (which attaches a phone to an already-logged-in account), this *is* the
-    login/signup entry point, so there's no existing user to check against
-    yet. Twilio Verify's own per-number rate limiting is the abuse guard."""
+    login/signup entry point. Twilio Verify's own per-number rate limiting is
+    the abuse guard; on top of that, a number that isn't already a verified
+    account must be a real mobile line (no VoIP/virtual) before we spend an
+    SMS on it. Existing accounts skip that check so a later misclassification
+    can never lock a returning user out."""
     phone_number = normalize_e164(phone_number)
     if _is_dev_bypass_number(phone_number):
         return
+
+    existing_user_id = await db.scalar(
+        select(User.id).where(User.phone_number == phone_number, User.phone_verified_at.is_not(None))
+    )
+    if existing_user_id is None:
+        await phone_screening.assert_real_mobile_number(phone_number)
     await verifier.start(phone_number)
 
 
@@ -141,9 +151,12 @@ async def login_or_signup_with_phone(
 
     user = User(phone_number=phone_number, phone_verified_at=datetime.now(timezone.utc))
     db.add(user)
-    await db.flush()
-    db.add(AuthProvider(user_id=user.id, provider="phone", provider_user_id=None))
     try:
+        # The INSERT actually runs at flush, so the unique-index race
+        # (double-tap / two devices confirming the same number at once) has
+        # to be caught around the flush as well as the commit.
+        await db.flush()
+        db.add(AuthProvider(user_id=user.id, provider="phone", provider_user_id=None))
         await db.commit()
     except IntegrityError:
         # Race: two confirms for the same number landed concurrently (e.g. a

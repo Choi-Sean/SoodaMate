@@ -37,6 +37,8 @@ async def _handle_message(db: AsyncSession, user: User, data: dict) -> None:
         return
     if message_type == "image" and not image_object_path:
         return
+    if message_type == "image" and not str(image_object_path).startswith(f"users/{user.id}/chat/"):
+        return
     try:
         match_id = uuid.UUID(data["match_id"])
     except (KeyError, ValueError, TypeError):

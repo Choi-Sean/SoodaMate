@@ -2,10 +2,10 @@ import uuid
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
-from sqlalchemy import and_, func, or_, select, text, update
+from sqlalchemy import and_, exists, func, or_, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.interaction import Match, Swipe
+from app.models.interaction import Block, Match, Swipe
 from app.models.profile import Photo, Profile
 from app.models.user import User
 from app.schemas.match import MatchOut, SwipeLimitOut, SwipeResponse
@@ -275,10 +275,18 @@ async def list_matches(db: AsyncSession, user_id: uuid.UUID) -> list[MatchOut]:
     # list renders them as a distinct grayed-out "Expired" row instead of
     # dropping them, so a match that timed out is still visible history,
     # just no longer chattable (chat_service blocks sending into it).
+    # A blocked pair (either direction) never shows up in the chat list.
+    blocked_pair = exists().where(
+        or_(
+            and_(Block.blocker_id == Match.user_a_id, Block.blocked_id == Match.user_b_id),
+            and_(Block.blocker_id == Match.user_b_id, Block.blocked_id == Match.user_a_id),
+        )
+    )
     rows = (
         await db.execute(
             select(Match).where(
                 or_(Match.user_a_id == user_id, Match.user_b_id == user_id),
+                ~blocked_pair,
             ).order_by(Match.is_active.desc(), Match.matched_at.desc())
         )
     ).scalars().all()

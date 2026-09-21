@@ -59,8 +59,8 @@ async def apple_login(body: AppleAuthRequest, db: AsyncSession = Depends(get_db)
 # /verification/phone/* (app/routers/verification.py), which attaches a
 # phone number to an *already-logged-in* account instead of authenticating.
 @router.post("/phone/start", status_code=204)
-async def start_phone_auth(body: PhoneAuthStartRequest) -> None:
-    await auth_service.start_phone_auth(sms_verifier, body.phone_number)
+async def start_phone_auth(body: PhoneAuthStartRequest, db: AsyncSession = Depends(get_db)) -> None:
+    await auth_service.start_phone_auth(db, sms_verifier, body.phone_number)
 
 
 @router.post("/phone/confirm", response_model=PhoneAuthResponse)

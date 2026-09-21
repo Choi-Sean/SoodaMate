@@ -50,12 +50,12 @@ async def test_presign_accepts_video_mp4(client, monkeypatch):
 
 @pytest.mark.asyncio
 async def test_confirm_photo_derives_media_type_from_extension(client):
-    _, headers = await create_user_with_profile(client, "uploader4@example.com")
+    uid, headers = await create_user_with_profile(client, "uploader4@example.com")
 
     photo_confirm = await client.post(
         "/profiles/me/photos/confirm",
         headers=headers,
-        json={"gcs_object_path": "users/x/photos/a.jpg", "position": 1},
+        json={"gcs_object_path": f"users/{uid}/photos/a.jpg", "position": 1},
     )
     assert photo_confirm.status_code == 201
     assert photo_confirm.json()["media_type"] == "photo"
@@ -63,15 +63,15 @@ async def test_confirm_photo_derives_media_type_from_extension(client):
     video_confirm = await client.post(
         "/profiles/me/photos/confirm",
         headers=headers,
-        json={"gcs_object_path": "users/x/photos/b.mp4", "position": 2},
+        json={"gcs_object_path": f"users/{uid}/photos/b.mp4", "position": 2},
     )
     assert video_confirm.status_code == 201
     assert video_confirm.json()["media_type"] == "video"
 
     me = await client.get("/profiles/me", headers=headers)
     media_types = {p["gcs_object_path"]: p["media_type"] for p in me.json()["photos"]}
-    assert media_types["users/x/photos/a.jpg"] == "photo"
-    assert media_types["users/x/photos/b.mp4"] == "video"
+    assert media_types[f"users/{uid}/photos/a.jpg"] == "photo"
+    assert media_types[f"users/{uid}/photos/b.mp4"] == "video"
 
 
 @pytest.mark.asyncio
@@ -105,14 +105,14 @@ async def test_display_name_locked_after_initial_creation(client):
 
 @pytest.mark.asyncio
 async def test_reorder_photos(client):
-    _, headers = await create_user_with_profile(client, "reorder@example.com")
+    uid, headers = await create_user_with_profile(client, "reorder@example.com")
 
     ids = []
     for pos in range(3):
         resp = await client.post(
             "/profiles/me/photos/confirm",
             headers=headers,
-            json={"gcs_object_path": f"users/x/photos/{pos}.jpg", "position": pos},
+            json={"gcs_object_path": f"users/{uid}/photos/{pos}.jpg", "position": pos},
         )
         ids.append(resp.json()["id"])
 

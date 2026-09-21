@@ -2,7 +2,7 @@ import json
 import uuid
 from datetime import date, datetime, timezone
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
 from app.schemas.moment import MomentOut
 from app.services.storage_service import build_public_url
@@ -90,6 +90,12 @@ class ProfileUpdate(BaseModel):
     # comma-separated storage as interests/languages.
     preferred_categories: list[str] = Field(default_factory=list)
     mbti: str | None = Field(default=None, pattern="^[EI][SN][TF][JP]$")
+
+    @model_validator(mode="after")
+    def _age_range_must_be_ordered(self) -> "ProfileUpdate":
+        if self.min_age_pref > self.max_age_pref:
+            raise ValueError("min_age_pref cannot be greater than max_age_pref")
+        return self
 
 
 class ProfileOut(BaseModel):
@@ -273,6 +279,12 @@ class AgeFilterUpdate(BaseModel):
 
     min_age_pref: int = Field(default=18, ge=18, le=99)
     max_age_pref: int = Field(default=99, ge=18, le=99)
+
+    @model_validator(mode="after")
+    def _age_range_must_be_ordered(self) -> "AgeFilterUpdate":
+        if self.min_age_pref > self.max_age_pref:
+            raise ValueError("min_age_pref cannot be greater than max_age_pref")
+        return self
 
 
 class BasicFilterUpdate(BaseModel):

@@ -2,6 +2,7 @@ import asyncio
 import os
 import sys
 
+import pytest
 import pytest_asyncio
 from dotenv import load_dotenv
 from httpx import ASGITransport, AsyncClient, Response
@@ -28,6 +29,7 @@ if "TEST_DATABASE_URL" in os.environ:
 
 from app.database import engine  # noqa: E402  (must import after env vars are set)
 from app.main import app  # noqa: E402
+from app.services import phone_screening  # noqa: E402
 from tests.helpers import cleanup_tracked_test_users, track_test_user  # noqa: E402
 
 # Endpoints that can create a brand-new user (see app/routers/auth.py).
@@ -75,6 +77,18 @@ async def _cleanup_real_writes():
     # Each test gets a fresh event loop (pytest-asyncio, function scope); the
     # pooled connections must not outlive it or the driver's teardown crashes.
     await engine.dispose()
+
+
+@pytest.fixture(autouse=True)
+def _no_real_twilio_lookup(monkeypatch):
+    """backend/.env carries real Twilio credentials, so without this every
+    phone-auth test would send a real (billed) Lookup request for its made-up
+    number. Tests that exercise the VoIP filter override this themselves."""
+
+    async def _unknown(_phone_number):
+        return None
+
+    monkeypatch.setattr(phone_screening, "_lookup_line_type", _unknown)
 
 
 @pytest_asyncio.fixture

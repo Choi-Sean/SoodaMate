@@ -3,12 +3,11 @@
 to be a plain string baked in at send time on the server; the client's own
 i18next instance never gets a chance to translate it the way in-app text
 does, so this is the one place server-side "content" needs its own
-translations. Only en/ko are hand-translated (mirroring what's actually
-been requested); an unsupported preferred_language (es/zh/ja, or anything
-unrecognized) falls back to English — same convention as the mobile app's
-own i18next fallbackLng="en"."""
+translations. All five app languages (en/ko/es/zh/ja) are covered; an
+unrecognized preferred_language falls back to English — same convention as
+the mobile app's own i18next fallbackLng="en"."""
 
-SUPPORTED_PUSH_LANGUAGES = ("en", "ko")
+SUPPORTED_PUSH_LANGUAGES = ("en", "ko", "es", "zh", "ja")
 
 _STRINGS: dict[str, dict[str, str]] = {
     "en": {
@@ -60,6 +59,81 @@ _STRINGS: dict[str, dict[str, str]] = {
         "blind_reveal_accepted_body": "이제 서로의 프로필을 볼 수 있어요.",
         "promo_title": "🎉 {product} {discount}% 할인!",
         "promo_body": "지금 한정 할인 중이에요 — 놓치지 마세요.",
+    },
+    "es": {
+        "match_title": "¡Es un match! 🎉",
+        "match_body": "Tienes un nuevo match en SooDaMate",
+        "like_title": "¡Nuevo like! 💛",
+        "like_body": "Alguien te dio like en SooDaMate",
+        "superlike_title": "¡Super Like! ⭐",
+        "superlike_body": "Alguien te dio un super like en SooDaMate",
+        "message_body": "te envió un mensaje",
+        "photo_message_body": "te envió una foto",
+        "verification_approved_title": "¡Estás verificado! ✅",
+        "verification_approved_body": "Tu insignia de verificación ya es visible en tu perfil.",
+        "verification_rejected_title": "La verificación necesita otro intento",
+        "verification_rejected_body": "Tu solicitud no fue aprobada: abre la app para ver el motivo.",
+        "couple_story_request_body": "quiere compartir vuestra historia de pareja: échale un vistazo",
+        "couple_story_published_title": "¡Tu historia de pareja ya está publicada! 💕",
+        "couple_story_published_body": "Tu historia ya es visible en el feed de la comunidad de SooDaMate.",
+        "blind_matched_title": "¡Ya tienes pareja de chat! 💬",
+        "blind_matched_body": "Alguien con intereses en común está listo para charlar.",
+        "blind_reveal_requested_title": "Quieren revelar los perfiles",
+        "blind_reveal_requested_body": "Abre el chat para aceptar o seguir conversando de forma anónima.",
+        "blind_reveal_accepted_title": "¡Perfiles revelados! 🎉",
+        "blind_reveal_accepted_body": "Ya podéis ver el perfil del otro.",
+        "promo_title": "🎉 ¡{discount}% de descuento en {product}!",
+        "promo_body": "Descuento por tiempo limitado: tócalo antes de que se acabe.",
+    },
+    "zh": {
+        "match_title": "配对成功！🎉",
+        "match_body": "你在 SooDaMate 有了新的配对",
+        "like_title": "收到新的喜欢！💛",
+        "like_body": "有人在 SooDaMate 喜欢了你",
+        "superlike_title": "超级喜欢！⭐",
+        "superlike_body": "有人在 SooDaMate 超级喜欢了你",
+        "message_body": "给你发来了消息",
+        "photo_message_body": "给你发来了一张照片",
+        "verification_approved_title": "认证成功！✅",
+        "verification_approved_body": "认证徽章已显示在你的个人资料上。",
+        "verification_rejected_title": "认证需要重新提交",
+        "verification_rejected_body": "你提交的认证未通过——打开应用查看原因。",
+        "couple_story_request_body": "想和你一起分享情侣故事——快来看看",
+        "couple_story_published_title": "你的情侣故事已发布！💕",
+        "couple_story_published_body": "你的故事现已显示在 SooDaMate 社区动态中。",
+        "blind_matched_title": "已为你配对！💬",
+        "blind_matched_body": "有共同兴趣的人已准备好聊天。",
+        "blind_reveal_requested_title": "对方想公开个人资料",
+        "blind_reveal_requested_body": "打开聊天来同意，或继续匿名聊天。",
+        "blind_reveal_accepted_title": "资料已公开！🎉",
+        "blind_reveal_accepted_body": "现在你们可以互相查看个人资料了。",
+        "promo_title": "🎉 {product} 限时{discount}%折扣！",
+        "promo_body": "限时优惠——趁还没结束快来抢购。",
+    },
+    "ja": {
+        "match_title": "マッチしました！🎉",
+        "match_body": "SooDaMateで新しいマッチがあります",
+        "like_title": "新しいいいね！💛",
+        "like_body": "SooDaMateで誰かがあなたにいいねしました",
+        "superlike_title": "スーパーいいね！⭐",
+        "superlike_body": "SooDaMateで誰かがあなたにスーパーいいねしました",
+        "message_body": "メッセージを送りました",
+        "photo_message_body": "写真を送りました",
+        "verification_approved_title": "認証完了！✅",
+        "verification_approved_body": "プロフィールに認証バッジが表示されました。",
+        "verification_rejected_title": "認証をやり直してください",
+        "verification_rejected_body": "提出した認証は承認されませんでした — アプリで理由を確認してください。",
+        "couple_story_request_body": "カップルストーリーを一緒に投稿したいそうです — 確認してみましょう",
+        "couple_story_published_title": "カップルストーリーが公開されました！💕",
+        "couple_story_published_body": "SooDaMateのコミュニティフィードにストーリーが表示されています。",
+        "blind_matched_title": "お相手が見つかりました！💬",
+        "blind_matched_body": "共通の興味を持つ方とチャットを始められます。",
+        "blind_reveal_requested_title": "プロフィールの公開を希望しています",
+        "blind_reveal_requested_body": "チャットで承認するか、そのまま匿名で会話を続けましょう。",
+        "blind_reveal_accepted_title": "プロフィールが公開されました！🎉",
+        "blind_reveal_accepted_body": "お互いのプロフィールが見られるようになりました。",
+        "promo_title": "🎉 {product}が{discount}%オフ！",
+        "promo_body": "期間限定割引 — なくなる前にタップしてゲット。",
     },
 }
 

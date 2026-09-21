@@ -1,4 +1,6 @@
 import json
+import asyncio
+import logging
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -26,6 +28,20 @@ from app.services import moment_service, storage_service
 from app.services.payment_service import is_premium_member
 
 router = APIRouter(prefix="/profiles", tags=["profiles"])
+
+logger = logging.getLogger(__name__)
+
+
+async def _delete_stored_object(user_id, object_path: str) -> None:
+    """Best-effort removal of a replaced/deleted photo from the bucket. Only
+    ever touches the caller's own users/<id>/ folder, and never fails the
+    request (the DB row is already gone)."""
+    if not object_path.startswith(f"users/{user_id}/"):
+        return
+    try:
+        await asyncio.to_thread(storage_service.delete_object, object_path)
+    except Exception:  # noqa: BLE001
+        logger.warning("could not delete stored object %s", object_path, exc_info=True)
 
 
 async def _load_profile_out(db: AsyncSession, user_id) -> ProfileOut:
@@ -106,12 +122,21 @@ async def confirm_photo(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> PhotoOut:
+    # The path comes from the client, so make sure it points into the caller's
+    # own storage folder (what /uploads/presign hands out), not at someone
+    # else's file.
+    if not body.gcs_object_path.startswith(f"users/{user.id}/"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid object path")
+
     media_type = storage_service.media_type_from_object_path(body.gcs_object_path)
 
     existing = await db.scalar(
         select(Photo).where(Photo.user_id == user.id, Photo.position == body.position)
     )
+    replaced_path: str | None = None
     if existing is not None:
+        if existing.gcs_object_path != body.gcs_object_path:
+            replaced_path = existing.gcs_object_path
         existing.gcs_object_path = body.gcs_object_path
         existing.media_type = media_type
         photo = existing
@@ -131,6 +156,8 @@ async def confirm_photo(
 
     await db.commit()
     await db.refresh(photo)
+    if replaced_path:
+        await _delete_stored_object(user.id, replaced_path)
     return PhotoOut.model_validate(photo)
 
 
@@ -177,8 +204,10 @@ async def delete_photo(
     remaining = await db.scalar(select(func.count()).select_from(Photo).where(Photo.user_id == user.id))
     if remaining <= 1:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "at least one photo is required")
+    object_path = photo.gcs_object_path
     await db.delete(photo)
     await db.commit()
+    await _delete_stored_object(user.id, object_path)
 
 
 @router.post("/me/incognito", response_model=ProfileOut)

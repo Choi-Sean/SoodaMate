@@ -41,6 +41,8 @@ async def create_story(
     match = await couple_story_service.get_match_for_participant(db, body.match_id, user.id)
     if match is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "match not found")
+    if body.photo_object_path and not body.photo_object_path.startswith(f"users/{user.id}/stories/"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid object path")
 
     existing = await db.scalar(select(CoupleStory).where(CoupleStory.match_id == body.match_id))
     if existing is not None:

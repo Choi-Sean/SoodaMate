@@ -68,6 +68,9 @@ async def test_face_verification_submit_and_admin_approve_flow(client, monkeypat
         "generate_upload_url",
         lambda object_path, content_type: f"https://fake.r2.cloudflarestorage.com/{object_path}",
     )
+    # The submit endpoint now checks the uploaded files really exist in storage;
+    # these tests never upload anything, so pretend they do.
+    monkeypatch.setattr(verification_router.storage_service, "object_exists", lambda path: True)
 
     user_id, headers = await create_user_with_profile(client, "faceverify1@example.com")
 
@@ -148,6 +151,9 @@ async def test_face_verification_reject_clears_badge(client, monkeypatch):
         "generate_upload_url",
         lambda object_path, content_type: f"https://fake.r2.cloudflarestorage.com/{object_path}",
     )
+    # The submit endpoint now checks the uploaded files really exist in storage;
+    # these tests never upload anything, so pretend they do.
+    monkeypatch.setattr(verification_router.storage_service, "object_exists", lambda path: True)
     import app.schemas.verification as verification_schemas
 
     monkeypatch.setattr(
@@ -204,6 +210,9 @@ async def test_verification_result_push_uses_recipient_language(client, monkeypa
         "generate_upload_url",
         lambda object_path, content_type: f"https://fake.r2.cloudflarestorage.com/{object_path}",
     )
+    # The submit endpoint now checks the uploaded files really exist in storage;
+    # these tests never upload anything, so pretend they do.
+    monkeypatch.setattr(verification_router.storage_service, "object_exists", lambda path: True)
 
     user_id, headers = await create_user_with_profile(client, "faceverifylang@example.com")
     lang_resp = await client.put("/account/language", headers=headers, json={"language": "ko"})

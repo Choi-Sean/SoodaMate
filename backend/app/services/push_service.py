@@ -170,8 +170,8 @@ async def send_promo_broadcast_notification(db: AsyncSession, product_id: str, d
     other send_*_notification above, since a discount is store-wide. Loops
     per-user (not a single FCM multicast) so each person still gets the
     title/body AND the product name itself in their own preferred_language
-    (push_i18n only hand-translates en/ko — see its own docstring — so
-    anyone else falls back to English, same as every other push)."""
+    (push_i18n covers all five app languages; an unknown language falls
+    back to English, same as every other push)."""
     from app.services.payment_service import PRODUCTS, _localized_product_name
 
     product = PRODUCTS.get(product_id)
@@ -181,7 +181,7 @@ async def send_promo_broadcast_notification(db: AsyncSession, product_id: str, d
     user_ids = (await db.execute(select(PushToken.user_id).distinct())).scalars().all()
     for user_id in user_ids:
         lang = await _get_language(db, user_id)
-        product_name = _localized_product_name(product_id, product, lang if lang in ("ko", "en") else "en")
+        product_name = _localized_product_name(product_id, product, lang if lang in push_i18n.SUPPORTED_PUSH_LANGUAGES else "en")
         await send_to_user(
             db,
             user_id,

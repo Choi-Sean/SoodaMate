@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.phone import normalize_e164
 from app.core.sms_verifier_base import SmsVerifier
 from app.models.user import User
+from app.services import phone_screening
 
 
 async def start_phone_verification(
@@ -26,6 +27,7 @@ async def start_phone_verification(
     if taken is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, "this phone number is already verified on another account")
 
+    await phone_screening.assert_real_mobile_number(phone_number)
     await verifier.start(phone_number)
 
 
