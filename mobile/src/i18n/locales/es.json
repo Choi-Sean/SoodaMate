@@ -536,6 +536,10 @@
     "subtitle": "Solo tu número de teléfono, nada más",
     "codeSubtitle": "Ingresa el código que te enviamos por SMS",
     "invalidNumber": "Ingresa un número de teléfono válido",
+    "virtualNumberNotAllowed": "No se admiten números de internet (VoIP) ni virtuales. Usa un número de móvil real de una operadora.",
+    "incorrectCode": "El código es incorrecto o ha caducado. Revísalo e inténtalo de nuevo.",
+    "accountDisabled": "Esta cuenta ha sido restringida. Contacta con soporte si necesitas ayuda.",
+    "sendFailed": "No pudimos enviar el código. Revisa el número e inténtalo de nuevo en un momento.",
     "codeExpiresIn": "El código vence en {{time}}",
     "codeExpired": "Tu código ha vencido. Solicita uno nuevo.",
     "resendCode": "Reenviar código"

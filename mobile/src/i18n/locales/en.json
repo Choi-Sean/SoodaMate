@@ -536,6 +536,10 @@
     "subtitle": "Just your phone number — nothing else needed",
     "codeSubtitle": "Enter the code we texted you",
     "invalidNumber": "Please enter a valid phone number",
+    "virtualNumberNotAllowed": "Internet (VoIP) and virtual numbers aren't supported. Please use a real mobile number from a carrier.",
+    "incorrectCode": "That code is incorrect or has expired. Please check it and try again.",
+    "accountDisabled": "This account has been restricted. Please contact support if you need help.",
+    "sendFailed": "We couldn't send the code. Check the number and try again in a moment.",
     "codeExpiresIn": "Code expires in {{time}}",
     "codeExpired": "Your code has expired. Please request a new one.",
     "resendCode": "Resend code"

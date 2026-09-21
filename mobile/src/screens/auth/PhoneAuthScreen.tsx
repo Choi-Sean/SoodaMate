@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import * as authApi from "../../api/auth";
 import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../theme";
+import { phoneErrorMessage } from "../../utils/phoneErrors";
 
 type Country = "KR" | "US";
 
@@ -106,7 +107,7 @@ export default function PhoneAuthScreen() {
       await authApi.startPhoneAuth(e164);
       setStep("code");
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));
+      setError(phoneErrorMessage(e, t));
     } finally {
       setSending(false);
     }
@@ -119,7 +120,7 @@ export default function PhoneAuthScreen() {
       const result = await authApi.confirmPhoneAuth(e164, code.trim());
       await login(result);
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));
+      setError(phoneErrorMessage(e, t));
     } finally {
       setConfirming(false);
     }
@@ -133,7 +134,7 @@ export default function PhoneAuthScreen() {
       setCode("");
       setCodeSentAt((n) => n + 1);
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));
+      setError(phoneErrorMessage(e, t));
     } finally {
       setSending(false);
     }

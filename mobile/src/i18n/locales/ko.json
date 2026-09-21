@@ -536,6 +536,10 @@
     "subtitle": "전화번호만으로 간편하게 시작해요",
     "codeSubtitle": "문자로 받은 인증 코드를 입력해주세요",
     "invalidNumber": "올바른 전화번호를 입력해주세요",
+    "virtualNumberNotAllowed": "인터넷 전화·가상번호는 사용할 수 없어요. 통신사에 가입된 실제 휴대폰 번호를 입력해주세요.",
+    "incorrectCode": "인증번호가 올바르지 않거나 만료됐어요. 다시 확인해주세요.",
+    "accountDisabled": "이용이 제한된 계정이에요. 문의가 필요하면 고객센터로 연락해주세요.",
+    "sendFailed": "인증번호를 보내지 못했어요. 번호를 확인하고 잠시 후 다시 시도해주세요.",
     "codeExpiresIn": "인증번호 유효시간: {{time}}",
     "codeExpired": "인증번호가 만료됐어요. 다시 받아주세요.",
     "resendCode": "인증번호 재전송"

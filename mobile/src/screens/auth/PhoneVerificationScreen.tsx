@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { startPhoneVerification, confirmPhoneVerification } from "../../api/verification";
 import { colors } from "../../theme";
+import { phoneErrorMessage } from "../../utils/phoneErrors";
 
 interface Props {
   onVerified: () => void;
@@ -44,7 +45,7 @@ export default function PhoneVerificationScreen({ onVerified }: Props) {
       await startPhoneVerification(e164);
       setStep("code");
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));
+      setError(phoneErrorMessage(e, t));
     } finally {
       setSending(false);
     }
@@ -57,7 +58,7 @@ export default function PhoneVerificationScreen({ onVerified }: Props) {
       await confirmPhoneVerification(e164, code.trim());
       onVerified();
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? e?.message ?? t("common.somethingWentWrong"));
+      setError(phoneErrorMessage(e, t));
     } finally {
       setConfirming(false);
     }
