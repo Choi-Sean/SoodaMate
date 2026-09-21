@@ -77,3 +77,39 @@ async def test_update_email_rejects_email_already_in_use(client):
 
     resp = await client.put("/account/email", headers=headers2, json={"email": "emailupdate3@example.com"})
     assert resp.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_age_restricted_report_disables_the_account_for_good(client, monkeypatch):
+    """The app calls this the moment a sign-up picks a birth date under 18: the
+    account is switched off, so its token stops working and the same phone
+    number can't log in again to retry with another birth date."""
+    import app.routers.auth as auth_router
+    from tests.helpers import track_test_user
+
+    class _Sms:
+        async def start(self, phone_number):
+            pass
+
+        async def check(self, phone_number, code):
+            return code == "123456"
+
+    monkeypatch.setattr(auth_router, "sms_verifier", _Sms())
+    phone = "+821098770001"
+    first = await client.post("/auth/phone/confirm", json={"phone_number": phone, "code": "123456"})
+    assert first.status_code == 200
+    track_test_user(first.json()["user_id"])
+    headers = {"Authorization": f"Bearer {first.json()['access_token']}"}
+
+    resp = await client.post("/account/age-restricted", headers=headers)
+    assert resp.status_code == 204
+
+    assert (await client.get("/account/me", headers=headers)).status_code in (401, 403)
+    retry = await client.post("/auth/phone/confirm", json={"phone_number": phone, "code": "123456"})
+    assert retry.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_age_restricted_requires_login(client):
+    resp = await client.post("/account/age-restricted")
+    assert resp.status_code in (401, 403)

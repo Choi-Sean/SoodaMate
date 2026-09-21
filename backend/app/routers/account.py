@@ -94,6 +94,21 @@ async def cancel_subscription(
     return CancelSubscriptionOut(premium_until=premium_until)
 
 
+@router.post("/age-restricted", status_code=204)
+async def report_underage(
+    db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
+) -> None:
+    """Called by the app the moment a sign-up enters a birth date that makes
+    the person younger than 18. The account is switched off, so the same phone
+    number can't simply retry with a different birth date: every later login
+    is refused as a disabled account (support can reactivate someone who
+    mistyped). The profile-write endpoint independently rejects under-18 birth
+    dates (schemas/profile.py), so this is the "and don't let them try again"
+    half of the age gate."""
+    user.is_active = False
+    await db.commit()
+
+
 @router.delete("/me", status_code=204)
 async def delete_my_account(
     db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
