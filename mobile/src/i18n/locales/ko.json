@@ -55,6 +55,8 @@
     "day": "일",
     "nameRequired": "이름(실명)을 입력해주세요",
     "birthDateRequired": "생년월일을 선택해주세요",
+    "ageConfirm": "만 18세 이상임을 확인합니다",
+    "ageConfirmRequired": "계속하려면 만 18세 이상임을 확인해주세요",
     "bioRequired": "자기소개를 입력해주세요",
     "iAm": "저는",
     "interestedIn": "관심 있는 성별",
@@ -531,6 +533,11 @@
     "codePlaceholder": "인증 코드",
     "confirm": "인증하기",
     "changeNumber": "번호 다시 입력하기"
+  },
+  "ageBlocked": {
+    "title": "만 18세 이상만 이용할 수 있어요",
+    "body": "수다메이트는 성인만 이용할 수 있는 서비스예요. 이 번호로는 가입을 진행할 수 없어요. 생년월일을 잘못 입력했다면 support@soodamate.com 으로 문의해주세요.",
+    "button": "확인"
   },
   "phoneAuth": {
     "subtitle": "전화번호만으로 간편하게 시작해요",

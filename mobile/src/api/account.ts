@@ -4,6 +4,12 @@ export async function deleteAccount(): Promise<void> {
   await apiClient.delete("/account/me");
 }
 
+/** Sign-up entered a birth date under 18: the server disables this account so
+ * the same phone number can't retry with another date. Best-effort. */
+export async function reportUnderage(): Promise<void> {
+  await apiClient.post("/account/age-restricted");
+}
+
 export interface Me {
   id: string;
   email: string | null;

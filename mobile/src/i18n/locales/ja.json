@@ -55,6 +55,8 @@
     "day": "日",
     "nameRequired": "本名を入力してください",
     "birthDateRequired": "生年月日を選択してください",
+    "ageConfirm": "18歳以上であることを確認します",
+    "ageConfirmRequired": "続行するには18歳以上であることをご確認ください",
     "bioRequired": "自己紹介を入力してください",
     "iAm": "自分の性別",
     "interestedIn": "興味のある性別",
@@ -531,6 +533,11 @@
     "codePlaceholder": "認証コード",
     "confirm": "認証する",
     "changeNumber": "番号を変更"
+  },
+  "ageBlocked": {
+    "title": "18歳以上の方のみご利用いただけます",
+    "body": "SooDaMateは成人の方のみご利用いただけるサービスです。この番号ではアカウントを作成できません。生年月日を誤って入力された場合は support@soodamate.com までご連絡ください。",
+    "button": "OK"
   },
   "phoneAuth": {
     "subtitle": "電話番号だけで簡単に始められます",

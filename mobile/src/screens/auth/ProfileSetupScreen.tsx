@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Pressable, ScrollView, Switch, Text, TextInput, View, StyleSheet } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
-import { updateEmail } from "../../api/account";
+import { reportUnderage, updateEmail } from "../../api/account";
 import { confirmPhoto, updateMyProfile } from "../../api/profiles";
 import { presignUpload, uploadToPresignedUrl } from "../../api/uploads";
 import ChipSelect from "../../components/ChipSelect";
@@ -32,6 +32,7 @@ import { K_CONTENT_KEYS } from "../../constants/kContentTags";
 import { BLIND_CHAT_CATEGORY_KEYS } from "../../constants/blindChatCategories";
 import { MBTI_TYPE_KEYS } from "../../constants/mbtiTypes";
 import type { Gender, InterestedIn } from "../../types";
+import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../theme";
 
 const GENDERS: Gender[] = ["male", "female", "other"];
@@ -46,14 +47,18 @@ function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
-// Signup is gated to 18-70 (matches the max age on the discovery/blind-chat
-// age filters) — the year dropdown only ever offers birth years that land in
-// that range, so there's no separate "must be 18+" check to run later.
+// Signup is gated to adults (18+). The year dropdown deliberately also lists
+// younger birth years (down to 10) instead of silently hiding them: picking
+// one shows the "you must be 18" block screen below and switches the account
+// off server-side (POST /account/age-restricted), rather than leaving a minor
+// wondering why their birth year is missing. The upper limit (70) matches the
+// max age on the blind-chat age filters.
 const CURRENT_YEAR = new Date().getFullYear();
 const MIN_SIGNUP_AGE = 18;
+const MIN_PICKER_AGE = 10;
 const MAX_SIGNUP_AGE = 70;
-const YEAR_OPTIONS: DropdownOption[] = Array.from({ length: MAX_SIGNUP_AGE - MIN_SIGNUP_AGE + 1 }, (_, i) => {
-  const year = CURRENT_YEAR - MIN_SIGNUP_AGE - i;
+const YEAR_OPTIONS: DropdownOption[] = Array.from({ length: MAX_SIGNUP_AGE - MIN_PICKER_AGE + 1 }, (_, i) => {
+  const year = CURRENT_YEAR - MIN_PICKER_AGE - i;
   return { key: String(year), label: String(year) };
 });
 const MONTH_OPTIONS: DropdownOption[] = Array.from({ length: 12 }, (_, i) => {
@@ -74,6 +79,7 @@ interface FieldErrors {
   name?: boolean;
   email?: boolean;
   birthDate?: boolean;
+  ageConfirm?: boolean;
   bio?: boolean;
   location?: boolean;
   categories?: boolean;
@@ -127,6 +133,10 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
   const [preferredCategories, setPreferredCategories] = useState<string[]>([]);
   const [mbti, setMbti] = useState<string | null>(null);
   const [showMbtiQuiz, setShowMbtiQuiz] = useState(false);
+
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [ageBlocked, setAgeBlocked] = useState(false);
+  const logout = useAuthStore((s) => s.logout);
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -208,6 +218,10 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
     if (!birthDate) {
       messages.push(t("profileSetup.birthDateRequired"));
       fields.birthDate = true;
+    }
+    if (!ageConfirmed) {
+      messages.push(t("profileSetup.ageConfirmRequired"));
+      fields.ageConfirm = true;
     }
     if (!bio.trim()) {
       messages.push(t("profileSetup.bioRequired"));
@@ -297,6 +311,14 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
 
   const ageFromBirthDate = calculateAge(birthDate);
 
+  // Under 18: block immediately (no chance to "fix" the date) and tell the
+  // server so the same phone number can't retry with a different birth date.
+  useEffect(() => {
+    if (ageBlocked || ageFromBirthDate == null || ageFromBirthDate >= MIN_SIGNUP_AGE) return;
+    setAgeBlocked(true);
+    reportUnderage().catch(() => {});
+  }, [ageFromBirthDate, ageBlocked]);
+
   const mbtiOptions: DropdownOption[] = MBTI_TYPE_KEYS.map((key) => ({ key, label: key }));
 
   const educationOptions: DropdownOption[] = EDUCATION_KEYS.map((key) => ({
@@ -317,6 +339,19 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
       ))}
     </View>
   );
+
+  if (ageBlocked) {
+    return (
+      <View style={styles.blockedContainer}>
+        <Image source={require("../../../assets/logo-mascot.png")} style={styles.blockedLogo} resizeMode="contain" />
+        <Text style={styles.blockedTitle}>{t("ageBlocked.title")}</Text>
+        <Text style={styles.blockedBody}>{t("ageBlocked.body")}</Text>
+        <Pressable style={styles.primaryButton} onPress={() => logout()}>
+          <Text style={styles.primaryButtonText}>{t("ageBlocked.button")}</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -504,6 +539,26 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
         {ageFromBirthDate != null && (
           <Text style={styles.ageHint}>{t("editProfile.age", { age: ageFromBirthDate })}</Text>
         )}
+
+        <Pressable
+          style={styles.ageConfirmRow}
+          onPress={() => {
+            setAgeConfirmed((v) => !v);
+            clearFieldError("ageConfirm");
+          }}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: ageConfirmed }}
+        >
+          <Ionicons
+            name={ageConfirmed ? "checkbox" : "square-outline"}
+            size={24}
+            color={fieldErrors.ageConfirm ? colors.danger : ageConfirmed ? colors.accentDark : colors.muted}
+          />
+          <Text style={[styles.ageConfirmText, fieldErrors.ageConfirm && styles.errorText]}>
+            {t("profileSetup.ageConfirm")}
+            <Text style={styles.requiredStar}> *</Text>
+          </Text>
+        </Pressable>
 
         <View style={styles.fieldGap}>
           <HeightInput required valueCm={heightCm} onChange={setHeightCm} />
@@ -850,6 +905,18 @@ const styles = StyleSheet.create({
   fieldLabelSpaced: { marginTop: 16 },
   nameLockNote: { fontSize: 12.5, color: colors.muted, marginTop: 6, lineHeight: 18 },
   ageHint: { fontSize: 12.5, color: colors.accentDark, fontWeight: "600", marginTop: 4 },
+  ageConfirmRow: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 14 },
+  ageConfirmText: { flex: 1, fontSize: 14, color: colors.navy, lineHeight: 20 },
+  blockedContainer: {
+    flex: 1,
+    backgroundColor: colors.white,
+    padding: 32,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  blockedLogo: { width: 96, height: 96, marginBottom: 20 },
+  blockedTitle: { fontSize: 22, fontWeight: "800", color: colors.navy, textAlign: "center", marginBottom: 10 },
+  blockedBody: { fontSize: 14.5, color: colors.muted, textAlign: "center", lineHeight: 22, marginBottom: 28 },
   multiline: { minHeight: 70, textAlignVertical: "top" },
   input: {
     borderWidth: 1,

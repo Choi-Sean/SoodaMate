@@ -55,6 +55,8 @@
     "day": "Día",
     "nameRequired": "Introduce tu nombre real",
     "birthDateRequired": "Selecciona tu fecha de nacimiento",
+    "ageConfirm": "Confirmo que tengo 18 años o más",
+    "ageConfirmRequired": "Confirma que tienes 18 años o más para continuar",
     "bioRequired": "Escribe una breve biografía",
     "iAm": "Soy",
     "interestedIn": "Interesado/a en",
@@ -531,6 +533,11 @@
     "codePlaceholder": "Código de verificación",
     "confirm": "Verificar",
     "changeNumber": "Cambiar número"
+  },
+  "ageBlocked": {
+    "title": "Debes tener 18 años o más",
+    "body": "SooDaMate es solo para adultos. No podemos crear una cuenta con este número. Si introdujiste tu fecha de nacimiento por error, escribe a support@soodamate.com.",
+    "button": "Aceptar"
   },
   "phoneAuth": {
     "subtitle": "Solo tu número de teléfono, nada más",

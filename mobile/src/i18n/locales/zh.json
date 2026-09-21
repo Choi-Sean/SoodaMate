@@ -55,6 +55,8 @@
     "day": "日",
     "nameRequired": "请输入真实姓名",
     "birthDateRequired": "请选择出生日期",
+    "ageConfirm": "我确认我已年满18周岁",
+    "ageConfirmRequired": "请确认您已年满18周岁后再继续",
     "bioRequired": "请填写自我介绍",
     "iAm": "我是",
     "interestedIn": "感兴趣的性别",
@@ -531,6 +533,11 @@
     "codePlaceholder": "验证码",
     "confirm": "验证",
     "changeNumber": "更改号码"
+  },
+  "ageBlocked": {
+    "title": "您必须年满18周岁",
+    "body": "SooDaMate 仅供成年人使用，我们无法用此号码为您创建账号。如果您误填了出生日期，请联系 support@soodamate.com。",
+    "button": "确定"
   },
   "phoneAuth": {
     "subtitle": "只需手机号码，简单快捷",
