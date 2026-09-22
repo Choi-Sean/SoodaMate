@@ -56,6 +56,12 @@ const googleServiceInfoPlistPath = path.join(__dirname, "GoogleService-Info.plis
 const hasAndroidFirebase = fs.existsSync(googleServicesJsonPath);
 const hasIosFirebase = fs.existsSync(googleServiceInfoPlistPath);
 
+// Silently building without the plist is how builds 10-12 shipped with no push at all
+// (the app just no-ops). On the EAS iOS production builder, fail loudly instead.
+if (process.env.EAS_BUILD_PROFILE === "production" && process.env.EAS_BUILD_PLATFORM === "ios" && !hasIosFirebase) {
+  throw new Error("GoogleService-Info.plist is missing from the project archive - refusing to build iOS without push.");
+}
+
 module.exports = {
   expo: {
     name: "SooDaMate",
@@ -87,6 +93,14 @@ module.exports = {
       // 4.8 — see docs/APP_STORE_SUBMISSION.md. Also enable the "Sign In
       // with Apple" capability on the App ID in the developer portal.
       usesAppleSignIn: true,
+      // Remote push (Firebase Cloud Messaging over APNs). @react-native-firebase/messaging's
+      // config plugin does nothing on iOS, so without this entitlement (and the background
+      // mode below) getToken() never yields a token and the app can't be woken by a push.
+      // "development" only for dev-client builds; every store/ad-hoc build talks to the
+      // production APNs environment. EAS syncs the Push Notifications capability on the App ID.
+      entitlements: {
+        "aps-environment": process.env.EAS_BUILD_PROFILE === "development" ? "development" : "production",
+      },
       infoPlist: {
         // Lets the translated permission prompts in ./locales/*.json (see
         // `locales` below) be used instead of always showing English.
@@ -95,6 +109,8 @@ module.exports = {
         // encryption) — declaring this avoids App Store Connect's export
         // compliance question blocking every single build submission.
         ITSAppUsesNonExemptEncryption: false,
+        // Lets a push wake the app in the background (silent/data delivery, token refresh).
+        UIBackgroundModes: ["remote-notification"],
       },
       ...(hasIosFirebase ? { googleServicesFile: googleServiceInfoPlistPath } : {}),
     },
