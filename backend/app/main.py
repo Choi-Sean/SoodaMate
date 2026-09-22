@@ -195,6 +195,12 @@ def create_app(production: bool | None = None) -> FastAPI:
     async def health() -> dict:
         return {"status": "ok"}
 
+    # Resolve Firebase once at boot so the deploy log states plainly whether push
+    # notifications are ON or OFF (and why) instead of failing invisibly later.
+    from app.services import push_service
+
+    fastapi_app.add_event_handler("startup", push_service._get_app)
+
     return fastapi_app
 
 

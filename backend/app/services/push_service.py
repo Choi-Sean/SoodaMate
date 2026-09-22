@@ -1,3 +1,6 @@
+import asyncio
+import json
+import logging
 import uuid
 
 import firebase_admin
@@ -10,25 +13,37 @@ from app.models.device import PushToken
 from app.models.user import User
 from app.services import push_i18n
 
+logger = logging.getLogger(__name__)
+
 _app: firebase_admin.App | None = None
 _init_attempted = False
 
 
 def _get_app() -> firebase_admin.App | None:
     """Lazily initializes Firebase. Returns None (no-op mode) until the user
-    has a real Firebase project and FIREBASE_CREDENTIALS_PATH is set — this
-    is an external prerequisite the user creates, not something Claude can
-    provision, so push is best-effort/no-op until then rather than fatal."""
+    has a real Firebase project and either FIREBASE_CREDENTIALS_JSON (the key
+    file's content) or FIREBASE_CREDENTIALS_PATH is set — an external
+    prerequisite, so push is best-effort/no-op until then rather than fatal.
+    Every reason for staying off is logged once: a silently disabled push is
+    exactly how the promo notifications went unnoticed."""
     global _app, _init_attempted
     if _init_attempted:
         return _app
     _init_attempted = True
-    if not settings.firebase_credentials_path:
-        return None
     try:
-        cred = credentials.Certificate(settings.firebase_credentials_path)
+        if settings.firebase_credentials_json:
+            # strict=False tolerates raw newlines inside the private key when the
+            # value was pasted without JSON escaping.
+            cred = credentials.Certificate(json.loads(settings.firebase_credentials_json, strict=False))
+        elif settings.firebase_credentials_path:
+            cred = credentials.Certificate(settings.firebase_credentials_path)
+        else:
+            logger.warning("push notifications are OFF: neither FIREBASE_CREDENTIALS_JSON nor FIREBASE_CREDENTIALS_PATH is set")
+            return None
         _app = firebase_admin.initialize_app(cred)
-    except Exception:
+        logger.info("push notifications are ON (Firebase project %s)", getattr(_app, "project_id", "?"))
+    except Exception as exc:  # noqa: BLE001 - never fatal; only the error type is logged, never key material
+        logger.error("push notifications are OFF: Firebase credentials could not be loaded (%s)", type(exc).__name__)
         _app = None
     return _app
 
@@ -48,18 +63,26 @@ async def send_to_user(
         await db.execute(select(PushToken.fcm_token).where(PushToken.user_id == user_id))
     ).scalars().all()
 
+    if not tokens:
+        logger.info("push to user %s skipped: no registered device token", user_id)
+        return
+
     for token in tokens:
+        message = messaging.Message(
+            notification=messaging.Notification(title=title, body=body),
+            data={k: str(v) for k, v in (data or {}).items()},
+            token=token,
+            # Without an explicit sound iOS delivers the banner silently; high priority
+            # so Android doesn't batch a match alert behind Doze.
+            apns=messaging.APNSConfig(payload=messaging.APNSPayload(aps=messaging.Aps(sound="default"))),
+            android=messaging.AndroidConfig(priority="high"),
+        )
         try:
-            messaging.send(
-                messaging.Message(
-                    notification=messaging.Notification(title=title, body=body),
-                    data={k: str(v) for k, v in (data or {}).items()},
-                    token=token,
-                ),
-                app=app,
-            )
-        except Exception:
-            pass  # expired/invalid token etc. — best-effort, not fatal
+            # firebase_admin's send() is a blocking HTTP call: run it off the event
+            # loop so a push (or a promo broadcast loop) never stalls chat sockets.
+            await asyncio.to_thread(messaging.send, message, app=app)
+        except Exception as exc:  # noqa: BLE001 - expired/invalid token etc.: best-effort, not fatal
+            logger.warning("push to user %s failed (%s)", user_id, type(exc).__name__)
 
 
 async def send_match_notification(db: AsyncSession, user_id: uuid.UUID, match_id: uuid.UUID) -> None:

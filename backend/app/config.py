@@ -53,6 +53,10 @@ class Settings(BaseSettings):
     r2_private_bucket_name: str = ""
 
     firebase_credentials_path: str = ""
+    # The same Firebase service-account key as a JSON string (paste the whole file
+    # content into the variable). Preferred on Railway, which has no persistent
+    # file to point FIREBASE_CREDENTIALS_PATH at. Takes precedence over the path.
+    firebase_credentials_json: str = ""
 
     # Google Cloud Translation v2 (https://translation.googleapis.com) — a
     # plain API key, not a service account. Powers real-time chat

@@ -13,7 +13,8 @@
 | `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` | Cloudflare dashboard → R2 → Manage R2 API Tokens → Create API Token (permission: Object Read & Write, scoped to the bucket below) | S3-style credential pair; the secret is only shown once at creation |
 | `R2_BUCKET_NAME` | Cloudflare dashboard → R2 → Create bucket | Bucket for profile photos |
 | `R2_PUBLIC_URL` | Cloudflare dashboard → R2 → (bucket) → Settings → Public Access → enable "R2.dev subdomain" (or attach a custom domain) | Base URL photos are served from, e.g. `https://pub-xxxxxxxx.r2.dev` — `PhotoOut.url` is built as `f"{R2_PUBLIC_URL}/{gcs_object_path}"` |
-| `FIREBASE_CREDENTIALS_PATH` | Firebase Console → Project Settings → Service Accounts | Path to service account JSON for FCM push |
+| `FIREBASE_CREDENTIALS_JSON` | Firebase Console → Project Settings → Service Accounts → Generate new private key | The whole service-account JSON file content pasted as the variable value (use this on Railway). Push notifications stay OFF until this or the path below is set; the boot log says `push notifications are ON/OFF`. Takes precedence over the path. |
+| `FIREBASE_CREDENTIALS_PATH` | Same key file | Alternative to the JSON variable: path to the service account JSON on disk (local dev) |
 | `CORS_ORIGINS` | — | Comma-separated allowed origins for the mobile app / web |
 | `STUN_URLS` | — | Defaults to Google's public STUN (`stun:stun.l.google.com:19302`), no account needed |
 | `TURN_URL` / `TURN_USERNAME` / `TURN_CREDENTIAL` | Twilio Network Traversal Service, coturn, or similar | External prerequisite for reliable video calls across restrictive NATs — STUN-only works without it but calls may fail to connect on some networks. Empty until provisioned. |
