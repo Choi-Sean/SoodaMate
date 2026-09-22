@@ -13,6 +13,10 @@ import { colors } from "../theme";
 interface Props {
   message: ChatMessage;
   isMine: boolean;
+  /** Only ever called for the sender's own, not-yet-deleted messages — see the
+   * long-press handler below. Omitted (or the message type is already
+   * "deleted") means no delete affordance is offered at all. */
+  onDelete?: (messageId: string) => void;
 }
 
 const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
@@ -33,11 +37,19 @@ const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
  * A sender always sees their own original text; there's nothing to translate
  * on their own bubble. Image bubbles render the photo inline and open a simple
  * fullscreen viewer on tap. */
-export default function ChatBubble({ message, isMine }: Props) {
+export default function ChatBubble({ message, isMine, onDelete }: Props) {
   const { t } = useTranslation();
   const [viewerOpen, setViewerOpen] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [shown, setShown] = useState<{ lang: SupportedLanguage; text: string } | null>(null);
+
+  function confirmDelete() {
+    if (!onDelete) return;
+    showAlert(t("chat.deleteMessageTitle"), t("chat.deleteMessageBody"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("common.delete"), style: "destructive", onPress: () => onDelete(message.id) },
+    ]);
+  }
 
   async function translateTo(lang: SupportedLanguage) {
     // The auto-translation ws_chat.py already attached at send time covers
@@ -67,10 +79,25 @@ export default function ChatBubble({ message, isMine }: Props) {
     showAlert(t("chat.translateTo"), undefined, buttons);
   }
 
+  if (message.message_type === "deleted") {
+    return (
+      <View style={[styles.row, isMine ? styles.rowMine : styles.rowTheirs]}>
+        <View style={[styles.bubble, styles.bubbleDeleted]}>
+          <Ionicons name="ban-outline" size={13} color={colors.muted} />
+          <Text style={styles.deletedText}>{t("chat.messageDeleted")}</Text>
+        </View>
+      </View>
+    );
+  }
+
   if (message.message_type === "image" && message.image_url) {
     return (
       <View style={[styles.row, isMine ? styles.rowMine : styles.rowTheirs]}>
-        <Pressable onPress={() => setViewerOpen(true)}>
+        <Pressable
+          onPress={() => setViewerOpen(true)}
+          onLongPress={isMine ? confirmDelete : undefined}
+          delayLongPress={350}
+        >
           <Image source={{ uri: message.image_url }} style={styles.image} resizeMode="cover" />
         </Pressable>
         <Modal visible={viewerOpen} transparent animationType="fade" onRequestClose={() => setViewerOpen(false)}>
@@ -87,7 +114,11 @@ export default function ChatBubble({ message, isMine }: Props) {
 
   return (
     <View style={[styles.row, isMine ? styles.rowMine : styles.rowTheirs]}>
-      <View style={[styles.bubble, isMine ? styles.bubbleMine : styles.bubbleTheirs]}>
+      <Pressable
+        style={[styles.bubble, isMine ? styles.bubbleMine : styles.bubbleTheirs]}
+        onLongPress={isMine ? confirmDelete : undefined}
+        delayLongPress={350}
+      >
         <Text style={isMine ? styles.textMine : styles.textTheirs}>{message.content}</Text>
         {shown && (
           <View style={styles.translatedBlock}>
@@ -109,7 +140,7 @@ export default function ChatBubble({ message, isMine }: Props) {
             )}
           </Pressable>
         )}
-      </View>
+      </Pressable>
     </View>
   );
 }
@@ -121,6 +152,15 @@ const styles = StyleSheet.create({
   bubble: { maxWidth: "78%", borderRadius: 16, paddingVertical: 10, paddingHorizontal: 14 },
   bubbleMine: { backgroundColor: colors.accent, borderBottomRightRadius: 4 },
   bubbleTheirs: { backgroundColor: colors.creamDeep, borderBottomLeftRadius: 4 },
+  bubbleDeleted: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  deletedText: { color: colors.muted, fontSize: 13, fontStyle: "italic" },
   textMine: { color: "#fff", fontSize: 15 },
   textTheirs: { color: colors.ink, fontSize: 15 },
   translatedBlock: { marginTop: 6, paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "rgba(11,41,68,0.15)" },

@@ -77,9 +77,19 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
                 // resumes wherever its stack was left (e.g. the room a blind match
                 // just opened) and the list is unreachable. Tapping the tab you're
                 // already on also pops it back to its first screen.
+                //
+                // preventDefault() here is load-bearing, not decorative: without it,
+                // React Navigation's own built-in tabPress handling ALSO runs (this
+                // listener doesn't stop it just by not calling navigate again), and
+                // it puts the Chat tab back wherever its stack's internal state
+                // already pointed — the room you were just in — racing the explicit
+                // navigate() below and undoing it a beat later (the reported "list
+                // flashes, then jumps back to the chat" bug).
                 if (route.name === "Chat") {
+                  event.preventDefault();
                   navigation.navigate("Chat", { screen: "ChatList" } as never);
                 } else if (focused) {
+                  event.preventDefault();
                   navigation.navigate(route.name, { screen: "MyProfile" } as never);
                 } else {
                   navigation.navigate(route.name);

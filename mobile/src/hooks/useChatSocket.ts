@@ -15,7 +15,8 @@ export function useChatSocket(
   matchId: string,
   onMessage: (msg: ChatMessage) => void,
   onError?: (err: ChatSocketError) => void,
-  onBlindRevealUpdate?: () => void
+  onBlindRevealUpdate?: () => void,
+  onMessageDeleted?: (messageId: string) => void
 ) {
   const { connected, send, addListener } = useSocket();
 
@@ -28,6 +29,8 @@ export function useChatSocket(
   onErrorRef.current = onError;
   const onBlindRevealUpdateRef = useRef(onBlindRevealUpdate);
   onBlindRevealUpdateRef.current = onBlindRevealUpdate;
+  const onMessageDeletedRef = useRef(onMessageDeleted);
+  onMessageDeletedRef.current = onMessageDeleted;
 
   useEffect(() => {
     return addListener((data) => {
@@ -53,6 +56,8 @@ export function useChatSocket(
         data.match_id === matchId
       ) {
         onBlindRevealUpdateRef.current?.();
+      } else if (data.type === "message_deleted" && data.match_id === matchId) {
+        onMessageDeletedRef.current?.(data.message_id);
       }
     });
   }, [addListener, matchId]);
@@ -70,5 +75,13 @@ export function useChatSocket(
 
   const markRead = useCallback(() => send({ type: "read", match_id: matchId }), [send, matchId]);
 
-  return { connected, sendMessage, sendImageMessage, markRead };
+  // No local echo comes back for this (see routers/ws_chat.py::_handle_message_delete's
+  // "no echo to sender" comment) — the caller updates its own message list
+  // optimistically right after calling this, same as sendMessage's own pattern.
+  const deleteMessage = useCallback(
+    (messageId: string) => send({ type: "message_delete", match_id: matchId, message_id: messageId }),
+    [send, matchId]
+  );
+
+  return { connected, sendMessage, sendImageMessage, markRead, deleteMessage };
 }

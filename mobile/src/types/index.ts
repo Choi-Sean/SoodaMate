@@ -212,7 +212,7 @@ export interface ChatMessage {
   match_id: string;
   sender_id: string;
   content: string;
-  message_type: "text" | "image";
+  message_type: "text" | "image" | "deleted";
   image_url: string | null;
   original_language: string | null;
   translated_content: string | null;

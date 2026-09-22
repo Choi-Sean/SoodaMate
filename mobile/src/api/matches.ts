@@ -6,6 +6,15 @@ export async function getMatches(): Promise<Match[]> {
   return resp.data;
 }
 
+/** Deletes the match and everything in it (messages, calls, ...). Unless
+ * either side has reported or blocked the other, this also clears the swipe
+ * history between the two — that's what actually lets them match again
+ * later; a report/block keeps this pair permanently excluded from each
+ * other's Discover deck instead (see backend match_service.delete_match). */
+export async function deleteMatch(matchId: string): Promise<void> {
+  await apiClient.delete(`/matches/${matchId}`);
+}
+
 /** The other side's full profile (every photo, age, gender, interests, MBTI, ...) —
  * same shape a discovery card uses. 403s until a blind match is revealed; the
  * caller (ChatRoomScreen's header) only offers this once there's something to show. */

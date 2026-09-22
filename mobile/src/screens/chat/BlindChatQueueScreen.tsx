@@ -16,6 +16,7 @@ import {
 } from "../../api/blindChat";
 import { getMatches } from "../../api/matches";
 import { getMyProfile } from "../../api/profiles";
+import { vibrateOnMatch } from "../../utils/matchVibration";
 import { BLIND_CHAT_CATEGORY_KEYS, knownBlindChatCategories } from "../../constants/blindChatCategories";
 import AdCard from "../../components/AdCard";
 import ChipSelect from "../../components/ChipSelect";
@@ -153,6 +154,7 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
 
   async function goToMatch(matchId: string) {
     setWaiting(false);
+    vibrateOnMatch();
     const matches = await queryClient.fetchQuery({ queryKey: ["matches"], queryFn: getMatches });
     const match = matches.find((m) => m.id === matchId);
     navigation.replace("ChatRoom", {

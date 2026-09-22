@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 import BlindChatFeedbackModal from "../../components/BlindChatFeedbackModal";
 import ChatBubble from "../../components/ChatBubble";
 import { getMessageHistory } from "../../api/messages";
-import { acceptBlindReveal, getIcebreaker, requestBlindReveal, submitBlindFeedback } from "../../api/matches";
+import { acceptBlindReveal, deleteMatch, getIcebreaker, requestBlindReveal, submitBlindFeedback } from "../../api/matches";
 import { getMyProfile } from "../../api/profiles";
 import { presignChatImage, uploadToPresignedUrl } from "../../api/uploads";
 import { blockUser, reportUser } from "../../api/safety";
@@ -136,11 +136,32 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
     queryClient.invalidateQueries({ queryKey: ["matches"] });
   }, [queryClient]);
 
-  const { connected, sendMessage, sendImageMessage, markRead } = useChatSocket(
+  const markMessageDeletedLocally = useCallback((messageId: string) => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === messageId
+          ? { ...m, message_type: "deleted", content: "", image_url: null, translated_content: null }
+          : m
+      )
+    );
+  }, []);
+
+  const { connected, sendMessage, sendImageMessage, markRead, deleteMessage } = useChatSocket(
     matchId,
     handleIncoming,
     handleSocketError,
-    handleBlindRevealUpdate
+    handleBlindRevealUpdate,
+    markMessageDeletedLocally
+  );
+
+  const handleDeleteMessage = useCallback(
+    (messageId: string) => {
+      // No round-trip confirmation comes back to the deleter (see
+      // useChatSocket's deleteMessage docstring) — update locally right away.
+      markMessageDeletedLocally(messageId);
+      deleteMessage(messageId);
+    },
+    [deleteMessage, markMessageDeletedLocally]
   );
 
   useEffect(() => {
@@ -262,6 +283,23 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
     ]);
   }
 
+  async function doDeleteMatch() {
+    try {
+      await deleteMatch(matchId);
+      await queryClient.invalidateQueries({ queryKey: ["matches"] });
+      navigation.navigate("ChatList");
+    } catch (e: any) {
+      showAlert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? "");
+    }
+  }
+
+  function confirmDeleteMatch() {
+    showAlert(t("chat.deleteChatTitle"), t("chat.deleteChatBody"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("common.delete"), style: "destructive", onPress: doDeleteMatch },
+    ]);
+  }
+
   function openMenu() {
     showAlert(otherDisplayName, undefined, [
       {
@@ -273,6 +311,7 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
         : []),
       { text: t("chat.report"), onPress: openReportReasons },
       { text: t("chat.block"), style: "destructive", onPress: confirmBlock },
+      { text: t("chat.deleteChat"), style: "destructive", onPress: confirmDeleteMatch },
       { text: t("chat.cancel"), style: "cancel" },
     ]);
   }
@@ -376,7 +415,13 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
           <FlatList
             data={messages}
             keyExtractor={(m) => m.id}
-            renderItem={({ item }) => <ChatBubble message={item} isMine={item.sender_id === userId} />}
+            renderItem={({ item }) => (
+              <ChatBubble
+                message={item}
+                isMine={item.sender_id === userId}
+                onDelete={item.sender_id === userId ? handleDeleteMessage : undefined}
+              />
+            )}
             contentContainerStyle={styles.list}
           />
         )}
