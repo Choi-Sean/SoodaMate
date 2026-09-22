@@ -111,6 +111,44 @@ async def send_like_notification(db: AsyncSession, user_id: uuid.UUID, superlike
     )
 
 
+async def send_incoming_call_notification(
+    db: AsyncSession, user_id: uuid.UUID, match_id: uuid.UUID, caller_id: uuid.UUID, caller_name: str
+) -> None:
+    """Sent alongside the live call_offer WS frame (routers/ws_chat.py::
+    _handle_call_offer) when the callee IS connected — a normal push still plays
+    the OS's default sound/vibration once on arrival, which is what actually
+    gets a backgrounded phone's attention; it is NOT a continuously ringing
+    call screen (that needs iOS PushKit/CallKit + an Android foreground
+    service — real, separately-scoped native work, not built here). The
+    in-app incoming-call screen is what "rings" for as long as the app is
+    open."""
+    lang = await _get_language(db, user_id)
+    await send_to_user(
+        db,
+        user_id,
+        caller_name,
+        push_i18n.t(lang, "incoming_call_body"),
+        {"type": "incoming_call", "match_id": str(match_id), "caller_id": str(caller_id)},
+    )
+
+
+async def send_missed_call_notification(
+    db: AsyncSession, user_id: uuid.UUID, match_id: uuid.UUID, caller_id: uuid.UUID, caller_name: str
+) -> None:
+    """Sent when a call never gets answered: the callee was never connected, the
+    45s ring timed out, or the callee's connection dropped while it was still
+    ringing (routers/ws_chat.py). Always goes to the callee — the one who,
+    from the app's perspective, "missed" the call."""
+    lang = await _get_language(db, user_id)
+    await send_to_user(
+        db,
+        user_id,
+        caller_name,
+        push_i18n.t(lang, "missed_call_body"),
+        {"type": "missed_call", "match_id": str(match_id), "caller_id": str(caller_id)},
+    )
+
+
 async def send_message_notification(
     db: AsyncSession,
     user_id: uuid.UUID,

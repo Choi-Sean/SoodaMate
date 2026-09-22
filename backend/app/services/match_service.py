@@ -143,6 +143,11 @@ def _mask_display_name(name: str) -> str:
 mask_display_name = _mask_display_name  # public alias: chat push notifications mask the same way
 
 
+def _age(birth_date: date) -> int:
+    today = date.today()
+    return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+
+
 def _build_match_out(
     m: Match, viewer_id: uuid.UUID, profile: Profile | None, photo: Photo | None
 ) -> MatchOut:
@@ -150,20 +155,37 @@ def _build_match_out(
     restricted = _is_restricted_and_waiting(m)
     display_name = profile.display_name if profile else ""
     photo_url = build_public_url(photo.gcs_object_path) if photo else None
+    age = _age(profile.birth_date) if profile else None
+    # Age and gender stay visible pre-reveal (product decision: not identifying
+    # enough on their own to withhold, unlike name/photo) — the mobile client
+    # renders gender as a symbol rather than the word while still masked.
+    gender = profile.gender if profile else None
+    mbti = (profile.mbti or None) if profile else None
+    bio = profile.bio if profile else None
+    bio2 = profile.bio2 if profile else None
+    bio3 = profile.bio3 if profile else None
 
     hide_identity = m.is_blind and not m.blind_revealed
     if hide_identity:
         display_name = _mask_display_name(display_name)
         photo_url = None
+        # Only the main bio survives pre-reveal — bio2/bio3 wait for the same
+        # gate as name/photo now (product decision, revised from "bios are
+        # never identity-sensitive").
+        bio2 = None
+        bio3 = None
 
     return MatchOut(
         id=m.id,
         other_user_id=other_id,
         other_display_name=display_name,
         other_photo_url=photo_url,
-        other_bio=profile.bio if profile else None,
-        other_bio2=profile.bio2 if profile else None,
-        other_bio3=profile.bio3 if profile else None,
+        other_age=age,
+        other_gender=gender,
+        other_mbti=mbti,
+        other_bio=bio,
+        other_bio2=bio2,
+        other_bio3=bio3,
         matched_at=m.matched_at,
         is_message_restricted=restricted,
         can_send_first_message=(not restricted) or (m.restricted_to_user_id == viewer_id),
@@ -222,6 +244,71 @@ async def accept_blind_reveal(db: AsyncSession, match_id: uuid.UUID, user_id: uu
     if not delivered:
         await push_service.send_blind_reveal_accepted_notification(db, peer_id, match_id)
     return await get_match_out(db, match_id, user_id)
+
+
+def _comma_list(value: str | None) -> list[str]:
+    return [v for v in (value or "").split(",") if v]
+
+
+class HideIdentityError(Exception):
+    """Raised by get_matched_profile for a still-anonymous blind match — the
+    router turns this into 403, distinct from the plain 404 for a match that
+    doesn't exist / isn't the viewer's."""
+
+
+async def get_matched_profile(db: AsyncSession, match_id: uuid.UUID, viewer_id: uuid.UUID):
+    """The full profile (all photos, age, gender, interests, MBTI, ...) of the
+    other side of a match — same shape discovery cards use (CandidateOut),
+    reachable by tapping a match's name/photo once there's something to show:
+    always for an ordinary match, only after blind_revealed for a blind one."""
+    from app.schemas.discovery import CandidateOut
+    from app.schemas.profile import PhotoOut
+    from app.schemas.moment import MomentOut
+    from app.services.discovery_service import get_photos_for_users
+    from app.services.moment_service import get_moments_for_users
+
+    m = await db.get(Match, match_id)
+    if m is None or viewer_id not in (m.user_a_id, m.user_b_id):
+        return None
+    if m.is_blind and not m.blind_revealed:
+        raise HideIdentityError()
+
+    other_id = m.user_b_id if m.user_a_id == viewer_id else m.user_a_id
+    profile = await db.get(Profile, other_id)
+    if profile is None:
+        return None
+    photos = (await get_photos_for_users(db, [other_id])).get(other_id, [])
+    moments = (await get_moments_for_users(db, [other_id])).get(other_id, [])
+    return CandidateOut(
+        user_id=profile.user_id,
+        display_name=profile.display_name,
+        age=_age(profile.birth_date),
+        gender=profile.gender,
+        bio=profile.bio,
+        bio2=profile.bio2,
+        bio3=profile.bio3,
+        photos=[PhotoOut.model_validate(p) for p in photos],
+        height_cm=profile.height_cm,
+        occupation=profile.occupation,
+        education=profile.education,
+        hometown=profile.hometown,
+        race_ethnicity=profile.race_ethnicity,
+        religion=profile.religion,
+        political_view=profile.political_view,
+        smoking=profile.smoking,
+        cannabis=profile.cannabis,
+        exercise_frequency=profile.exercise_frequency,
+        relationship_goal=profile.relationship_goal,
+        wants_kids=profile.wants_kids,
+        has_kids=profile.has_kids,
+        interests=_comma_list(profile.interests),
+        languages=_comma_list(profile.languages),
+        k_content_tags=_comma_list(profile.k_content_tags),
+        verified_badge=profile.verified_badge,
+        face_verified=profile.face_verified,
+        open_to_language_exchange=profile.open_to_language_exchange,
+        moments=[MomentOut.model_validate(mo) for mo in moments],
+    )
 
 
 async def get_match_out(db: AsyncSession, match_id: uuid.UUID, viewer_id: uuid.UUID) -> MatchOut | None:

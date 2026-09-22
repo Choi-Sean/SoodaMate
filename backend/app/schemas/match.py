@@ -22,6 +22,16 @@ class MatchOut(BaseModel):
     other_user_id: uuid.UUID
     other_display_name: str
     other_photo_url: str | None = None
+    # Masked to None alongside name/photo above while hide_identity is in effect
+    # (blind chat, not yet revealed) — age+gender in combination narrow down a
+    # real person more than a free-text bio does, so they follow the name/photo
+    # masking rule, not the "always shown" rule bio/bio2/bio3 get.
+    other_age: int | None = None
+    other_gender: str | None = None
+    # Shown alongside the blind-chat "matched on" categories banner — same
+    # not-very-identifying-alone reasoning as age/gender above, so it isn't
+    # blanked out by hide_identity either.
+    other_mbti: str | None = None
     # Shown regardless of is_blind/blind_revealed — unlike name/photo above,
     # a bio was never treated as identifying enough to withhold during an
     # anonymous chat (product decision), so _build_match_out populates these

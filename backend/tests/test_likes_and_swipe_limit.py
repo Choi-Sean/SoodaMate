@@ -73,3 +73,11 @@ async def test_matches_include_other_users_photo_url(client):
     # Full host depends on R2_PUBLIC_URL, which isn't set in the test env —
     # just confirm the object path landed in the URL.
     assert "/photos/" in matches[0]["other_photo_url"]
+    match_id = matches[0]["id"]
+
+    # Unlike a blind match, an ordinary swipe match's profile is viewable
+    # immediately — is_blind is False, so get_matched_profile never raises
+    # HideIdentityError regardless of the Phase 14 first-message restriction.
+    profile = await client.get(f"/matches/{match_id}/profile", headers=a_headers)
+    assert profile.status_code == 200
+    assert profile.json()["display_name"] == "Test User"

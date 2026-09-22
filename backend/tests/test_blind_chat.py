@@ -173,11 +173,69 @@ async def test_reveal_accept_unmasks_both_sides_but_not_self_accept(client):
     assert accept.json()["blind_revealed"] is True
     assert accept.json()["other_display_name"] == "revealDB"  # real name, no longer masked
     assert accept.json()["other_photo_url"] is not None
+    assert accept.json()["other_age"] == 26  # B was created with age_b=26
+    assert accept.json()["other_gender"] == "female"
 
     b_view = (await client.get("/matches", headers=b_headers)).json()
     match_b = next(m for m in b_view if m["id"] == match_id)
     assert match_b["blind_revealed"] is True
     assert match_b["other_display_name"] == "revealCA"
+    assert match_b["other_age"] == 28  # A was created with age_a=28
+    assert match_b["other_gender"] == "male"
+
+
+@pytest.mark.asyncio
+async def test_pre_reveal_shows_age_gender_mbti_and_bio1_but_masks_name_photo_bio2_bio3(client):
+    a_id, a_headers, b_id, b_headers, match_id = await _paired_couple(client, "maskA", "maskB", age_a=31, age_b=24)
+    await client.put(
+        "/profiles/me",
+        headers=b_headers,
+        json={
+            "display_name": "maskBB", "legal_first_name": "maskBB", "birth_date": "2001-01-01",
+            "gender": "female", "interested_in": "male", "min_age_pref": 18, "max_age_pref": 99,
+            "bio": "bio one", "bio2": "bio two", "bio3": "bio three", "mbti": "ENFP",
+        },
+    )
+
+    view = (await client.get("/matches", headers=a_headers)).json()
+    match = next(m for m in view if m["id"] == match_id)
+    assert match["other_display_name"] == "M***"  # masked, not the real "maskBB"
+    assert match["other_photo_url"] is None
+    assert match["other_age"] == 24
+    assert match["other_gender"] == "female"
+    assert match["other_mbti"] == "ENFP"
+    assert match["other_bio"] == "bio one"
+    assert match["other_bio2"] is None
+    assert match["other_bio3"] is None
+
+    await client.post(f"/matches/{match_id}/blind-reveal/request", headers=b_headers)
+    revealed = (await client.post(f"/matches/{match_id}/blind-reveal/accept", headers=a_headers)).json()
+    assert revealed["other_display_name"] == "maskBB"
+    assert revealed["other_photo_url"] is not None
+    assert revealed["other_bio2"] == "bio two"
+    assert revealed["other_bio3"] == "bio three"
+
+
+@pytest.mark.asyncio
+async def test_match_profile_endpoint_blocked_until_revealed_then_returns_full_profile(client):
+    a_id, a_headers, b_id, b_headers, match_id = await _paired_couple(client, "profE", "profF", age_a=30, age_b=27)
+
+    still_blind = await client.get(f"/matches/{match_id}/profile", headers=a_headers)
+    assert still_blind.status_code == 403
+
+    await client.post(f"/matches/{match_id}/blind-reveal/request", headers=b_headers)
+    await client.post(f"/matches/{match_id}/blind-reveal/accept", headers=a_headers)
+
+    a_view = await client.get(f"/matches/{match_id}/profile", headers=a_headers)
+    assert a_view.status_code == 200
+    body = a_view.json()
+    assert body["display_name"] == "profFB"
+    assert body["age"] == 27
+    assert body["gender"] == "female"
+    assert len(body["photos"]) == 1
+
+    not_found = await client.get(f"/matches/{uuid.uuid4()}/profile", headers=a_headers)
+    assert not_found.status_code == 404
 
 
 def test_blind_chat_messaging_open_immediately_no_first_message_gate():

@@ -1,6 +1,7 @@
 import uuid
 from datetime import date
 
+import pytest
 from starlette.testclient import TestClient
 
 from app.main import app
@@ -111,3 +112,52 @@ def test_chat_message_is_translated_when_languages_differ(monkeypatch):
                 assert received["translated_content"] == "[ko] hello"
                 assert received["translated_language"] == "ko"
                 assert received["original_language"] == "en"
+                message_id = received["message_id"]
+
+        # On-demand translate: either side, any of the 5 app languages, not just
+        # the recipient's saved preferred_language.
+        r = tc.post(
+            f"/matches/{match_id}/messages/{message_id}/translate",
+            headers=a_headers,
+            json={"target_language": "es"},
+        )
+        assert r.status_code == 200, r.text
+        assert r.json() == {"translated_content": "[es] hello", "target_language": "es"}
+
+
+def test_translate_message_endpoint_rejects_bad_language_and_foreign_match(monkeypatch):
+    import app.services.translation_service as translation_service
+
+    monkeypatch.setattr(translation_service, "translate", lambda *a, **k: pytest.fail("must not be called"))
+
+    with TestClient(app) as tc:
+        a_id, a_token = _signup_and_complete_profile(tc, "translateC@example.com", "male", "female")
+        b_id, b_token = _signup_and_complete_profile(tc, "translateD@example.com", "female", "male")
+        outsider_id, outsider_token = _signup_and_complete_profile(tc, "translateE@example.com", "male", "female")
+        a_headers = {"Authorization": f"Bearer {a_token}"}
+        b_headers = {"Authorization": f"Bearer {b_token}"}
+        outsider_headers = {"Authorization": f"Bearer {outsider_token}"}
+
+        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
+        match_id = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id}).json()["match_id"]
+        with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
+            with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
+                ws_b.send_json({"type": "message", "match_id": match_id, "content": "hi"})
+                message_id = ws_a.receive_json()["message_id"]  # send_to_user only reaches the peer, not the sender
+
+        bad_lang = tc.post(
+            f"/matches/{match_id}/messages/{message_id}/translate", headers=a_headers, json={"target_language": "fr"}
+        )
+        assert bad_lang.status_code == 422
+
+        not_a_participant = tc.post(
+            f"/matches/{match_id}/messages/{message_id}/translate",
+            headers=outsider_headers,
+            json={"target_language": "ko"},
+        )
+        assert not_a_participant.status_code == 404
+
+        wrong_match = tc.post(
+            f"/matches/{uuid.uuid4()}/messages/{message_id}/translate", headers=a_headers, json={"target_language": "ko"}
+        )
+        assert wrong_match.status_code == 404

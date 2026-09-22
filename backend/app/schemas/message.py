@@ -5,6 +5,11 @@ from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from app.services.storage_service import build_public_url
 
+# Same 5 languages the rest of the app is localized into (i18n, push_i18n) —
+# a translation target outside this set would just be an untranslated app
+# around it, so the picker never offers more than this.
+SUPPORTED_TRANSLATE_LANGUAGES = ("ko", "en", "es", "zh", "ja")
+
 
 class MessageOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -26,6 +31,15 @@ class MessageOut(BaseModel):
     @property
     def image_url(self) -> str | None:
         return build_public_url(self.image_object_path) if self.image_object_path else None
+
+
+class TranslateMessageRequest(BaseModel):
+    target_language: str = Field(pattern="^(" + "|".join(SUPPORTED_TRANSLATE_LANGUAGES) + ")$")
+
+
+class TranslateMessageOut(BaseModel):
+    translated_content: str
+    target_language: str
 
 
 class ImagePresignRequest(BaseModel):

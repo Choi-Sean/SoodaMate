@@ -7,10 +7,17 @@ from app.database import get_db
 from app.deps import get_current_user
 from app.models.profile import Profile
 from app.models.user import User
+from app.schemas.discovery import CandidateOut
 from app.schemas.match import BlindChatFeedbackCreate, BlindChatFeedbackOut, IcebreakerOut, MatchOut
 from app.services import chat_service, icebreaker_service
 from app.services.blind_chat_service import submit_blind_chat_feedback
-from app.services.match_service import accept_blind_reveal, list_matches, request_blind_reveal
+from app.services.match_service import (
+    HideIdentityError,
+    accept_blind_reveal,
+    get_matched_profile,
+    list_matches,
+    request_blind_reveal,
+)
 
 router = APIRouter(prefix="/matches", tags=["matches"])
 
@@ -20,6 +27,19 @@ async def get_matches(
     db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
 ) -> list[MatchOut]:
     return await list_matches(db, user.id)
+
+
+@router.get("/{match_id}/profile", response_model=CandidateOut)
+async def get_match_profile(
+    match_id: uuid.UUID, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
+) -> CandidateOut:
+    try:
+        result = await get_matched_profile(db, match_id, user.id)
+    except HideIdentityError:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "profiles aren't revealed in this match yet")
+    if result is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "match not found")
+    return result
 
 
 @router.get("/{match_id}/icebreaker", response_model=IcebreakerOut)

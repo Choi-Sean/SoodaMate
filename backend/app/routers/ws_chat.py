@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import rate_limit
 from app.core.security import decode_token
 from app.database import async_session_factory
+from app.models.call import CallSession
 from app.models.profile import Profile
 from app.models.user import User
 from app.services import call_service, chat_service, push_service, storage_service, translation_service
@@ -29,6 +30,8 @@ MESSAGES_PER_10S = 30
 FRAMES_PER_10S = 120
 TRANSLATE_CHARS_PER_HOUR = 30_000
 CALL_END_REASONS = {"hangup", "declined", "busy", "missed", "timeout", "peer_offline", "error"}
+# How long an offer rings before it's treated as a missed call if nobody answers.
+RING_TIMEOUT_SECONDS = 45
 
 
 async def _authenticate(token: str, db: AsyncSession) -> User | None:
@@ -181,6 +184,27 @@ def _sdp_ok(sdp) -> bool:
     return isinstance(sdp, str) and 0 < len(sdp) <= MAX_SDP_CHARS
 
 
+async def _ring_timeout(call_id: uuid.UUID, caller_id: uuid.UUID, callee_id: uuid.UUID, match_id: uuid.UUID) -> None:
+    """Fired once per call_offer, RING_TIMEOUT_SECONDS later. Uses its own DB
+    session (the request-scoped one from _handle_call_offer is long closed by
+    then) and re-checks the call is still "ringing" before doing anything —
+    a no-op if it was answered or ended in the meantime."""
+    await asyncio.sleep(RING_TIMEOUT_SECONDS)
+    try:
+        async with async_session_factory() as db:
+            call = await db.get(CallSession, call_id)
+            if call is None or call.status != "ringing":
+                return
+            await call_service.mark_ended(db, call, "timeout")
+            await manager.send_to_user(caller_id, {"type": "call_end", "call_id": str(call_id), "reason": "timeout"})
+            await manager.send_to_user(callee_id, {"type": "call_end", "call_id": str(call_id), "reason": "timeout"})
+            caller_profile = await db.get(Profile, caller_id)
+            caller_name = caller_profile.display_name if caller_profile else "SooDaMate"
+            await push_service.send_missed_call_notification(db, callee_id, match_id, caller_id, caller_name)
+    except Exception:  # noqa: BLE001 - a background task's own bug must not go unnoticed, but must not crash anything either
+        logger.exception("ring timeout handling failed for call %s", call_id)
+
+
 async def _handle_call_offer(db: AsyncSession, user: User, data: dict) -> None:
     try:
         match_id = uuid.UUID(data["match_id"])
@@ -196,19 +220,40 @@ async def _handle_call_offer(db: AsyncSession, user: User, data: dict) -> None:
     if match.is_blind and not match.blind_revealed:
         await _error(user.id, "call_not_allowed", match_id=str(match_id))
         return
+    # Bumble-style: in a man/woman match, only the woman may place the first
+    # call — same restricted_to_user_id gate messaging already uses, so it
+    # lifts the moment either side has sent a first message (reusing state
+    # rather than adding a separate "first call" flag). Same-gender/'other'
+    # pairs are unrestricted, per is_message_allowed.
+    if not chat_service.is_message_allowed(match, user.id):
+        await _error(user.id, "call_restricted", match_id=str(match_id))
+        return
     if not rate_limit.allow("ws:call_offer", str(user.id), 5, 60):
         await _error(user.id, "rate_limited", match_id=str(match_id))
         return
     peer_id = chat_service.other_participant(match, user.id)
 
     call = await call_service.create_call(db, match_id, caller_id=user.id, callee_id=peer_id)
+    caller_profile = await db.get(Profile, user.id)
+    caller_name = caller_profile.display_name if caller_profile else "SooDaMate"
 
     if not manager.is_connected(peer_id):
         await call_service.mark_ended(db, call, "peer_offline")
         await manager.send_to_user(
             user.id, {"type": "call_end", "call_id": str(call.id), "reason": "peer_offline"}
         )
+        # Not a ringing call (needs iOS VoIP push / PushKit, out of scope) — just
+        # lets the callee know to open the app and call back. Calls are already
+        # blocked entirely for an un-revealed blind match (checked above), so
+        # there's no anonymity to protect in the caller's name here.
+        await push_service.send_missed_call_notification(db, peer_id, match_id, user.id, caller_name)
         return
+
+    # A normal push plays the OS's default sound/vibration once, which is what
+    # actually gets a backgrounded phone's attention — not a continuously
+    # ringing call screen (see send_incoming_call_notification's docstring).
+    await push_service.send_incoming_call_notification(db, peer_id, match_id, user.id, caller_name)
+    asyncio.create_task(_ring_timeout(call.id, caller_id=user.id, callee_id=peer_id, match_id=match_id))
 
     await manager.send_to_user(
         peer_id,
@@ -342,10 +387,20 @@ async def ws_chat(websocket: WebSocket, token: str = Query(...)) -> None:
             try:
                 async with async_session_factory() as db:
                     ended_calls = await call_service.end_active_calls_for_user(db, user_id, reason="peer_offline")
-                for call in ended_calls:
-                    peer_id = call_service.other_participant(call, user_id)
-                    await manager.send_to_user(
-                        peer_id, {"type": "call_end", "call_id": str(call.id), "reason": "peer_offline"}
-                    )
+                    for call in ended_calls:
+                        peer_id = call_service.other_participant(call, user_id)
+                        await manager.send_to_user(
+                            peer_id, {"type": "call_end", "call_id": str(call.id), "reason": "peer_offline"}
+                        )
+                        # This user was the callee of a call that was still ringing
+                        # (never answered) when their connection dropped — a real
+                        # missed call, not just a caller who cancelled or a call
+                        # that had already connected and then dropped mid-conversation.
+                        if call.callee_id == user_id and call.connected_at is None:
+                            caller_profile = await db.get(Profile, call.caller_id)
+                            caller_name = caller_profile.display_name if caller_profile else "SooDaMate"
+                            await push_service.send_missed_call_notification(
+                                db, user_id, call.match_id, call.caller_id, caller_name
+                            )
             except Exception:  # noqa: BLE001
                 logger.exception("websocket cleanup failed")
