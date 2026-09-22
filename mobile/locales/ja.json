@@ -4,6 +4,7 @@
     "NSLocationWhenInUseUsageDescription": "他のユーザーとの距離を表示し、近くのお相手を見つけるために位置情報を使用します。",
     "NSLocationAlwaysAndWhenInUseUsageDescription": "他のユーザーとの距離を表示し、近くのお相手を見つけるために位置情報を使用します。",
     "NSPhotoLibraryUsageDescription": "プロフィールに写真を追加できるよう、SooDaMate が写真にアクセスすることを許可してください。",
-    "NSCameraUsageDescription": "プロフィール写真を撮影できるよう、SooDaMate がカメラにアクセスすることを許可してください。"
+    "NSCameraUsageDescription": "写真撮影とビデオ通話のため、SooDaMate がカメラにアクセスすることを許可してください。",
+    "NSMicrophoneUsageDescription": "ビデオ通話のため、SooDaMate がマイクにアクセスすることを許可してください。"
   }
 }

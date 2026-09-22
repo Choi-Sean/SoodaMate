@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { ActivityIndicator, Modal, Pressable, ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 
 import { deleteAccount } from "../../api/account";
@@ -9,6 +10,12 @@ import { useAuthStore } from "../../store/authStore";
 import { env } from "../../config/env";
 import { SUPPORTED_LANGUAGES, setLanguage, type SupportedLanguage } from "../../i18n";
 import type { ProfileStackParamList } from "../../navigation/ProfileStack";
+import {
+  getPushPermissionStatus,
+  openNotificationSettings,
+  registerForPushNotifications,
+  type PushPermissionStatus,
+} from "../../services/pushNotifications";
 import { colors } from "../../theme";
 import { showAlert } from "../../utils/alert";
 import { openExternalUrl } from "../../utils/openExternalUrl";
@@ -31,6 +38,28 @@ export default function SettingsScreen({ navigation }: Props) {
   const [inquirySubject, setInquirySubject] = useState("");
   const [inquiryMessage, setInquiryMessage] = useState("");
   const [submittingInquiry, setSubmittingInquiry] = useState(false);
+  const [pushStatus, setPushStatus] = useState<PushPermissionStatus>("not-determined");
+
+  // Re-checked every time this screen gains focus (not just on mount) — the only
+  // way permission actually changes is the OS Settings app, which the row below
+  // sends the user to and then back here.
+  useFocusEffect(
+    useCallback(() => {
+      getPushPermissionStatus().then(setPushStatus);
+    }, [])
+  );
+
+  async function handlePushRowPress() {
+    if (pushStatus === "not-determined") {
+      const result = await registerForPushNotifications();
+      setPushStatus(result);
+      return;
+    }
+    // "granted": nothing to request — still useful as a shortcut to the OS toggle.
+    // "denied": this is the only way left to turn it back on (iOS won't re-prompt).
+    // "unavailable": web, or a build without push configured — no-op.
+    if (pushStatus !== "unavailable") openNotificationSettings();
+  }
 
   function openInquiry() {
     setInquirySubject("");
@@ -99,6 +128,15 @@ export default function SettingsScreen({ navigation }: Props) {
       <Pressable style={styles.row} onPress={() => navigation.navigate("Verification")}>
         <Text style={styles.rowText}>{t("settings.verification")}</Text>
       </Pressable>
+
+      {pushStatus !== "unavailable" && (
+        <Pressable style={[styles.row, styles.rowSpaceBetween]} onPress={handlePushRowPress}>
+          <Text style={styles.rowText}>{t("settings.pushNotifications")}</Text>
+          <Text style={pushStatus === "granted" ? styles.rowValueOn : styles.rowValueOff}>
+            {t(pushStatus === "granted" ? "settings.pushOn" : "settings.pushOff")}
+          </Text>
+        </Pressable>
+      )}
 
       <Pressable style={styles.row} onPress={() => openExternalUrl(`${env.marketingSiteUrl}/privacy-policy.html`)}>
         <Text style={styles.rowText}>{t("settings.privacyPolicy")}</Text>
@@ -174,7 +212,10 @@ const styles = StyleSheet.create({
   langChipText: { color: colors.ink, fontSize: 13 },
   langChipTextActive: { color: "#fff", fontSize: 13, fontWeight: "600" },
   row: { padding: 18, borderBottomWidth: 1, borderBottomColor: colors.border },
+  rowSpaceBetween: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   rowText: { fontSize: 16, color: colors.ink },
+  rowValueOn: { fontSize: 14, fontWeight: "700", color: colors.accent },
+  rowValueOff: { fontSize: 14, fontWeight: "600", color: colors.muted },
   dangerText: { fontSize: 16, color: colors.danger },
   modalBackdrop: { flex: 1, backgroundColor: "rgba(11,41,68,0.55)", justifyContent: "flex-end" },
   modalCard: {

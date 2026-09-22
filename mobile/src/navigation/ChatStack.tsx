@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import ChatListScreen from "../screens/chat/ChatListScreen";
 import ChatRoomScreen from "../screens/chat/ChatRoomScreen";
+import MatchedProfileScreen from "../screens/chat/MatchedProfileScreen";
 import BlindChatQueueScreen from "../screens/chat/BlindChatQueueScreen";
 import SubmitCoupleStoryScreen from "../screens/profile/SubmitCoupleStoryScreen";
 import { colors } from "../theme";
@@ -10,6 +11,7 @@ import { colors } from "../theme";
 export type ChatStackParamList = {
   ChatList: undefined;
   ChatRoom: { matchId: string; otherUserId: string; otherDisplayName: string };
+  MatchedProfile: { matchId: string };
   SubmitCoupleStory: { matchId: string; otherDisplayName: string };
   BlindChatQueue: { initialCategories?: string[] } | undefined;
 };
@@ -33,6 +35,11 @@ export default function ChatStack() {
         name="ChatRoom"
         component={ChatRoomScreen}
         options={({ route }) => ({ title: route.params.otherDisplayName })}
+      />
+      <Stack.Screen
+        name="MatchedProfile"
+        component={MatchedProfileScreen}
+        options={{ title: t("chat.profileTitle"), headerShadowVisible: true }}
       />
       <Stack.Screen
         name="SubmitCoupleStory"

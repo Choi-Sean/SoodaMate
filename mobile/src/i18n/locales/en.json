@@ -16,7 +16,27 @@
     "loading": "Loading...",
     "somethingWentWrong": "Something went wrong. Please try again.",
     "tooManyRequests": "Too many attempts. Please wait a few minutes and try again.",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "notNow": "Not now",
+    "openSettings": "Open Settings"
+  },
+  "notifications": {
+    "enableTitle": "Turn on notifications?",
+    "enableBody": "You'll be notified about new matches and messages."
+  },
+  "call": {
+    "someone": "Someone",
+    "calling": "Calling...",
+    "incoming": "Incoming video call",
+    "endedDeclined": "Call declined",
+    "endedNoAnswer": "No answer",
+    "endedOffline": "They're not available right now",
+    "endedError": "The call couldn't connect",
+    "endedBusy": "They're on another call",
+    "startErrorRestricted": "In a match like this, she gets to make the first call.",
+    "startErrorNotAllowed": "You can't call until you've both revealed your profiles.",
+    "startErrorRateLimited": "Too many call attempts — try again in a minute.",
+    "startErrorGeneric": "The call couldn't be started."
   },
   "errorBoundary": {
     "title": "Oops, something broke"
@@ -218,10 +238,12 @@
     "sendImage": "Send photo",
     "imagePermission": "Photo library permission is required to send a photo",
     "imageSendError": "Couldn't send the photo. Please try again.",
-    "viewOriginal": "View original",
-    "viewTranslated": "View translation",
-    "translatedLabel": "Translated",
+    "translate": "Translate",
+    "translateAgain": "Translate to another language",
+    "translateTo": "Translate to",
+    "translatedInto": "Translated to {{language}}",
     "aboutThem": "About {{name}}",
+    "profileTitle": "Profile",
     "icebreakerLabel": "Conversation starter",
     "icebreaker": {
       "shared_kcontent": "You both like {{label}}! What's your favorite part? 👀",
@@ -332,7 +354,7 @@
     "iAm": "I am",
     "interestedIn": "Interested in",
     "languageExchangeLabel": "Open to language exchange",
-    "languageExchangeHint": "Show that you're also open to a language exchange, not just dating.",
+    "languageExchangeHint": "Shows on your card, lets others filter for it in Discover, and gets highlighted as a shared interest in Blind Chat conversation starters.",
     "to": "to",
     "managePhotosCount": "Manage photos ({{count}})",
     "completenessLabel": "Profile strength",
@@ -468,6 +490,9 @@
     "tryAgainLater": "Try again later",
     "travelMode": "Travel mode",
     "verification": "Work/school verification",
+    "pushNotifications": "Push Notifications",
+    "pushOn": "On",
+    "pushOff": "Off",
     "contactUs": "Contact / feedback",
     "inquiryHint": "Send us a question or suggestion and our team will follow up after reviewing it.",
     "inquirySubjectLabel": "Subject",
@@ -677,6 +702,8 @@
     "queueTimeoutTitle": "Still haven't found a chat partner",
     "queueTimeoutBody": "Looks like no one's waiting right now. Try again in a bit!",
     "matchedOn": "Matched on {{categories}}",
+    "matchedMbti": "Their MBTI is {{mbti}}",
+    "matchedMbtiCompatible": "Their MBTI is {{mbti}} — a great match for your type!",
     "incomingRevealRequest": "{{name}} wants to reveal profiles",
     "acceptReveal": "Accept & reveal",
     "revealPending": "You asked to reveal profiles — waiting for a response",

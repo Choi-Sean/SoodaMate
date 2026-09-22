@@ -16,7 +16,27 @@
     "loading": "불러오는 중...",
     "somethingWentWrong": "문제가 발생했어요. 다시 시도해주세요.",
     "tooManyRequests": "시도 횟수가 너무 많아요. 몇 분 뒤에 다시 시도해 주세요.",
-    "tryAgain": "다시 시도"
+    "tryAgain": "다시 시도",
+    "notNow": "나중에",
+    "openSettings": "설정으로 이동"
+  },
+  "notifications": {
+    "enableTitle": "알림을 켤까요?",
+    "enableBody": "새로운 매칭과 메시지를 바로 알려드려요."
+  },
+  "call": {
+    "someone": "상대방",
+    "calling": "전화 거는 중...",
+    "incoming": "영상통화가 왔어요",
+    "endedDeclined": "통화가 거절됐어요",
+    "endedNoAnswer": "응답이 없어요",
+    "endedOffline": "지금은 연결할 수 없어요",
+    "endedError": "통화 연결에 실패했어요",
+    "endedBusy": "상대방이 다른 통화 중이에요",
+    "startErrorRestricted": "이 매칭에서는 여성 회원이 먼저 영상통화를 걸 수 있어요.",
+    "startErrorNotAllowed": "서로 프로필을 공개한 뒤에 통화할 수 있어요.",
+    "startErrorRateLimited": "통화 시도가 너무 많아요. 잠시 후 다시 시도해주세요.",
+    "startErrorGeneric": "통화를 시작하지 못했어요."
   },
   "errorBoundary": {
     "title": "이런! 문제가 생겼어요"
@@ -218,10 +238,12 @@
     "sendImage": "사진 보내기",
     "imagePermission": "사진을 보내려면 사진 라이브러리 접근 권한이 필요해요",
     "imageSendError": "사진을 보내지 못했어요. 다시 시도해주세요.",
-    "viewOriginal": "원문 보기",
-    "viewTranslated": "번역 보기",
-    "translatedLabel": "번역됨",
+    "translate": "번역",
+    "translateAgain": "다른 언어로 번역",
+    "translateTo": "번역할 언어 선택",
+    "translatedInto": "{{language}}로 번역됨",
     "aboutThem": "{{name}}님 소개",
+    "profileTitle": "프로필",
     "icebreakerLabel": "대화 시작 제안",
     "icebreaker": {
       "shared_kcontent": "둘 다 {{label}} 좋아하시네요! 최애 포인트가 뭐예요? 👀",
@@ -332,7 +354,7 @@
     "iAm": "저는",
     "interestedIn": "관심 있는 성별",
     "languageExchangeLabel": "언어교류도 환영해요",
-    "languageExchangeHint": "연애 상대뿐 아니라 언어교류 상대도 찾고 있다는 걸 함께 보여줘요.",
+    "languageExchangeHint": "내 카드에 표시되고, 다른 사람이 탐색에서 이 조건으로 필터링할 수 있어요. 블라인드 채팅에서는 서로 켰을 때 대화 시작 문구에 공통 관심사로 반영돼요.",
     "to": "~",
     "managePhotosCount": "사진 관리 ({{count}}장)",
     "completenessLabel": "프로필 완성도",
@@ -468,6 +490,9 @@
     "tryAgainLater": "나중에 다시 시도해주세요",
     "travelMode": "여행 모드",
     "verification": "재직/학교 인증",
+    "pushNotifications": "푸시 알림",
+    "pushOn": "켜짐",
+    "pushOff": "꺼짐",
     "contactUs": "문의 / 건의하기",
     "inquiryHint": "궁금한 점이나 건의사항을 남겨주시면 운영팀이 확인 후 처리해드려요.",
     "inquirySubjectLabel": "제목",
@@ -677,6 +702,8 @@
     "queueTimeoutTitle": "아직 대화 상대를 찾지 못했어요",
     "queueTimeoutBody": "지금은 대기 중인 분이 없나봐요. 잠시 후 다시 시도해보세요!",
     "matchedOn": "{{categories}} 카테고리에서 매칭됐어요",
+    "matchedMbti": "상대방 MBTI는 {{mbti}}예요",
+    "matchedMbtiCompatible": "상대방 MBTI는 {{mbti}} — 나와 궁합이 좋은 유형이에요!",
     "incomingRevealRequest": "{{name}}님이 프로필 공개를 원해요",
     "acceptReveal": "수락하고 공개하기",
     "revealPending": "프로필 공개를 요청했어요 — 상대방의 응답을 기다리는 중",

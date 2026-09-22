@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { Image, Modal, Pressable, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Image, Modal, Pressable, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
+import { translateMessage } from "../api/messages";
+import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "../i18n";
+import type { AlertButtonSpec } from "../services/alertStore";
+import { showAlert } from "../utils/alert";
 import type { ChatMessage } from "../types";
 import { colors } from "../theme";
 
@@ -11,20 +15,57 @@ interface Props {
   isMine: boolean;
 }
 
-/** Text bubbles show the translated_content (already computed server-side
- * for the recipient — see routers/ws_chat.py) as the primary line when
- * present, with a small "translated" label and a tap-to-toggle back to the
- * original — same idea as WhatsApp/Messenger's translation UI. A sender
- * always sees their own original text (translated_content is only ever
- * populated for the recipient's language). Image bubbles render the photo
- * inline and open a simple fullscreen viewer on tap. */
+const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
+  ko: "한국어",
+  en: "English",
+  es: "Español",
+  zh: "中文",
+  ja: "日本語",
+};
+
+/** Text bubbles from the other person show a small translate button. Tapping it
+ * offers a pick of the app's 5 languages (not just the viewer's own preferred
+ * language) and fetches that translation on demand (services/api/messages.ts),
+ * replacing the earlier always-on auto-translated-into-my-language display —
+ * the server still computes that one too (routers/ws_chat.py), but this button
+ * is the only thing shown for it now: picking the viewer's own preferred
+ * language here shows the exact same text instantly with no extra request.
+ * A sender always sees their own original text; there's nothing to translate
+ * on their own bubble. Image bubbles render the photo inline and open a simple
+ * fullscreen viewer on tap. */
 export default function ChatBubble({ message, isMine }: Props) {
   const { t } = useTranslation();
-  const [showOriginal, setShowOriginal] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [shown, setShown] = useState<{ lang: SupportedLanguage; text: string } | null>(null);
 
-  const hasTranslation = !isMine && !!message.translated_content;
-  const primaryText = hasTranslation && !showOriginal ? message.translated_content! : message.content;
+  async function translateTo(lang: SupportedLanguage) {
+    // The auto-translation ws_chat.py already attached at send time covers
+    // exactly one language (the recipient's own preferred_language) — reuse
+    // it instead of a redundant network call when it happens to match.
+    if (message.translated_language === lang && message.translated_content) {
+      setShown({ lang, text: message.translated_content });
+      return;
+    }
+    setTranslating(true);
+    try {
+      const result = await translateMessage(message.match_id, message.id, lang);
+      setShown({ lang, text: result.translated_content });
+    } catch (e: any) {
+      showAlert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? undefined);
+    } finally {
+      setTranslating(false);
+    }
+  }
+
+  function openLanguagePicker() {
+    const buttons: AlertButtonSpec[] = SUPPORTED_LANGUAGES.map((lang) => ({
+      text: LANGUAGE_LABELS[lang],
+      onPress: () => translateTo(lang),
+    }));
+    buttons.push({ text: t("common.cancel"), style: "cancel" });
+    showAlert(t("chat.translateTo"), undefined, buttons);
+  }
 
   if (message.message_type === "image" && message.image_url) {
     return (
@@ -47,12 +88,25 @@ export default function ChatBubble({ message, isMine }: Props) {
   return (
     <View style={[styles.row, isMine ? styles.rowMine : styles.rowTheirs]}>
       <View style={[styles.bubble, isMine ? styles.bubbleMine : styles.bubbleTheirs]}>
-        <Text style={isMine ? styles.textMine : styles.textTheirs}>{primaryText}</Text>
-        {hasTranslation && (
-          <Pressable onPress={() => setShowOriginal((v) => !v)} hitSlop={6}>
-            <Text style={[styles.translatedLabel, isMine ? styles.translatedLabelMine : styles.translatedLabelTheirs]}>
-              {showOriginal ? t("chat.viewTranslated") : `${t("chat.translatedLabel")} · ${t("chat.viewOriginal")}`}
+        <Text style={isMine ? styles.textMine : styles.textTheirs}>{message.content}</Text>
+        {shown && (
+          <View style={styles.translatedBlock}>
+            <Text style={isMine ? styles.textMine : styles.textTheirs}>{shown.text}</Text>
+            <Text style={[styles.translatedTag, isMine ? styles.translatedLabelMine : styles.translatedLabelTheirs]}>
+              {t("chat.translatedInto", { language: LANGUAGE_LABELS[shown.lang] })}
             </Text>
+          </View>
+        )}
+        {!isMine && (
+          <Pressable onPress={openLanguagePicker} disabled={translating} style={styles.translateButton} hitSlop={6}>
+            {translating ? (
+              <ActivityIndicator size="small" color={colors.muted} />
+            ) : (
+              <>
+                <Ionicons name="language-outline" size={13} color={colors.muted} />
+                <Text style={styles.translateButtonText}>{shown ? t("chat.translateAgain") : t("chat.translate")}</Text>
+              </>
+            )}
           </Pressable>
         )}
       </View>
@@ -69,9 +123,12 @@ const styles = StyleSheet.create({
   bubbleTheirs: { backgroundColor: colors.creamDeep, borderBottomLeftRadius: 4 },
   textMine: { color: "#fff", fontSize: 15 },
   textTheirs: { color: colors.ink, fontSize: 15 },
-  translatedLabel: { fontSize: 11, marginTop: 4 },
+  translatedBlock: { marginTop: 6, paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "rgba(11,41,68,0.15)" },
+  translatedTag: { fontSize: 11, marginTop: 2 },
   translatedLabelMine: { color: "rgba(255,255,255,0.75)" },
   translatedLabelTheirs: { color: colors.muted },
+  translateButton: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 },
+  translateButtonText: { fontSize: 11, color: colors.muted, fontWeight: "600" },
   image: { width: 200, height: 200, borderRadius: 16, backgroundColor: colors.creamDeep },
   viewerBackdrop: { flex: 1, backgroundColor: "rgba(11,41,68,0.95)", alignItems: "center", justifyContent: "center" },
   viewerClose: { position: "absolute", top: 50, right: 20, zIndex: 1, padding: 8 },

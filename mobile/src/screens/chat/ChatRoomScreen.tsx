@@ -20,8 +20,12 @@ import BlindChatFeedbackModal from "../../components/BlindChatFeedbackModal";
 import ChatBubble from "../../components/ChatBubble";
 import { getMessageHistory } from "../../api/messages";
 import { acceptBlindReveal, getIcebreaker, requestBlindReveal, submitBlindFeedback } from "../../api/matches";
+import { getMyProfile } from "../../api/profiles";
 import { presignChatImage, uploadToPresignedUrl } from "../../api/uploads";
 import { blockUser, reportUser } from "../../api/safety";
+import { MBTI_COMPATIBLE_TYPE, type MbtiType } from "../../constants/mbtiTypes";
+import { useCall } from "../../services/CallContext";
+import { webrtcAvailable } from "../../services/webrtc";
 import { showAlert } from "../../utils/alert";
 import { useChatSocket, type ChatSocketError } from "../../hooks/useChatSocket";
 import { useMatches } from "../../hooks/useMatches";
@@ -55,6 +59,16 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
   // has loaded — live match data (masked "S***" pre-reveal, real name once
   // blind_revealed flips) always wins once available.
   const otherDisplayName = match?.other_display_name ?? otherDisplayNameParam;
+  // Same gate the backend uses for other_display_name/other_photo_url masking
+  // (services/match_service.py's hide_identity) — nothing to show yet before this.
+  const canViewFullProfile = !!match && (!match.is_blind || match.blind_revealed);
+
+  // Cheap cache read in practice — RootNavigator already populated this exact
+  // key on app open. Only needed here for the MBTI-compatibility hint below.
+  const { data: myProfile } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
+  const myMbti = (myProfile?.mbti as MbtiType | undefined) ?? null;
+  const otherMbti = (match?.other_mbti as MbtiType | undefined) ?? null;
+  const isMbtiCompatible = !!myMbti && !!otherMbti && MBTI_COMPATIBLE_TYPE[myMbti] === otherMbti;
 
   async function handleRequestReveal() {
     try {
@@ -263,17 +277,64 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
     ]);
   }
 
+  const genderIconName =
+    match?.other_gender === "male" ? "male" : match?.other_gender === "female" ? "female" : null;
+
+  const call = useCall();
+  // Reuses the exact same gate the server checks for calling (chat_service.
+  // is_message_allowed — the Bumble-style "she goes first" rule, see routers/
+  // ws_chat.py::_handle_call_offer): can_send_first_message already encodes
+  // it for messaging, and the two are deliberately the same underlying state.
+  const canCall =
+    webrtcAvailable && canViewFullProfile && !isExpired && !!match?.can_send_first_message && call.phase === "idle";
+
+  function handleStartCall() {
+    if (!canCall) return;
+    call.startCall({ matchId, otherUserId, otherDisplayName, otherGender: match?.other_gender ?? null });
+  }
+
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: otherDisplayName,
-      headerRight: () => (
-        <Pressable onPress={openMenu} hitSlop={12} style={styles.menuButton}>
-          <Text style={styles.menuButtonText}>⋯</Text>
+      headerTitle: () => (
+        <Pressable
+          onPress={canViewFullProfile ? () => navigation.navigate("MatchedProfile", { matchId }) : undefined}
+          disabled={!canViewFullProfile}
+          hitSlop={8}
+          style={styles.headerTitleRow}
+        >
+          <Text style={styles.headerTitleText} numberOfLines={1}>
+            {otherDisplayName}
+          </Text>
+          {genderIconName && (
+            <Ionicons
+              name={genderIconName}
+              size={15}
+              color={match?.other_gender === "male" ? colors.navy : colors.heart}
+              style={styles.headerGenderIcon}
+            />
+          )}
         </Pressable>
+      ),
+      headerRight: () => (
+        <View style={styles.headerRightRow}>
+          {webrtcAvailable && canViewFullProfile && !isExpired && (
+            <Pressable
+              onPress={handleStartCall}
+              disabled={!canCall}
+              hitSlop={12}
+              style={[styles.callButton, !canCall && styles.callButtonDisabled]}
+            >
+              <Ionicons name="videocam" size={20} color={canCall ? colors.accentDark : colors.muted} />
+            </Pressable>
+          )}
+          <Pressable onPress={openMenu} hitSlop={12} style={styles.menuButton}>
+            <Text style={styles.menuButtonText}>⋯</Text>
+          </Pressable>
+        </View>
       ),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation, otherUserId, otherDisplayName]);
+  }, [navigation, otherUserId, otherDisplayName, match?.other_gender, canViewFullProfile, matchId, canCall, isExpired]);
 
   function handleSend() {
     const content = input.trim();
@@ -351,6 +412,11 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
                 })}
               </Text>
             )}
+            {otherMbti && (
+              <Text style={styles.blindBannerCategories}>
+                {t(isMbtiCompatible ? "blindChat.matchedMbtiCompatible" : "blindChat.matchedMbti", { mbti: otherMbti })}
+              </Text>
+            )}
             {match.has_incoming_reveal_request ? (
               <>
                 <Text style={styles.blindBannerText}>{t("blindChat.incomingRevealRequest", { name: otherDisplayName })}</Text>
@@ -422,8 +488,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
   list: { paddingVertical: 12, flexGrow: 1 },
   loadingCenter: { flex: 1, alignItems: "center", justifyContent: "center" },
+  headerRightRow: { flexDirection: "row", alignItems: "center" },
+  callButton: { paddingHorizontal: 8 },
+  callButtonDisabled: { opacity: 0.4 },
   menuButton: { paddingHorizontal: 8 },
   menuButtonText: { fontSize: 22, color: colors.ink },
+  headerTitleRow: { flexDirection: "row", alignItems: "center", maxWidth: 220 },
+  headerTitleText: { fontSize: 17, fontWeight: "800", color: colors.navy, flexShrink: 1 },
+  headerGenderIcon: { marginLeft: 4 },
   restrictedBanner: {
     backgroundColor: colors.accentSoft,
     paddingVertical: 10,

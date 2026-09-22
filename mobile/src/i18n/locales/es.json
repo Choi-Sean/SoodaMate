@@ -16,7 +16,27 @@
     "loading": "Cargando...",
     "somethingWentWrong": "Algo salió mal. Inténtalo de nuevo.",
     "tooManyRequests": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
-    "tryAgain": "Reintentar"
+    "tryAgain": "Reintentar",
+    "notNow": "Ahora no",
+    "openSettings": "Abrir Ajustes"
+  },
+  "notifications": {
+    "enableTitle": "¿Activar notificaciones?",
+    "enableBody": "Te avisaremos de nuevos matches y mensajes."
+  },
+  "call": {
+    "someone": "Alguien",
+    "calling": "Llamando...",
+    "incoming": "Videollamada entrante",
+    "endedDeclined": "Llamada rechazada",
+    "endedNoAnswer": "Sin respuesta",
+    "endedOffline": "No está disponible ahora",
+    "endedError": "No se pudo conectar la llamada",
+    "endedBusy": "Está en otra llamada",
+    "startErrorRestricted": "En un match así, ella es quien puede hacer la primera llamada.",
+    "startErrorNotAllowed": "No puedes llamar hasta que ambos hayan revelado sus perfiles.",
+    "startErrorRateLimited": "Demasiados intentos de llamada — inténtalo de nuevo en un minuto.",
+    "startErrorGeneric": "No se pudo iniciar la llamada."
   },
   "errorBoundary": {
     "title": "Vaya, algo se rompió"
@@ -218,10 +238,12 @@
     "sendImage": "Enviar foto",
     "imagePermission": "Se necesita permiso de acceso a fotos para enviar una foto",
     "imageSendError": "No se pudo enviar la foto. Inténtalo de nuevo.",
-    "viewOriginal": "Ver original",
-    "viewTranslated": "Ver traducción",
-    "translatedLabel": "Traducido",
+    "translate": "Traducir",
+    "translateAgain": "Traducir a otro idioma",
+    "translateTo": "Traducir a",
+    "translatedInto": "Traducido al {{language}}",
     "aboutThem": "Sobre {{name}}",
+    "profileTitle": "Perfil",
     "icebreakerLabel": "Sugerencia para iniciar la charla",
     "icebreaker": {
       "shared_kcontent": "¡A ambos les gusta {{label}}! ¿Qué es lo que más te gusta? 👀",
@@ -332,7 +354,7 @@
     "iAm": "Soy",
     "interestedIn": "Interesado/a en",
     "languageExchangeLabel": "Abierto/a a intercambio de idiomas",
-    "languageExchangeHint": "Muestra que también te interesa un intercambio de idiomas, no solo citas.",
+    "languageExchangeHint": "Aparece en tu tarjeta, otros pueden filtrar por esto en Descubrir, y se destaca como interés compartido en las sugerencias de Chat a Ciegas.",
     "to": "a",
     "managePhotosCount": "Administrar fotos ({{count}})",
     "completenessLabel": "Nivel de perfil",
@@ -468,6 +490,9 @@
     "tryAgainLater": "Inténtalo más tarde",
     "travelMode": "Modo viaje",
     "verification": "Verificación laboral/escolar",
+    "pushNotifications": "Notificaciones push",
+    "pushOn": "Activadas",
+    "pushOff": "Desactivadas",
     "contactUs": "Contacto / sugerencias",
     "inquiryHint": "Envíanos una pregunta o sugerencia y nuestro equipo te responderá tras revisarla.",
     "inquirySubjectLabel": "Asunto",
@@ -677,6 +702,8 @@
     "queueTimeoutTitle": "Aún no encontramos a nadie",
     "queueTimeoutBody": "Parece que ahora mismo no hay nadie esperando. ¡Intenta de nuevo en un momento!",
     "matchedOn": "Emparejados por {{categories}}",
+    "matchedMbti": "Su MBTI es {{mbti}}",
+    "matchedMbtiCompatible": "Su MBTI es {{mbti}} — ¡un gran match para tu tipo!",
     "incomingRevealRequest": "{{name}} quiere revelar los perfiles",
     "acceptReveal": "Aceptar y revelar",
     "revealPending": "Pediste revelar los perfiles — esperando respuesta",

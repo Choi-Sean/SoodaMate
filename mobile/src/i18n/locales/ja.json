@@ -16,7 +16,27 @@
     "loading": "読み込み中...",
     "somethingWentWrong": "問題が発生しました。もう一度お試しください。",
     "tooManyRequests": "試行回数が多すぎます。数分待ってからもう一度お試しください。",
-    "tryAgain": "再試行"
+    "tryAgain": "再試行",
+    "notNow": "後で",
+    "openSettings": "設定を開く"
+  },
+  "notifications": {
+    "enableTitle": "通知をオンにしますか？",
+    "enableBody": "新しいマッチやメッセージをお知らせします。"
+  },
+  "call": {
+    "someone": "お相手",
+    "calling": "発信中...",
+    "incoming": "ビデオ通話がかかってきました",
+    "endedDeclined": "通話が拒否されました",
+    "endedNoAnswer": "応答がありませんでした",
+    "endedOffline": "今は連絡が取れません",
+    "endedError": "通話に接続できませんでした",
+    "endedBusy": "お相手は別の通話中です",
+    "startErrorRestricted": "このマッチでは、女性会員が最初のビデオ通話を発信できます。",
+    "startErrorNotAllowed": "お互いにプロフィールを公開してから通話できます。",
+    "startErrorRateLimited": "通話の試行回数が多すぎます。しばらくしてから再度お試しください。",
+    "startErrorGeneric": "通話を開始できませんでした。"
   },
   "errorBoundary": {
     "title": "おっと、問題が発生しました"
@@ -218,10 +238,12 @@
     "sendImage": "写真を送る",
     "imagePermission": "写真を送るには写真ライブラリへのアクセス許可が必要です",
     "imageSendError": "写真を送信できませんでした。もう一度お試しください。",
-    "viewOriginal": "原文を見る",
-    "viewTranslated": "翻訳を見る",
-    "translatedLabel": "翻訳済み",
+    "translate": "翻訳",
+    "translateAgain": "別の言語に翻訳",
+    "translateTo": "翻訳する言語を選択",
+    "translatedInto": "{{language}}に翻訳しました",
     "aboutThem": "{{name}}さんについて",
+    "profileTitle": "プロフィール",
     "icebreakerLabel": "会話のきっかけ",
     "icebreaker": {
       "shared_kcontent": "お二人とも{{label}}が好きなんですね！どこが一番好きですか？👀",
@@ -332,7 +354,7 @@
     "iAm": "自分の性別",
     "interestedIn": "興味のある性別",
     "languageExchangeLabel": "言語交換も歓迎",
-    "languageExchangeHint": "恋愛だけでなく言語交換にも興味があることを表示します。",
+    "languageExchangeHint": "プロフィールカードに表示され、他のユーザーは検索でこの条件で絞り込めます。ブラインドチャットでは、お互いオンにしていると共通の興味として会話のきっかけに反映されます。",
     "to": "〜",
     "managePhotosCount": "写真を管理 ({{count}}枚)",
     "completenessLabel": "プロフィール充実度",
@@ -468,6 +490,9 @@
     "tryAgainLater": "しばらくしてから再度お試しください",
     "travelMode": "トラベルモード",
     "verification": "職場/学校認証",
+    "pushNotifications": "プッシュ通知",
+    "pushOn": "オン",
+    "pushOff": "オフ",
     "contactUs": "お問い合わせ / ご意見",
     "inquiryHint": "ご質問やご意見をお送りください。確認のうえ対応いたします。",
     "inquirySubjectLabel": "件名",
@@ -677,6 +702,8 @@
     "queueTimeoutTitle": "まだお相手が見つかっていません",
     "queueTimeoutBody": "今は待っている人がいないようです。少ししてからもう一度試してみてください！",
     "matchedOn": "{{categories}}でマッチしました",
+    "matchedMbti": "相手のMBTIは{{mbti}}です",
+    "matchedMbtiCompatible": "相手のMBTIは{{mbti}} — あなたのタイプと相性抜群です！",
     "incomingRevealRequest": "{{name}}さんがプロフィール公開を希望しています",
     "acceptReveal": "同意して公開する",
     "revealPending": "プロフィール公開をリクエストしました — 返信を待っています",

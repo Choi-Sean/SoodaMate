@@ -43,6 +43,15 @@ const userTrackingUsageDescription =
 const locationUsageDescription =
   "We use your location to show your distance to other users and find matches near you.";
 
+// One shared string per permission across every plugin that touches it
+// (expo-image-picker and the WebRTC plugin below both write
+// NSCameraUsageDescription/NSMicrophoneUsageDescription) — Expo's config
+// plugins overwrite, not merge, so a mismatched pair between two plugins
+// would leave whichever ran last as the only real, possibly-inaccurate copy.
+const cameraUsageDescription =
+  "Allow SooDaMate to access your camera to take photos and make video calls.";
+const microphoneUsageDescription = "Allow SooDaMate to access your microphone for video calls.";
+
 // The @react-native-firebase/* config plugins hard-fail prebuild (not just
 // a runtime no-op, unlike this app's other "no real account yet" defaults)
 // if expo.android.googleServicesFile / expo.ios.googleServicesFile aren't
@@ -127,6 +136,11 @@ module.exports = {
         monochromeImage: "./assets/android-icon-monochrome.png",
       },
       predictiveBackGestureEnabled: false,
+      // VIBRATE isn't a "dangerous" permission (no runtime prompt) but also isn't
+      // auto-added by any installed package — needed for the incoming-call ring
+      // (services/CallContext.tsx uses React Native core's Vibration API directly,
+      // not a plugin that would merge this into the manifest on its own).
+      permissions: ["VIBRATE"],
       ...(hasAndroidFirebase ? { googleServicesFile: googleServicesJsonPath } : {}),
     },
     web: {
@@ -180,9 +194,15 @@ module.exports = {
         "expo-image-picker",
         {
           photosPermission: "Allow SooDaMate to access your photos so you can add them to your profile.",
-          cameraPermission: "Allow SooDaMate to access your camera so you can take a profile photo.",
-          microphonePermission: false,
+          cameraPermission: cameraUsageDescription,
+          // Was `false` (opted out) before video calls existed — image
+          // picking itself still never touches the mic.
+          microphonePermission: microphoneUsageDescription,
         },
+      ],
+      [
+        "@config-plugins/react-native-webrtc",
+        { cameraPermission: cameraUsageDescription, microphonePermission: microphoneUsageDescription },
       ],
       ...(hasAndroidFirebase || hasIosFirebase
         ? ["@react-native-firebase/app", "@react-native-firebase/messaging"]

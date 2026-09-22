@@ -16,7 +16,27 @@
     "loading": "加载中...",
     "somethingWentWrong": "出错了，请重试。",
     "tooManyRequests": "尝试次数过多，请等待几分钟后再试。",
-    "tryAgain": "重试"
+    "tryAgain": "重试",
+    "notNow": "暂不",
+    "openSettings": "前往设置"
+  },
+  "notifications": {
+    "enableTitle": "要开启通知吗？",
+    "enableBody": "第一时间获知新的配对和消息。"
+  },
+  "call": {
+    "someone": "对方",
+    "calling": "正在呼叫...",
+    "incoming": "视频通话邀请",
+    "endedDeclined": "通话被拒绝",
+    "endedNoAnswer": "无人接听",
+    "endedOffline": "对方目前无法接通",
+    "endedError": "通话连接失败",
+    "endedBusy": "对方正在通话中",
+    "startErrorRestricted": "在这种配对中，只有女性会员可以先发起视频通话。",
+    "startErrorNotAllowed": "双方公开资料后才能通话。",
+    "startErrorRateLimited": "通话尝试次数过多，请稍后再试。",
+    "startErrorGeneric": "无法发起通话。"
   },
   "errorBoundary": {
     "title": "哎呀，出问题了"
@@ -218,10 +238,12 @@
     "sendImage": "发送照片",
     "imagePermission": "发送照片需要相册访问权限",
     "imageSendError": "照片发送失败，请重试。",
-    "viewOriginal": "查看原文",
-    "viewTranslated": "查看翻译",
-    "translatedLabel": "已翻译",
+    "translate": "翻译",
+    "translateAgain": "翻译成其他语言",
+    "translateTo": "选择翻译语言",
+    "translatedInto": "已翻译为{{language}}",
     "aboutThem": "关于{{name}}",
+    "profileTitle": "资料",
     "icebreakerLabel": "开场话题推荐",
     "icebreaker": {
       "shared_kcontent": "你们都喜欢{{label}}！最喜欢哪一点呢？👀",
@@ -332,7 +354,7 @@
     "iAm": "我是",
     "interestedIn": "感兴趣的性别",
     "languageExchangeLabel": "也欢迎语言交流",
-    "languageExchangeHint": "让别人知道你除了约会，也对语言交流感兴趣。",
+    "languageExchangeHint": "会显示在你的资料卡上，其他人可以在探索中按此条件筛选。在盲选聊天中，如果双方都开启，会作为共同兴趣出现在开场白推荐里。",
     "to": "至",
     "managePhotosCount": "管理照片 ({{count}}张)",
     "completenessLabel": "资料完整度",
@@ -468,6 +490,9 @@
     "tryAgainLater": "请稍后再试",
     "travelMode": "旅行模式",
     "verification": "职场/学校认证",
+    "pushNotifications": "推送通知",
+    "pushOn": "已开启",
+    "pushOff": "已关闭",
     "contactUs": "联系我们 / 建议",
     "inquiryHint": "发送问题或建议，我们的团队会审核后回复。",
     "inquirySubjectLabel": "主题",
@@ -677,6 +702,8 @@
     "queueTimeoutTitle": "暂时还没找到聊天对象",
     "queueTimeoutBody": "现在好像没有人在等待呢。请稍后再试一次！",
     "matchedOn": "因{{categories}}匹配成功",
+    "matchedMbti": "对方的MBTI是{{mbti}}",
+    "matchedMbtiCompatible": "对方的MBTI是{{mbti}} — 和你的类型很配哦！",
     "incomingRevealRequest": "{{name}}想要公开资料",
     "acceptReveal": "同意并公开",
     "revealPending": "已请求公开资料 — 等待对方回应",

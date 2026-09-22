@@ -700,6 +700,13 @@ const translations = {
     zh: "公司可因运营或技术需要变更或中止服务的全部或部分内容，重大变更将通过应用或网站提前公告。",
     ja: "当社は運営上・技術上の必要に応じてサービスの全部または一部を変更または中断することがあり、重要な変更事項はアプリまたはウェブサイトを通じて事前に告知します。",
   },
+  "terms.a6.li1": {
+    ko: "남녀 매칭의 경우, 먼저 메시지를 보내거나 영상통화를 걸 수 있는 것은 여성 회원입니다. 여성 회원이 첫 메시지를 보내면 이후에는 양쪽 모두 자유롭게 메시지와 영상통화를 이용할 수 있습니다. 동성 매칭이거나 성별을 \"기타\"로 설정한 경우에는 이 제한이 적용되지 않습니다.",
+    en: "In a man/woman match, only the woman may send the first message or place the first video call. Once she sends the first message, both sides can message and video call freely. This restriction does not apply to same-gender matches or when either profile's gender is set to \"Other.\"",
+    es: "En un match entre hombre y mujer, solo la mujer puede enviar el primer mensaje o hacer la primera videollamada. Una vez que ella envía el primer mensaje, ambas partes pueden enviar mensajes y hacer videollamadas libremente. Esta restricción no se aplica a matches del mismo género ni cuando el género de cualquiera de los perfiles esté configurado como \"Otro.\"",
+    zh: "在男女配对中，只有女性会员可以先发消息或先发起视频通话。女性会员发送第一条消息后，双方即可自由收发消息和进行视频通话。此限制不适用于同性配对，或任一资料的性别设置为「其他」的情况。",
+    ja: "男女のマッチでは、最初のメッセージ送信や最初のビデオ通話の発信ができるのは女性会員のみです。女性会員が最初のメッセージを送信すると、以降は双方が自由にメッセージとビデオ通話を利用できます。同性同士のマッチ、またはいずれかのプロフィールの性別が「その他」に設定されている場合、この制限は適用されません。",
+  },
   "terms.a7.title": { ko: "제7조 (계정 삭제)", en: "Article 7 (Account Deletion)", es: "Artículo 7 (Eliminación de cuenta)", zh: "第7条（账户删除）", ja: "第7条（アカウント削除）" },
   "terms.a7.body": {
     ko: '이용자는 앱 내 "설정 &gt; 계정 삭제"를 통해 언제든지 자유롭게 탈퇴할 수 있으며, 관련 개인정보 처리는 개인정보처리방침에 따릅니다.',

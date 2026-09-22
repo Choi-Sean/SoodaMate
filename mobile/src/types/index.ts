@@ -136,7 +136,15 @@ export interface Match {
   // Shown regardless of is_blind/blind_revealed — unlike name/photo above, a
   // bio was never treated as identifying enough to withhold during an
   // anonymous chat (product decision).
+  // Stay visible pre-reveal (masked to null only for a still-anonymous blind
+  // match's name/photo above) — the chat header shows a gender icon and the
+  // blind-match banner shows age/MBTI even before names/photos are revealed.
+  other_age: number | null;
+  other_gender: Gender | null;
+  other_mbti: string | null;
   other_bio: string | null;
+  // bio2/bio3 wait for the same reveal gate as name/photo; only bio survives
+  // pre-reveal.
   other_bio2: string | null;
   other_bio3: string | null;
   matched_at: string;

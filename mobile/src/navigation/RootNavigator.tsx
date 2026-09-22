@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import i18n from "../i18n";
 import { useAuthStore } from "../store/authStore";
 import { getMyProfile } from "../api/profiles";
 import { getMe, updateLanguagePreference } from "../api/account";
-import { registerForPushNotifications } from "../services/pushNotifications";
+import { openNotificationSettings, registerForPushNotifications } from "../services/pushNotifications";
+import { SocketProvider } from "../services/SocketProvider";
+import { CallProvider } from "../services/CallContext";
+import CallOverlay from "../components/CallOverlay";
 import { usePurchaseReturnWatch } from "../hooks/usePurchaseReturnWatch";
+import { showAlert } from "../utils/alert";
 import AnimatedSplash from "../components/AnimatedSplash";
 import AuthStack from "./AuthStack";
 import MainTabs from "./MainTabs";
@@ -108,9 +113,21 @@ export default function RootNavigator() {
 
 function MainApp() {
   usePurchaseReturnWatch();
+  const { t } = useTranslation();
 
   useEffect(() => {
-    registerForPushNotifications();
+    // Requests permission (shows the OS prompt only the very first time) and
+    // registers the device token. If the user already said no on a previous
+    // open, this resolves "denied" with no OS UI — the nudge below is what
+    // gets them to the one place that can still turn it on (Settings app).
+    registerForPushNotifications().then((status) => {
+      if (status === "denied") {
+        showAlert(t("notifications.enableTitle"), t("notifications.enableBody"), [
+          { text: t("common.notNow"), style: "cancel" },
+          { text: t("common.openSettings"), onPress: openNotificationSettings },
+        ]);
+      }
+    });
     // Covers a language change made while logged out, or on a device that
     // never got a chance to sync (e.g. this feature shipped after the user
     // had already picked a language) — setLanguage() itself also syncs on
@@ -118,5 +135,14 @@ function MainApp() {
     updateLanguagePreference(i18n.language).catch(() => {});
   }, []);
 
-  return <MainTabs />;
+  return (
+    <SocketProvider>
+      <CallProvider>
+        <MainTabs />
+        {/* Mounted once, above the tab navigator, so an incoming call surfaces
+            (via the shared socket) no matter which screen is on top. */}
+        <CallOverlay />
+      </CallProvider>
+    </SocketProvider>
+  );
 }

@@ -4,6 +4,7 @@
     "NSLocationWhenInUseUsageDescription": "我们使用你的位置来显示与其他用户的距离，并为你寻找附近的匹配对象。",
     "NSLocationAlwaysAndWhenInUseUsageDescription": "我们使用你的位置来显示与其他用户的距离，并为你寻找附近的匹配对象。",
     "NSPhotoLibraryUsageDescription": "允许 SooDaMate 访问你的照片，以便你将照片添加到个人资料中。",
-    "NSCameraUsageDescription": "允许 SooDaMate 访问你的相机，以便你拍摄个人资料照片。"
+    "NSCameraUsageDescription": "允许 SooDaMate 访问你的相机，以便拍照和进行视频通话。",
+    "NSMicrophoneUsageDescription": "允许 SooDaMate 访问你的麦克风，以便进行视频通话。"
   }
 }
