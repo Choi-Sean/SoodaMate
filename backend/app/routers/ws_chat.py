@@ -173,6 +173,31 @@ async def _handle_read(db: AsyncSession, user: User, data: dict) -> None:
     await manager.send_to_user(peer_id, {"type": "read", "match_id": str(match_id)})
 
 
+async def _handle_message_delete(db: AsyncSession, user: User, data: dict) -> None:
+    try:
+        match_id = uuid.UUID(data["match_id"])
+        message_id = uuid.UUID(data["message_id"])
+    except (KeyError, ValueError, TypeError, AttributeError):
+        return
+
+    # get_match_for_user, not get_active_match_for_user — deleting your own
+    # message is still allowed in an expired match (same "history stays
+    # readable" reasoning get_messages uses); only sending new ones is gated.
+    match = await chat_service.get_match_for_user(db, match_id, user.id)
+    if match is None:
+        return
+    if not await chat_service.delete_message(db, match_id, message_id, user.id):
+        return
+
+    # No echo back to the sender — same convention as _handle_message, whose
+    # own client already updates its local state optimistically rather than
+    # waiting on a round trip. Only the peer needs telling.
+    peer_id = chat_service.other_participant(match, user.id)
+    await manager.send_to_user(
+        peer_id, {"type": "message_deleted", "match_id": str(match_id), "message_id": str(message_id)}
+    )
+
+
 # --- Phase 15: video call signaling, piggybacked on this same connection ---
 # (no second realtime channel). Gated by "match still active" — same check as
 # messaging — and NOT tied to the Phase 14 first-message restriction; calling is
@@ -326,6 +351,7 @@ async def _handle_call_end(db: AsyncSession, user: User, data: dict) -> None:
 _HANDLERS = {
     "message": _handle_message,
     "read": _handle_read,
+    "message_delete": _handle_message_delete,
     "call_offer": _handle_call_offer,
     "call_answer": _handle_call_answer,
     "call_ice_candidate": _handle_call_ice_candidate,

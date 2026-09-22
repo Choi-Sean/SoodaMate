@@ -1,3 +1,4 @@
+import time
 import uuid
 from datetime import date
 
@@ -67,6 +68,79 @@ def test_two_matched_users_exchange_messages_live():
         contents = [m["content"] for m in history.json()]
         assert "hi from B" in contents
         assert "hi back from A" in contents
+
+
+def test_deleting_own_message_notifies_the_peer_and_blanks_history():
+    with TestClient(app) as tc:
+        a_id, a_token = _signup_and_complete_profile(tc, "wsDelA@example.com", "male", "female")
+        b_id, b_token = _signup_and_complete_profile(tc, "wsDelB@example.com", "female", "male")
+        a_headers = {"Authorization": f"Bearer {a_token}"}
+        b_headers = {"Authorization": f"Bearer {b_token}"}
+
+        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
+        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
+        match_id = match_resp.json()["match_id"]
+
+        with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
+            with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
+                ws_b.send_json({"type": "message", "match_id": match_id, "content": "oops, wrong chat"})
+                received = ws_a.receive_json()
+                message_id = received["message_id"]
+
+                ws_b.send_json({"type": "message_delete", "match_id": match_id, "message_id": message_id})
+                notice = ws_a.receive_json()
+                assert notice == {"type": "message_deleted", "match_id": match_id, "message_id": message_id}
+
+        history = tc.get(f"/matches/{match_id}/messages", headers=a_headers).json()
+        deleted = next(m for m in history if m["id"] == message_id)
+        assert deleted["message_type"] == "deleted"
+        assert deleted["content"] == ""
+
+
+def test_cannot_delete_someone_elses_message_or_delete_twice():
+    with TestClient(app) as tc:
+        a_id, a_token = _signup_and_complete_profile(tc, "wsDelC@example.com", "male", "female")
+        b_id, b_token = _signup_and_complete_profile(tc, "wsDelD@example.com", "female", "male")
+        a_headers = {"Authorization": f"Bearer {a_token}"}
+        b_headers = {"Authorization": f"Bearer {b_token}"}
+
+        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
+        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
+        match_id = match_resp.json()["match_id"]
+
+        with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
+            with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
+                ws_b.send_json({"type": "message", "match_id": match_id, "content": "hers"})
+                message_id = ws_a.receive_json()["message_id"]
+
+                # A (not the sender) tries to delete B's message — silently ignored,
+                # no message_deleted frame goes anywhere.
+                ws_a.send_json({"type": "message_delete", "match_id": match_id, "message_id": message_id})
+
+                # Confirm nothing happened by having B send a second message and
+                # checking A receives *that* next, not a stray deletion notice.
+                ws_b.send_json({"type": "message", "match_id": match_id, "content": "still here"})
+                next_frame = ws_a.receive_json()
+                assert next_frame["content"] == "still here"
+
+        history = tc.get(f"/matches/{match_id}/messages", headers=a_headers).json()
+        untouched = next(m for m in history if m["id"] == message_id)
+        assert untouched["message_type"] == "text"
+        assert untouched["content"] == "hers"
+
+        # The real sender deletes it. No confirmation frame comes back to the
+        # deleter (same no-self-echo convention as sending a message), so
+        # there's nothing to receive_json() on — poll REST history instead of
+        # a fixed sleep, since the real hosted DB's commit latency varies.
+        with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b2:
+            ws_b2.send_json({"type": "message_delete", "match_id": match_id, "message_id": message_id})
+            deadline = time.time() + 5
+            message_type = "text"
+            while message_type != "deleted" and time.time() < deadline:
+                time.sleep(0.2)
+                history2 = tc.get(f"/matches/{match_id}/messages", headers=a_headers).json()
+                message_type = next(m for m in history2 if m["id"] == message_id)["message_type"]
+        assert message_type == "deleted"
 
 
 def test_unauthenticated_ws_connection_rejected():

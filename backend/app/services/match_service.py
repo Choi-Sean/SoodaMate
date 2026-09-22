@@ -2,10 +2,10 @@ import uuid
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
-from sqlalchemy import and_, exists, func, or_, select, text, update
+from sqlalchemy import and_, delete, exists, func, or_, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.interaction import Block, Match, Swipe
+from app.models.interaction import Block, Match, Report, Swipe
 from app.models.profile import Photo, Profile
 from app.models.user import User
 from app.schemas.match import MatchOut, SwipeLimitOut, SwipeResponse
@@ -362,6 +362,69 @@ async def expire_stale_matches(db: AsyncSession, user_id: uuid.UUID) -> None:
         .values(is_active=False)
     )
     await db.commit()
+
+
+async def delete_match(db: AsyncSession, match_id: uuid.UUID, user_id: uuid.UUID) -> bool:
+    """Deletes the match and (via ondelete=CASCADE on every table with a
+    MatchId FK — Messages, CallSessions, CoupleStories, BlindChatFeedback;
+    BlindChatQueueEntry.MatchedId is ondelete=SET NULL) everything tied to
+    it. Also clears the Swipe rows between the pair *unless* either side has
+    reported or blocked the other — discovery excludes anyone still swiped
+    on (app/services/discovery_service.py's already_swiped), so clearing
+    them is what actually lets the two people match again later; a report or
+    block means that should stay closed instead. Returns False only if the
+    match doesn't exist or user_id isn't a participant (-> 404 at the
+    router)."""
+    match = await db.get(Match, match_id)
+    if match is None or user_id not in (match.user_a_id, match.user_b_id):
+        return False
+    other_id = match.user_b_id if match.user_a_id == user_id else match.user_a_id
+
+    # Two separate single-table scalar checks, not one exists() combining both
+    # tables — MSSQL doesn't accept a bare "SELECT EXISTS(...)" the way
+    # Postgres/MySQL do, and a single exists().where() referencing two
+    # unrelated tables produces an (also broken) unjoined cartesian product.
+    reported = await db.scalar(
+        select(Report.id)
+        .where(
+            or_(
+                and_(Report.reporter_id == user_id, Report.reported_id == other_id),
+                and_(Report.reporter_id == other_id, Report.reported_id == user_id),
+            )
+        )
+        .limit(1)
+    )
+    blocked = await db.scalar(
+        select(Block.id)
+        .where(
+            or_(
+                and_(Block.blocker_id == user_id, Block.blocked_id == other_id),
+                and_(Block.blocker_id == other_id, Block.blocked_id == user_id),
+            )
+        )
+        .limit(1)
+    )
+    reported_or_blocked = reported is not None or blocked is not None
+
+    await db.delete(match)
+    swipe_pair = or_(
+        and_(Swipe.from_user_id == user_id, Swipe.to_user_id == other_id),
+        and_(Swipe.from_user_id == other_id, Swipe.to_user_id == user_id),
+    )
+    if reported_or_blocked:
+        # A match existing at all means BOTH sides already have a "like"/
+        # "superlike" swipe on record — simply leaving those in place would
+        # let a single new like from either side immediately re-match them
+        # again (record_swipe just checks for an existing reciprocal like),
+        # undoing the whole point of a report/block. Neutralize them to
+        # "pass" instead of deleting: discovery keeps excluding the pair
+        # (already_swiped doesn't care about the action) and neither side's
+        # like can find a reciprocal anymore, without erasing the record.
+        await db.execute(update(Swipe).where(swipe_pair).values(action="pass"))
+    else:
+        await db.execute(delete(Swipe).where(swipe_pair))
+    await db.commit()
+    return True
 
 
 async def list_matches(db: AsyncSession, user_id: uuid.UUID) -> list[MatchOut]:

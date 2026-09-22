@@ -115,6 +115,28 @@ async def persist_message(
     return await run_with_deadlock_retry(db, _store)
 
 
+async def delete_message(db: AsyncSession, match_id: uuid.UUID, message_id: uuid.UUID, requester_id: uuid.UUID) -> bool:
+    """Soft delete: only the sender may delete their own message, and only its
+    content/image is cleared (message_type becomes "deleted") rather than the
+    row being removed — the timestamp and position in history stay, same as
+    WhatsApp/Slack-style "this message was deleted" placeholders. Reuses the
+    existing message_type column (already a free-form Unicode(10)) instead of
+    a new schema column. Returns False (no-op) for a wrong match, a message
+    that isn't the requester's, or one already deleted."""
+    message = await db.get(Message, message_id)
+    if message is None or message.match_id != match_id or message.sender_id != requester_id:
+        return False
+    if message.message_type == "deleted":
+        return False
+    message.message_type = "deleted"
+    message.content = ""
+    message.image_object_path = None
+    message.translated_content = None
+    message.translated_language = None
+    await db.commit()
+    return True
+
+
 async def mark_read(db: AsyncSession, match_id: uuid.UUID, reader_id: uuid.UUID) -> None:
     await db.execute(
         Message.__table__.update()

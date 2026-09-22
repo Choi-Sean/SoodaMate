@@ -14,6 +14,7 @@ from app.services.blind_chat_service import submit_blind_chat_feedback
 from app.services.match_service import (
     HideIdentityError,
     accept_blind_reveal,
+    delete_match,
     get_matched_profile,
     list_matches,
     request_blind_reveal,
@@ -27,6 +28,14 @@ async def get_matches(
     db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
 ) -> list[MatchOut]:
     return await list_matches(db, user.id)
+
+
+@router.delete("/{match_id}", status_code=204)
+async def delete_match_endpoint(
+    match_id: uuid.UUID, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
+) -> None:
+    if not await delete_match(db, match_id, user.id):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "match not found")
 
 
 @router.get("/{match_id}/profile", response_model=CandidateOut)
