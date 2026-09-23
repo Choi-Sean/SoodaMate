@@ -22,6 +22,9 @@ class CallSession(Base):
     callee_id: Mapped[uuid.UUID] = mapped_column("CalleeId", ForeignKey("Users.Id"), nullable=False)
     status: Mapped[str] = mapped_column("Status", Unicode(20), default="ringing", nullable=False)
     # 'ringing' | 'active' | 'ended' | 'declined' | 'missed'
+    call_type: Mapped[str] = mapped_column("CallType", Unicode(10), default="video", nullable=False)
+    # 'video' | 'audio' — same signaling/gating for both, only whether the
+    # caller's getUserMedia() (and the callee's UI) includes a camera track.
     end_reason: Mapped[str | None] = mapped_column("EndReason", Unicode(20), nullable=True)
     # 'hangup' | 'declined' | 'cancelled' | 'timeout' | 'peer_offline'
     started_at: Mapped[datetime] = mapped_column(

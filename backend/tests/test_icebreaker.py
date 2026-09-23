@@ -1,6 +1,6 @@
 import pytest
 
-from tests.helpers import create_user_with_profile
+from tests.helpers import create_ordinary_match, create_user_with_profile
 
 
 @pytest.mark.asyncio
@@ -19,10 +19,7 @@ async def test_icebreaker_prefers_shared_kcontent_over_interests(client):
         json=_profile_body("B", "female", "male", interests=["hiking"], k_content_tags=["newjeans"]),
     )
 
-    like_a = await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-    match_resp = await client.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-    assert match_resp.json()["matched"] is True
-    match_id = match_resp.json()["match_id"]
+    match_id = await create_ordinary_match(a_id, b_id)
 
     resp = await client.get(f"/matches/{match_id}/icebreaker", headers=a_headers)
     assert resp.status_code == 200
@@ -36,9 +33,7 @@ async def test_icebreaker_falls_back_to_generic_with_nothing_shared(client):
     a_id, a_headers = await create_user_with_profile(client, "iceC@example.com", gender="male", interested_in="female")
     b_id, b_headers = await create_user_with_profile(client, "iceD@example.com", gender="female", interested_in="male")
 
-    await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-    match_resp = await client.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-    match_id = match_resp.json()["match_id"]
+    match_id = await create_ordinary_match(a_id, b_id)
 
     resp = await client.get(f"/matches/{match_id}/icebreaker", headers=a_headers)
     assert resp.status_code == 200

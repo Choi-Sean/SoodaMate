@@ -2,7 +2,7 @@ import uuid as uuid_mod
 
 import pytest
 
-from tests.helpers import create_user_with_profile
+from tests.helpers import create_ordinary_match, create_user_with_profile
 
 pytestmark = pytest.mark.asyncio
 
@@ -93,11 +93,7 @@ async def test_cannot_peek_a_non_blind_match(client):
     b_id, b_headers = await create_user_with_profile(client, "peekB4@example.com", gender="female", interested_in="male")
     await _grant_peek_credits(a_id, 1)
 
-    r1 = await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-    assert r1.json()["matched"] is False
-    r2 = await client.post("/interactions/superlike", headers=b_headers, json={"to_user_id": a_id})
-    assert r2.json()["matched"] is True
-    match_id = r2.json()["match_id"]
+    match_id = await create_ordinary_match(a_id, b_id)
 
     resp = await client.post(f"/matches/{match_id}/blind-peek", headers=a_headers)
     assert resp.status_code == 400

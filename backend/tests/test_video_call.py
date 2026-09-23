@@ -4,6 +4,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from app.main import app
+from tests.helpers import create_ordinary_match_sync
 from tests.test_chat_ws import _signup_and_complete_profile
 
 
@@ -18,9 +19,7 @@ def test_video_call_offer_answer_ice_and_hangup():
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
@@ -53,9 +52,7 @@ def test_video_call_only_the_woman_may_call_first_then_it_opens_up_for_both():
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
@@ -84,9 +81,7 @@ def test_video_call_same_gender_pair_is_unrestricted():
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
@@ -111,9 +106,7 @@ def test_video_call_to_offline_peer_ends_immediately_and_sends_a_missed_call_pus
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         # A is never connected via WS in this test. B (the woman) calls him.
         with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
@@ -149,8 +142,8 @@ def test_video_call_offer_to_a_connected_peer_sends_an_incoming_call_push_not_a_
         lambda *a, **k: pytest.fail("must not be called for a connected callee that hasn't timed out"),
     )
 
-    async def fake_send_incoming_call_notification(db, user_id, match_id, caller_id, caller_name):
-        incoming.append((user_id, match_id, caller_id, caller_name))
+    async def fake_send_incoming_call_notification(db, user_id, match_id, caller_id, caller_name, call_type="video"):
+        incoming.append((user_id, match_id, caller_id, caller_name, call_type))
 
     monkeypatch.setattr(ws_chat.push_service, "send_incoming_call_notification", fake_send_incoming_call_notification)
     # No live ring for this test — avoid a background timeout task outliving it.
@@ -162,23 +155,60 @@ def test_video_call_offer_to_a_connected_peer_sends_an_incoming_call_push_not_a_
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
+                # No call_type sent — defaults to "video" (backward compat with
+                # any client that predates audio calling).
                 ws_b.send_json({"type": "call_offer", "match_id": match_id, "sdp": "fake-offer-sdp"})
                 offer = ws_a.receive_json()
                 assert offer["type"] == "call_offer"
+                assert offer["call_type"] == "video"
 
                 deadline = time.time() + 5
                 while not incoming and time.time() < deadline:
                     time.sleep(0.1)
         assert len(incoming) == 1
-        user_id, sent_match_id, caller_id, caller_name = incoming[0]
+        user_id, sent_match_id, caller_id, caller_name, call_type = incoming[0]
         assert str(user_id) == a_id  # the callee being rung, not the caller
         assert str(caller_id) == b_id
+        assert call_type == "video"
+
+
+def test_video_call_offer_with_call_type_audio_is_relayed_and_reflected_in_the_push(monkeypatch):
+    """Same as the test above, but exercises the new call_type="audio" path —
+    added for the audio-calling feature (not just video)."""
+    import app.routers.ws_chat as ws_chat
+
+    incoming = []
+
+    async def fake_send_incoming_call_notification(db, user_id, match_id, caller_id, caller_name, call_type="video"):
+        incoming.append(call_type)
+
+    monkeypatch.setattr(ws_chat.push_service, "send_incoming_call_notification", fake_send_incoming_call_notification)
+    monkeypatch.setattr(ws_chat, "RING_TIMEOUT_SECONDS", 3600)
+
+    with TestClient(app) as tc:
+        a_id, a_token = _signup_and_complete_profile(tc, "vcAudio1@example.com", "male", "female")
+        b_id, b_token = _signup_and_complete_profile(tc, "vcAudio2@example.com", "female", "male")
+        a_headers = {"Authorization": f"Bearer {a_token}"}
+        b_headers = {"Authorization": f"Bearer {b_token}"}
+
+        match_id = create_ordinary_match_sync(a_id, b_id)
+
+        with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
+            with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
+                ws_b.send_json(
+                    {"type": "call_offer", "match_id": match_id, "call_type": "audio", "sdp": "fake-offer-sdp"}
+                )
+                offer = ws_a.receive_json()
+                assert offer["call_type"] == "audio"
+
+                deadline = time.time() + 5
+                while not incoming and time.time() < deadline:
+                    time.sleep(0.1)
+        assert incoming == ["audio"]
 
 
 def test_video_call_unanswered_within_the_ring_window_times_out_and_sends_a_missed_call_push(monkeypatch):
@@ -199,9 +229,7 @@ def test_video_call_unanswered_within_the_ring_window_times_out_and_sends_a_miss
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
@@ -245,9 +273,7 @@ def test_video_call_answered_before_the_ring_window_does_not_time_out(monkeypatc
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
@@ -269,9 +295,7 @@ def test_disconnect_mid_call_notifies_peer():
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
@@ -319,9 +343,7 @@ def test_disconnect_while_still_ringing_sends_the_callee_a_missed_call_push_once
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
             with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:

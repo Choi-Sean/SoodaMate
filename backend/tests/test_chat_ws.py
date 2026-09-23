@@ -5,7 +5,7 @@ from datetime import date
 from starlette.testclient import TestClient
 
 from app.main import app
-from tests.helpers import track_test_user
+from tests.helpers import create_ordinary_match_sync, track_test_user
 
 
 def _signup_and_complete_profile(client: TestClient, email: str, gender: str, interested_in: str) -> tuple[str, str]:
@@ -44,10 +44,7 @@ def test_two_matched_users_exchange_messages_live():
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        assert match_resp.json()["matched"] is True
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
@@ -77,9 +74,7 @@ def test_deleting_own_message_notifies_the_peer_and_blanks_history():
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
@@ -104,9 +99,7 @@ def test_cannot_delete_someone_elses_message_or_delete_twice():
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:

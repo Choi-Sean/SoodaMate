@@ -1,14 +1,12 @@
 import pytest
 
-from tests.helpers import create_user_with_profile
+from tests.helpers import create_ordinary_match, create_user_with_profile
 
 
 async def _make_match(client, email_a="csA@example.com", email_b="csB@example.com"):
     a_id, a_headers = await create_user_with_profile(client, email_a, gender="male", interested_in="female")
     b_id, b_headers = await create_user_with_profile(client, email_b, gender="female", interested_in="male")
-    await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-    match_resp = await client.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-    match_id = match_resp.json()["match_id"]
+    match_id = await create_ordinary_match(a_id, b_id)
     return a_id, a_headers, b_id, b_headers, match_id
 
 

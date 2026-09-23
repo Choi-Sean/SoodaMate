@@ -1,6 +1,6 @@
 import pytest
 
-from tests.helpers import create_user_with_profile
+from tests.helpers import create_ordinary_match, create_user_with_profile
 
 
 @pytest.mark.asyncio
@@ -8,8 +8,7 @@ async def test_deleting_a_match_lets_the_same_pair_match_again(client):
     a_id, a_headers = await create_user_with_profile(client, "delmatch-a@example.com", gender="male", interested_in="female")
     b_id, b_headers = await create_user_with_profile(client, "delmatch-b@example.com", gender="female", interested_in="male")
 
-    await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-    first = await client.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
+    first = await create_ordinary_match(a_id, b_id)
     assert first.json()["matched"] is True
     match_id = first.json()["match_id"]
 

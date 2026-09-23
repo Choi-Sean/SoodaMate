@@ -701,11 +701,11 @@ const translations = {
     ja: "当社は運営上・技術上の必要に応じてサービスの全部または一部を変更または中断することがあり、重要な変更事項はアプリまたはウェブサイトを通じて事前に告知します。",
   },
   "terms.a6.li1": {
-    ko: "남녀 매칭의 경우, 먼저 메시지를 보내거나 영상통화를 걸 수 있는 것은 여성 회원입니다. 여성 회원이 첫 메시지를 보내면 이후에는 양쪽 모두 자유롭게 메시지와 영상통화를 이용할 수 있습니다. 동성 매칭이거나 성별을 \"기타\"로 설정한 경우에는 이 제한이 적용되지 않습니다.",
-    en: "In a man/woman match, only the woman may send the first message or place the first video call. Once she sends the first message, both sides can message and video call freely. This restriction does not apply to same-gender matches or when either profile's gender is set to \"Other.\"",
-    es: "En un match entre hombre y mujer, solo la mujer puede enviar el primer mensaje o hacer la primera videollamada. Una vez que ella envía el primer mensaje, ambas partes pueden enviar mensajes y hacer videollamadas libremente. Esta restricción no se aplica a matches del mismo género ni cuando el género de cualquiera de los perfiles esté configurado como \"Otro.\"",
-    zh: "在男女配对中，只有女性会员可以先发消息或先发起视频通话。女性会员发送第一条消息后，双方即可自由收发消息和进行视频通话。此限制不适用于同性配对，或任一资料的性别设置为「其他」的情况。",
-    ja: "男女のマッチでは、最初のメッセージ送信や最初のビデオ通話の発信ができるのは女性会員のみです。女性会員が最初のメッセージを送信すると、以降は双方が自由にメッセージとビデオ通話を利用できます。同性同士のマッチ、またはいずれかのプロフィールの性別が「その他」に設定されている場合、この制限は適用されません。",
+    ko: "남녀 매칭의 경우, 먼저 메시지를 보내거나 전화(음성·영상통화)를 걸 수 있는 것은 여성 회원입니다. 여성 회원이 첫 메시지를 보내면 이후에는 양쪽 모두 자유롭게 메시지와 전화를 이용할 수 있습니다. 동성 매칭이거나 성별을 \"기타\"로 설정한 경우에는 이 제한이 적용되지 않습니다.",
+    en: "In a man/woman match, only the woman may send the first message or place the first call (voice or video). Once she sends the first message, both sides can message and call freely. This restriction does not apply to same-gender matches or when either profile's gender is set to \"Other.\"",
+    es: "En un match entre hombre y mujer, solo la mujer puede enviar el primer mensaje o hacer la primera llamada (de voz o video). Una vez que ella envía el primer mensaje, ambas partes pueden enviar mensajes y llamar libremente. Esta restricción no se aplica a matches del mismo género ni cuando el género de cualquiera de los perfiles esté configurado como \"Otro.\"",
+    zh: "在男女配对中，只有女性会员可以先发消息或先发起通话（语音或视频）。女性会员发送第一条消息后，双方即可自由收发消息和通话。此限制不适用于同性配对，或任一资料的性别设置为「其他」的情况。",
+    ja: "男女のマッチでは、最初のメッセージ送信や最初の通話（音声・ビデオ）の発信ができるのは女性会員のみです。女性会員が最初のメッセージを送信すると、以降は双方が自由にメッセージと通話を利用できます。同性同士のマッチ、またはいずれかのプロフィールの性別が「その他」に設定されている場合、この制限は適用されません。",
   },
   "terms.a6.li2": {
     ko: "블라인드 채팅은 원칙적으로 양측이 모두 동의해야만 서로의 프로필(이름, 사진 등)이 공개됩니다. 다만 유료 아이템 \"몰래보기권\"을 구매·사용한 회원은 상대방의 동의 없이 상대방의 프로필을 확인할 수 있으며, 이 경우에도 상대방에게는 프로필이 확인되었다는 사실이 별도로 통지되지 않습니다.",

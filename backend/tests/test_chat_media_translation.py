@@ -5,7 +5,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from app.main import app
-from tests.helpers import track_test_user
+from tests.helpers import create_ordinary_match_sync, track_test_user
 
 
 def _signup_and_complete_profile(
@@ -47,9 +47,7 @@ def test_image_message_round_trips_with_image_url():
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         presign = tc.post(
             "/uploads/presign-chat-image", headers=b_headers, json={"content_type": "image/jpeg"}
@@ -99,9 +97,7 @@ def test_chat_message_is_translated_when_languages_differ(monkeypatch):
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
@@ -138,8 +134,7 @@ def test_translate_message_endpoint_rejects_bad_language_and_foreign_match(monke
         b_headers = {"Authorization": f"Bearer {b_token}"}
         outsider_headers = {"Authorization": f"Bearer {outsider_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_id = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id}).json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
                 ws_b.send_json({"type": "message", "match_id": match_id, "content": "hi"})

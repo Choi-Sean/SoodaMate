@@ -19,6 +19,8 @@ export type CallPhase = "idle" | "outgoing" | "incoming" | "active";
 // Matches CALL_END_REASONS in backend/app/routers/ws_chat.py.
 export type CallEndReason = "hangup" | "declined" | "busy" | "missed" | "timeout" | "peer_offline" | "error";
 
+export type CallType = "video" | "audio";
+
 interface CallPeer {
   matchId: string;
   otherUserId: string;
@@ -29,6 +31,7 @@ interface CallPeer {
 interface CallState {
   phase: CallPhase;
   peer: CallPeer | null;
+  callType: CallType;
   localStreamURL: string | null;
   remoteStreamURL: string | null;
   isMuted: boolean;
@@ -41,7 +44,7 @@ interface CallState {
 }
 
 interface CallContextValue extends CallState {
-  startCall: (peer: CallPeer) => Promise<void>;
+  startCall: (peer: CallPeer, callType?: CallType) => Promise<void>;
   acceptCall: () => Promise<void>;
   declineCall: () => void;
   hangUp: () => void;
@@ -52,6 +55,7 @@ interface CallContextValue extends CallState {
 const initialState: CallState = {
   phase: "idle",
   peer: null,
+  callType: "video",
   localStreamURL: null,
   remoteStreamURL: null,
   isMuted: false,
@@ -138,13 +142,13 @@ export function CallProvider({ children }: { children: ReactNode }) {
   );
 
   const startCall = useCallback(
-    async (peer: CallPeer) => {
+    async (peer: CallPeer, callType: CallType = "video") => {
       if (!webrtcAvailable) return;
       if (state.phase !== "idle") return;
-      setState({ ...initialState, phase: "outgoing", peer });
+      setState({ ...initialState, phase: "outgoing", peer, callType });
       isCallerRef.current = true;
       try {
-        const localStream = await mediaDevices.getUserMedia({ audio: true, video: true });
+        const localStream = await mediaDevices.getUserMedia({ audio: true, video: callType === "video" });
         localStreamRef.current = localStream;
         setState((prev) => ({ ...prev, localStreamURL: localStream.toURL() }));
 
@@ -153,7 +157,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
         const offer = await pc.createOffer({});
         await pc.setLocalDescription(offer);
-        send({ type: "call_offer", match_id: peer.matchId, sdp: offer.sdp });
+        send({ type: "call_offer", match_id: peer.matchId, call_type: callType, sdp: offer.sdp });
       } catch {
         teardown("error");
       }
@@ -165,7 +169,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
     if (state.phase !== "incoming" || !state.peer || !callIdRef.current) return;
     Vibration.cancel();
     try {
-      const localStream = await mediaDevices.getUserMedia({ audio: true, video: true });
+      const localStream = await mediaDevices.getUserMedia({ audio: true, video: state.callType === "video" });
       localStreamRef.current = localStream;
       setState((prev) => ({ ...prev, phase: "active", localStreamURL: localStream.toURL() }));
 
@@ -179,7 +183,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       send({ type: "call_end", call_id: callIdRef.current, reason: "error" });
       teardown("error");
     }
-  }, [state.phase, state.peer, send, teardown]);
+  }, [state.phase, state.peer, state.callType, send, teardown]);
 
   const declineCall = useCallback(() => {
     if (callIdRef.current) send({ type: "call_end", call_id: callIdRef.current, reason: "declined" });
@@ -238,6 +242,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           setState({
             ...initialState,
             phase: "incoming",
+            callType: data.call_type === "audio" ? "audio" : "video",
             peer: {
               matchId: data.match_id,
               otherUserId: data.caller_id,

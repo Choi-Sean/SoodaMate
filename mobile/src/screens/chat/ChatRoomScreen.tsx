@@ -377,7 +377,12 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
 
   function handleStartCall() {
     if (!canCall) return;
-    call.startCall({ matchId, otherUserId, otherDisplayName, otherGender: match?.other_gender ?? null });
+    call.startCall({ matchId, otherUserId, otherDisplayName, otherGender: match?.other_gender ?? null }, "video");
+  }
+
+  function handleStartVoiceCall() {
+    if (!canCall) return;
+    call.startCall({ matchId, otherUserId, otherDisplayName, otherGender: match?.other_gender ?? null }, "audio");
   }
 
   useLayoutEffect(() => {
@@ -405,14 +410,24 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
       headerRight: () => (
         <View style={styles.headerRightRow}>
           {webrtcAvailable && mutuallyRevealed && !isExpired && (
-            <Pressable
-              onPress={handleStartCall}
-              disabled={!canCall}
-              hitSlop={12}
-              style={[styles.callButton, !canCall && styles.callButtonDisabled]}
-            >
-              <Ionicons name="videocam" size={20} color={canCall ? colors.accentDark : colors.muted} />
-            </Pressable>
+            <>
+              <Pressable
+                onPress={handleStartVoiceCall}
+                disabled={!canCall}
+                hitSlop={12}
+                style={[styles.callButton, !canCall && styles.callButtonDisabled]}
+              >
+                <Ionicons name="call" size={19} color={canCall ? colors.accentDark : colors.muted} />
+              </Pressable>
+              <Pressable
+                onPress={handleStartCall}
+                disabled={!canCall}
+                hitSlop={12}
+                style={[styles.callButton, !canCall && styles.callButtonDisabled]}
+              >
+                <Ionicons name="videocam" size={20} color={canCall ? colors.accentDark : colors.muted} />
+              </Pressable>
+            </>
           )}
           <Pressable onPress={openMenu} hitSlop={12} style={styles.menuButton}>
             <Text style={styles.menuButtonText}>⋯</Text>

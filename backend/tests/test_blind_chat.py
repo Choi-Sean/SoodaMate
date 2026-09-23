@@ -1,7 +1,7 @@
 import uuid
 import pytest
 
-from tests.helpers import create_user_with_profile
+from tests.helpers import create_ordinary_match, create_user_with_profile
 
 
 @pytest.mark.asyncio
@@ -687,10 +687,7 @@ async def test_blind_feedback_rejects_non_blind_match(client):
     b_id, b_headers = await create_user_with_profile(
         client, "fbSwipeB@example.com", gender="female", interested_in="male"
     )
-    await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-    matched = await client.post(
-        "/interactions/superlike", headers=b_headers, json={"to_user_id": a_id}
-    )
+    matched = await create_ordinary_match(a_id, b_id)
     match_id = matched.json()["match_id"]
 
     resp = await client.post(

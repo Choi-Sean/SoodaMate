@@ -28,6 +28,7 @@
     "someone": "Alguien",
     "calling": "Llamando...",
     "incoming": "Videollamada entrante",
+    "incomingAudio": "Llamada entrante",
     "endedDeclined": "Llamada rechazada",
     "endedNoAnswer": "Sin respuesta",
     "endedOffline": "No está disponible ahora",

@@ -2,7 +2,10 @@ import uuid
 from datetime import date
 
 from sqlalchemy import delete
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 
+from app.config import settings
 from app.database import async_session_factory
 from app.models.interaction import Block, Match, Report, Swipe
 from app.models.user import User
@@ -20,6 +23,77 @@ def track_test_user(user_id: str) -> str:
     callers can wrap it inline."""
     _tracked_user_ids.append(user_id)
     return user_id
+
+
+def _throwaway_session_factory():
+    """A brand-new engine/pool, entirely separate from app.database.engine —
+    used only by the two helpers below. Deliberately NOT the app's shared
+    async_session_factory: that engine's async internals get bound to
+    whichever event loop first touches it, and create_ordinary_match_sync
+    below runs its own throwaway asyncio.run() loop, distinct from both
+    pytest-asyncio's per-function loop and Starlette TestClient's own
+    background portal loop. Reusing the shared engine across a THIRD loop
+    silently deadlocked the *next* test's DB access on the app's real engine
+    (confirmed empirically — see app/database.py's own NullPool comment for
+    the first, related cross-loop failure mode this test suite already hit).
+    A fully separate engine, created and disposed within the same single
+    loop it's used in, never touches the shared one at all."""
+    engine = create_async_engine(settings.database_url, poolclass=NullPool, deprecate_large_types=True)
+    return engine, async_sessionmaker(engine, expire_on_commit=False)
+
+
+async def record_swipe_direct(from_user_id: str, to_user_id: str, action: str) -> dict:
+    """Calls match_service.record_swipe directly (bypassing the now-
+    discontinued /interactions/like + /superlike HTTP endpoints — see
+    routers/interactions.py) for tests that need one single, specific swipe
+    action rather than a full mutual match (e.g. exercising GET /discovery/
+    liked-me's superliked_me flag). Returns {"matched": bool, "match_id": str|None}."""
+    from app.services.match_service import record_swipe
+
+    engine, session_factory = _throwaway_session_factory()
+    try:
+        async with session_factory() as session:
+            result = await record_swipe(session, uuid.UUID(from_user_id), uuid.UUID(to_user_id), action)
+    finally:
+        await engine.dispose()
+    return {"matched": result.matched, "match_id": str(result.match_id) if result.match_id else None}
+
+
+async def create_ordinary_match(user_a_id: str, user_b_id: str) -> str:
+    """Creates a non-blind Match the same real way /interactions/like +
+    /interactions/superlike used to (via match_service.record_swipe — the
+    actual stored proc and match-creation semantics, not a synthetic DB
+    insert), bypassing the HTTP layer directly. Those two endpoints were
+    discontinued (see routers/interactions.py) since nothing in the app can
+    reach them anymore, but plenty of unrelated tests (chat, video/voice
+    call, couple stories, icebreaker, delete-match, ...) still need *a*
+    match to test on top of. Two separate sessions, matching the isolation
+    the old two-HTTP-request flow had."""
+    from app.services.match_service import record_swipe
+
+    engine, session_factory = _throwaway_session_factory()
+    try:
+        async with session_factory() as session:
+            await record_swipe(session, uuid.UUID(user_a_id), uuid.UUID(user_b_id), "like")
+        async with session_factory() as session:
+            result = await record_swipe(session, uuid.UUID(user_b_id), uuid.UUID(user_a_id), "like")
+    finally:
+        await engine.dispose()
+    return str(result.match_id)
+
+
+def create_ordinary_match_sync(user_a_id: str, user_b_id: str) -> str:
+    """Sync wrapper of create_ordinary_match for the TestClient-based
+    (non-httpx, non-pytest-asyncio) test modules — test_chat_ws.py and
+    test_video_call.py drive everything through the sync Starlette
+    TestClient and have no running event loop of their own to await into.
+    Safe specifically because create_ordinary_match never touches the app's
+    shared engine (see _throwaway_session_factory's docstring) — this
+    asyncio.run() loop is used and torn down without ever crossing into the
+    TestClient portal's own separate loop."""
+    import asyncio
+
+    return asyncio.run(create_ordinary_match(user_a_id, user_b_id))
 
 
 async def cleanup_tracked_test_users() -> None:

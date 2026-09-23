@@ -1,6 +1,6 @@
 import pytest
 
-from tests.helpers import create_user_with_profile
+from tests.helpers import create_ordinary_match, create_user_with_profile, record_swipe_direct
 
 
 @pytest.mark.asyncio
@@ -36,8 +36,11 @@ async def test_liked_me_excludes_already_matched_and_already_responded(client):
     b_id, b_headers = await create_user_with_profile(client, "liked-b@example.com", gender="female", interested_in="male")
     c_id, c_headers = await create_user_with_profile(client, "liked-c@example.com", gender="female", interested_in="male")
 
-    await client.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-    await client.post("/interactions/superlike", headers=c_headers, json={"to_user_id": a_id})
+    # Direct calls, not the (now-discontinued) /interactions/like +
+    # /superlike HTTP endpoints — see routers/interactions.py — but the same
+    # real record_swipe logic this endpoint used to run.
+    await record_swipe_direct(b_id, a_id, "like")
+    await record_swipe_direct(c_id, a_id, "superlike")
 
     liked_me = (await client.get("/discovery/liked-me", headers=a_headers)).json()
     liked_me_ids = {c["user_id"] for c in liked_me}
@@ -47,8 +50,8 @@ async def test_liked_me_excludes_already_matched_and_already_responded(client):
 
     # A likes B back -> instant match (B already liked A) -> B drops out of
     # A's liked-me (already matched), C should remain.
-    match_resp = await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-    assert match_resp.json()["matched"] is True
+    match_result = await record_swipe_direct(a_id, b_id, "like")
+    assert match_result["matched"] is True
 
     liked_me_after_match = (await client.get("/discovery/liked-me", headers=a_headers)).json()
     assert {c["user_id"] for c in liked_me_after_match} == {c_id}
@@ -64,8 +67,7 @@ async def test_matches_include_other_users_photo_url(client):
     a_id, a_headers = await create_user_with_profile(client, "photo-a@example.com", gender="male", interested_in="female")
     b_id, b_headers = await create_user_with_profile(client, "photo-b@example.com", gender="female", interested_in="male")
 
-    await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-    await client.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
+    await create_ordinary_match(a_id, b_id)
 
     matches = (await client.get("/matches", headers=a_headers)).json()
     assert len(matches) == 1

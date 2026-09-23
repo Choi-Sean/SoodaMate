@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from starlette.testclient import TestClient
 
 from app.main import app
+from tests.helpers import create_ordinary_match_sync
 from tests.test_chat_ws import _signup_and_complete_profile
 
 
@@ -14,9 +15,7 @@ def test_male_first_message_rejected_with_error_frame():
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             ws_a.send_json({"type": "message", "match_id": match_id, "content": "hi, I'm the man"})
@@ -35,9 +34,7 @@ def test_female_sends_first_then_either_can_message():
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
             with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
@@ -58,9 +55,7 @@ def test_expired_match_shown_inactive_history_readable_but_send_rejected():
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         from app.database import async_session_factory
         from app.models.interaction import Match
@@ -110,9 +105,7 @@ def test_same_gender_match_is_unrestricted_from_either_side():
         a_headers = {"Authorization": f"Bearer {a_token}"}
         b_headers = {"Authorization": f"Bearer {b_token}"}
 
-        tc.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-        match_resp = tc.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-        match_id = match_resp.json()["match_id"]
+        match_id = create_ordinary_match_sync(a_id, b_id)
 
         matches = tc.get("/matches", headers=a_headers).json()
         this_match = next(m for m in matches if m["id"] == match_id)

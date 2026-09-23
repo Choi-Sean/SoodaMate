@@ -238,6 +238,7 @@ async def _handle_call_offer(db: AsyncSession, user: User, data: dict) -> None:
         return
     if not _sdp_ok(sdp):
         return
+    call_type = data.get("call_type") if data.get("call_type") in ("video", "audio") else "video"
 
     match = await chat_service.get_active_match_for_user(db, match_id, user.id)
     if match is None:
@@ -258,7 +259,7 @@ async def _handle_call_offer(db: AsyncSession, user: User, data: dict) -> None:
         return
     peer_id = chat_service.other_participant(match, user.id)
 
-    call = await call_service.create_call(db, match_id, caller_id=user.id, callee_id=peer_id)
+    call = await call_service.create_call(db, match_id, caller_id=user.id, callee_id=peer_id, call_type=call_type)
     caller_profile = await db.get(Profile, user.id)
     caller_name = caller_profile.display_name if caller_profile else "SooDaMate"
 
@@ -277,7 +278,7 @@ async def _handle_call_offer(db: AsyncSession, user: User, data: dict) -> None:
     # A normal push plays the OS's default sound/vibration once, which is what
     # actually gets a backgrounded phone's attention — not a continuously
     # ringing call screen (see send_incoming_call_notification's docstring).
-    await push_service.send_incoming_call_notification(db, peer_id, match_id, user.id, caller_name)
+    await push_service.send_incoming_call_notification(db, peer_id, match_id, user.id, caller_name, call_type=call_type)
     asyncio.create_task(_ring_timeout(call.id, caller_id=user.id, callee_id=peer_id, match_id=match_id))
 
     await manager.send_to_user(
@@ -287,6 +288,7 @@ async def _handle_call_offer(db: AsyncSession, user: User, data: dict) -> None:
             "call_id": str(call.id),
             "match_id": str(match_id),
             "caller_id": str(user.id),
+            "call_type": call_type,
             "sdp": sdp,
         },
     )

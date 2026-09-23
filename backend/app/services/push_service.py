@@ -112,7 +112,12 @@ async def send_like_notification(db: AsyncSession, user_id: uuid.UUID, superlike
 
 
 async def send_incoming_call_notification(
-    db: AsyncSession, user_id: uuid.UUID, match_id: uuid.UUID, caller_id: uuid.UUID, caller_name: str
+    db: AsyncSession,
+    user_id: uuid.UUID,
+    match_id: uuid.UUID,
+    caller_id: uuid.UUID,
+    caller_name: str,
+    call_type: str = "video",
 ) -> None:
     """Sent alongside the live call_offer WS frame (routers/ws_chat.py::
     _handle_call_offer) when the callee IS connected — a normal push still plays
@@ -123,12 +128,13 @@ async def send_incoming_call_notification(
     in-app incoming-call screen is what "rings" for as long as the app is
     open."""
     lang = await _get_language(db, user_id)
+    body_key = "incoming_call_body_audio" if call_type == "audio" else "incoming_call_body"
     await send_to_user(
         db,
         user_id,
         caller_name,
-        push_i18n.t(lang, "incoming_call_body"),
-        {"type": "incoming_call", "match_id": str(match_id), "caller_id": str(caller_id)},
+        push_i18n.t(lang, body_key),
+        {"type": "incoming_call", "match_id": str(match_id), "caller_id": str(caller_id), "call_type": call_type},
     )
 
 

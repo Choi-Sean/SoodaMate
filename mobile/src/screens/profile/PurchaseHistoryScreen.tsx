@@ -8,12 +8,15 @@ import { getPurchaseHistory } from "../../api/payments";
 import type { PurchaseHistoryItem } from "../../types";
 import { colors } from "../../theme";
 
+// superlike/boost intentionally absent — Classic Matching's swipe/discovery
+// UI (and its superlike/boost items) is discontinued (see backend routers/
+// interactions.py); a legacy purchase of either kind from before that falls
+// back to the generic "cart" icon below rather than a dedicated one.
 const ICON_BY_KIND: Record<string, keyof typeof Ionicons.glyphMap> = {
   ai_match: "sparkles",
   unlimited_matching_days: "infinite",
   membership: "star",
-  superlike: "star",
-  boost: "rocket",
+  blind_peek: "eye",
 };
 
 /** Every completed Stripe purchase, newest first — lets a user confirm a

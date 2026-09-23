@@ -28,6 +28,7 @@
     "someone": "Someone",
     "calling": "Calling...",
     "incoming": "Incoming video call",
+    "incomingAudio": "Incoming call",
     "endedDeclined": "Call declined",
     "endedNoAnswer": "No answer",
     "endedOffline": "They're not available right now",

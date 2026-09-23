@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
@@ -51,13 +51,23 @@ export default function CallOverlay() {
   const name = call.peer?.otherDisplayName || t("call.someone");
   const genderIconName = call.peer?.otherGender === "male" ? "male" : call.peer?.otherGender === "female" ? "female" : null;
 
+  const isAudioCall = call.callType === "audio";
+
   return (
     <Modal visible animationType="slide" onRequestClose={() => {}}>
       <View style={styles.container}>
-        {call.phase === "active" && call.remoteStreamURL ? (
+        {!isAudioCall && call.phase === "active" && call.remoteStreamURL ? (
           <RTCView streamURL={call.remoteStreamURL} style={styles.remoteVideo} objectFit="cover" />
         ) : (
-          <View style={[styles.remoteVideo, styles.remotePlaceholder]} />
+          <View style={[styles.remoteVideo, styles.remotePlaceholder]}>
+            {isAudioCall && (
+              <Image
+                source={require("../../assets/logo-mascot.png")}
+                style={styles.audioMascot}
+                resizeMode="contain"
+              />
+            )}
+          </View>
         )}
 
         {/* Name shown at the top of the call screen throughout — masked "S***"
@@ -70,10 +80,14 @@ export default function CallOverlay() {
           {genderIconName && <Ionicons name={genderIconName} size={16} color="#fff" style={styles.nameGenderIcon} />}
         </View>
         <Text style={styles.statusText}>
-          {call.phase === "outgoing" ? t("call.calling") : call.phase === "incoming" ? t("call.incoming") : ""}
+          {call.phase === "outgoing"
+            ? t("call.calling")
+            : call.phase === "incoming"
+              ? t(isAudioCall ? "call.incomingAudio" : "call.incoming")
+              : ""}
         </Text>
 
-        {call.phase === "active" && call.localStreamURL && (
+        {!isAudioCall && call.phase === "active" && call.localStreamURL && (
           <RTCView streamURL={call.localStreamURL} style={styles.localVideo} objectFit="cover" mirror zOrder={1} />
         )}
 
@@ -112,7 +126,8 @@ export default function CallOverlay() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#0B2944", alignItems: "center" },
   remoteVideo: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
-  remotePlaceholder: { backgroundColor: "#0B3B63" },
+  remotePlaceholder: { backgroundColor: "#0B3B63", alignItems: "center", justifyContent: "center" },
+  audioMascot: { width: 140, height: 140, opacity: 0.9 },
   nameBar: { flexDirection: "row", alignItems: "center", marginTop: 90, paddingHorizontal: 24 },
   nameText: { color: "#fff", fontSize: 26, fontWeight: "800" },
   nameGenderIcon: { marginLeft: 8 },
