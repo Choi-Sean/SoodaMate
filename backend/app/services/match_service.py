@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import and_, delete, exists, func, or_, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.user_lock import user_lock
 from app.models.interaction import Block, Match, Report, Swipe
 from app.models.profile import Photo, Profile
 from app.models.user import User
@@ -143,6 +144,13 @@ def _mask_display_name(name: str) -> str:
 mask_display_name = _mask_display_name  # public alias: chat push notifications mask the same way
 
 
+def _has_peeked(m: Match, viewer_id: uuid.UUID) -> bool:
+    """Whether `viewer_id` has spent their own stealth-peek credit on this
+    match (services/match_service.use_blind_peek) — per-viewer, never the
+    peer's flag, so this can only ever unmask the caller's own view."""
+    return m.blind_peeked_by_user_a if m.user_a_id == viewer_id else m.blind_peeked_by_user_b
+
+
 def _age(birth_date: date) -> int:
     today = date.today()
     return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
@@ -165,7 +173,15 @@ def _build_match_out(
     bio2 = profile.bio2 if profile else None
     bio3 = profile.bio3 if profile else None
 
-    hide_identity = m.is_blind and not m.blind_revealed
+    viewer_peeked = _has_peeked(m, viewer_id)
+    # still_anonymous drives the mutual-reveal request/accept UI, which stays
+    # available even after a one-sided peek — peeking is a private shortcut
+    # for the peeker alone, not a substitute for actually, honestly revealing
+    # both ways. hide_identity is the narrower "does THIS viewer's own copy
+    # of MatchOut need its name/photo masked" question, which peeking does
+    # answer (no, not for them).
+    still_anonymous = m.is_blind and not m.blind_revealed
+    hide_identity = still_anonymous and not viewer_peeked
     if hide_identity:
         display_name = _mask_display_name(display_name)
         photo_url = None
@@ -195,13 +211,14 @@ def _build_match_out(
         blind_categories=[c for c in (m.blind_categories or "").split(",") if c],
         blind_revealed=m.blind_revealed,
         can_request_reveal=(
-            hide_identity
+            still_anonymous
             and (m.blind_reveal_eligible_user_id is None or m.blind_reveal_eligible_user_id == viewer_id)
         ),
         has_incoming_reveal_request=(
-            hide_identity and m.blind_reveal_requested_by is not None and m.blind_reveal_requested_by != viewer_id
+            still_anonymous and m.blind_reveal_requested_by is not None and m.blind_reveal_requested_by != viewer_id
         ),
         reveal_requested_by_me=m.blind_reveal_requested_by == viewer_id,
+        has_peeked=viewer_peeked,
     )
 
 
@@ -246,6 +263,39 @@ async def accept_blind_reveal(db: AsyncSession, match_id: uuid.UUID, user_id: uu
     return await get_match_out(db, match_id, user_id)
 
 
+async def use_blind_peek(db: AsyncSession, match_id: uuid.UUID, user_id: uuid.UUID) -> MatchOut | None:
+    """Spends 1 Profile.stealth_peek_credits to let `user_id` alone see the
+    other side's real profile in a still-anonymous blind match — deliberately
+    the mirror image of request_blind_reveal/accept_blind_reveal above:
+    no peer consent, no WS event, no push, and blind_revealed never flips.
+    Idempotent — peeking again on a match already peeked just re-returns the
+    current state, free (never double-charges, never re-checks the credit
+    balance the second time)."""
+    match = await db.get(Match, match_id)
+    if match is None or user_id not in (match.user_a_id, match.user_b_id):
+        return None
+    if not match.is_blind or match.blind_revealed:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "not an anonymous blind match")
+    if _has_peeked(match, user_id):
+        return await get_match_out(db, match_id, user_id)
+
+    # Grants and spends of the same user's credits are serialized (see
+    # core/user_lock.py) so this can't interleave with a webhook grant (or
+    # another spend) and lose an update — same convention as payment_service.
+    async with user_lock(f"credits:{user_id}"):
+        profile = await db.get(Profile, user_id)
+        if profile is None or profile.stealth_peek_credits < 1:
+            raise HTTPException(status.HTTP_402_PAYMENT_REQUIRED, "no stealth peek credits")
+        profile.stealth_peek_credits -= 1
+        if match.user_a_id == user_id:
+            match.blind_peeked_by_user_a = True
+        else:
+            match.blind_peeked_by_user_b = True
+        await db.commit()
+
+    return await get_match_out(db, match_id, user_id)
+
+
 def _comma_list(value: str | None) -> list[str]:
     return [v for v in (value or "").split(",") if v]
 
@@ -270,7 +320,7 @@ async def get_matched_profile(db: AsyncSession, match_id: uuid.UUID, viewer_id: 
     m = await db.get(Match, match_id)
     if m is None or viewer_id not in (m.user_a_id, m.user_b_id):
         return None
-    if m.is_blind and not m.blind_revealed:
+    if m.is_blind and not m.blind_revealed and not _has_peeked(m, viewer_id):
         raise HideIdentityError()
 
     other_id = m.user_b_id if m.user_a_id == viewer_id else m.user_a_id

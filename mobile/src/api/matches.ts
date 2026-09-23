@@ -38,6 +38,18 @@ export async function acceptBlindReveal(matchId: string): Promise<Match> {
   return resp.data;
 }
 
+/** Spends 1 stealth_peek_credit (shop product blind_peek_1) so *I* alone can
+ * see the other side's real profile in a still-anonymous blind match — the
+ * other side is never told. Throws a 402 (axios error, response.status)
+ * when there are no credits left; the caller sends the buyer to the shop.
+ * Named spendBlindPeek, not useBlindPeek — it's a plain API call fired from
+ * an event handler, and a "use..." name would make eslint's rules-of-hooks
+ * (wrongly) treat it as a hook. */
+export async function spendBlindPeek(matchId: string): Promise<Match> {
+  const resp = await apiClient.post<Match>(`/matches/${matchId}/blind-peek`);
+  return resp.data;
+}
+
 export async function submitBlindFeedback(
   matchId: string,
   input: BlindChatFeedbackInput

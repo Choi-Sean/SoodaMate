@@ -707,6 +707,13 @@ const translations = {
     zh: "在男女配对中，只有女性会员可以先发消息或先发起视频通话。女性会员发送第一条消息后，双方即可自由收发消息和进行视频通话。此限制不适用于同性配对，或任一资料的性别设置为「其他」的情况。",
     ja: "男女のマッチでは、最初のメッセージ送信や最初のビデオ通話の発信ができるのは女性会員のみです。女性会員が最初のメッセージを送信すると、以降は双方が自由にメッセージとビデオ通話を利用できます。同性同士のマッチ、またはいずれかのプロフィールの性別が「その他」に設定されている場合、この制限は適用されません。",
   },
+  "terms.a6.li2": {
+    ko: "블라인드 채팅은 원칙적으로 양측이 모두 동의해야만 서로의 프로필(이름, 사진 등)이 공개됩니다. 다만 유료 아이템 \"몰래보기권\"을 구매·사용한 회원은 상대방의 동의 없이 상대방의 프로필을 확인할 수 있으며, 이 경우에도 상대방에게는 프로필이 확인되었다는 사실이 별도로 통지되지 않습니다.",
+    en: "In Blind Chat, profiles (name, photos, etc.) are normally revealed to each other only once both sides agree. However, a member who purchases and uses the paid \"Secret Peek\" item may view the other side's profile without their consent, and the other side is not notified that this happened.",
+    es: "En el Chat a ciegas, los perfiles (nombre, fotos, etc.) normalmente solo se revelan entre sí cuando ambas partes lo aceptan. Sin embargo, un miembro que compre y use el artículo de pago \"Vistazo secreto\" puede ver el perfil de la otra persona sin su consentimiento, y a esa persona no se le notifica que esto ocurrió.",
+    zh: "在盲聊中，双方资料（姓名、照片等）原则上须经双方同意才会互相公开。但购买并使用付费道具「偷看卡」的会员，可在未经对方同意的情况下查看对方资料，且对方不会收到查看行为已发生的任何通知。",
+    ja: "ブラインドチャットでは、原則として双方が同意した場合にのみお互いのプロフィール（名前・写真など）が公開されます。ただし、有料アイテム「こっそり閲覧権」を購入・使用した会員は、相手の同意なしに相手のプロフィールを確認できます。その場合も、確認された事実が相手に通知されることはありません。",
+  },
   "terms.a7.title": { ko: "제7조 (계정 삭제)", en: "Article 7 (Account Deletion)", es: "Artículo 7 (Eliminación de cuenta)", zh: "第7条（账户删除）", ja: "第7条（アカウント削除）" },
   "terms.a7.body": {
     ko: '이용자는 앱 내 "설정 &gt; 계정 삭제"를 통해 언제든지 자유롭게 탈퇴할 수 있으며, 관련 개인정보 처리는 개인정보처리방침에 따릅니다.',
@@ -931,6 +938,14 @@ const translations = {
     es: "Sáltate la cola de Chat a ciegas — te empareja al instante con tu mejor match.",
     zh: "跳过盲聊排队，立即匹配最合适的对象。",
     ja: "ブラインドチャットの順番待ちなしで、最も相性の良い相手とすぐマッチング。",
+  },
+  "shop.product.blind_peek_1.name": { ko: "몰래보기권 1회", en: "Secret Peek x1", es: "1 Vistazo secreto", zh: "偷看卡 x1", ja: "こっそり閲覧 ×1" },
+  "shop.product.blind_peek_1.desc": {
+    ko: "블라인드 채팅에서 상대방 모르게 프로필을 1회 확인할 수 있어요. 상대방에게는 전혀 알림이 가지 않아요.",
+    en: "See a Blind Chat match's real profile once, without them ever being told.",
+    es: "Mira el perfil real de un match de Chat a ciegas una vez, sin que se entere.",
+    zh: "在盲聊中可偷偷查看对方的真实资料一次，对方完全不会收到通知。",
+    ja: "ブラインドチャットの相手の本当のプロフィールを1回だけ、相手に知られずに見られます。",
   },
   "shop.product.unlimited_matching_week.name": {
     ko: "무제한 매칭 1주일", en: "Unlimited Matching — 1 week", es: "Matching ilimitado — 1 semana",

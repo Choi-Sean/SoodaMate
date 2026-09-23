@@ -79,6 +79,13 @@ class Profile(Base):
     unlimited_matching_until: Mapped[datetime | None] = mapped_column(
         "UnlimitedMatchingUntil", DateTime(timezone=True), nullable=True
     )
+    # Blind-chat "stealth peek" item (see services/match_service.use_blind_peek):
+    # 1 credit lets the buyer alone see the other side's real profile in an
+    # otherwise still-anonymous blind match, without the other side ever being
+    # told. Gender-neutral, unlike the Bumble first-message/first-call rules —
+    # anyone can buy and use it. Same consumable-credit shape as the fields
+    # above.
+    stealth_peek_credits: Mapped[int] = mapped_column("StealthPeekCredits", Integer, default=0, nullable=False)
     # Rewarded-ad bonus: watching one ad grants +1 blind match for that
     # calendar day (UTC — see get_blind_chat_limit_status), same
     # once-per-day date-stamp pattern as free_superlike_used_on above,

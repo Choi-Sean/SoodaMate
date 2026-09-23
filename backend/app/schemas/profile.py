@@ -133,6 +133,7 @@ class ProfileOut(BaseModel):
     boost_active_until: datetime | None = None
     ai_match_credits: int = 0
     unlimited_matching_until: datetime | None = None
+    stealth_peek_credits: int = 0
     is_incognito: bool = False
     travel_lat: float | None = None
     travel_lng: float | None = None

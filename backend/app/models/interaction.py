@@ -85,6 +85,15 @@ class Match(Base):
     blind_reveal_requested_by: Mapped[uuid.UUID | None] = mapped_column(
         "BlindRevealRequestedBy", ForeignKey("Users.Id"), nullable=True
     )
+    # Paid "stealth peek" item (services/match_service.use_blind_peek): lets
+    # one side alone see the other's real profile while the match stays
+    # blind for everyone else, including the peer — deliberately NOT a single
+    # nullable "who peeked" column, since either or both sides could buy and
+    # use their own peek independently. Never flips blind_revealed and never
+    # notifies the peer; each flag only ever unmasks that one user's own view
+    # (services/match_service._build_match_out / get_matched_profile).
+    blind_peeked_by_user_a: Mapped[bool] = mapped_column("BlindPeekedByUserA", Boolean, default=False, nullable=False)
+    blind_peeked_by_user_b: Mapped[bool] = mapped_column("BlindPeekedByUserB", Boolean, default=False, nullable=False)
 
 
 class Block(Base):

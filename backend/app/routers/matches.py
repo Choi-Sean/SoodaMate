@@ -18,6 +18,7 @@ from app.services.match_service import (
     get_matched_profile,
     list_matches,
     request_blind_reveal,
+    use_blind_peek,
 )
 
 router = APIRouter(prefix="/matches", tags=["matches"])
@@ -87,6 +88,19 @@ async def blind_reveal_accept(
     match_id: uuid.UUID, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
 ) -> MatchOut:
     result = await accept_blind_reveal(db, match_id, user.id)
+    if result is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "match not found")
+    return result
+
+
+@router.post("/{match_id}/blind-peek", response_model=MatchOut)
+async def blind_peek(
+    match_id: uuid.UUID, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
+) -> MatchOut:
+    """Consumes 1 Profile.stealth_peek_credits (shop product blind_peek_1) to
+    let the caller alone see the other side's real profile in a still-
+    anonymous blind match — no consent, no notice to the peer."""
+    result = await use_blind_peek(db, match_id, user.id)
     if result is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "match not found")
     return result

@@ -62,6 +62,20 @@ PRODUCTS: dict[str, dict] = {
         "days": 30,
         "price_usd_cents": 699,
     },
+    # Gender-neutral, unlike the Bumble-style first-message/first-call rules —
+    # anyone can buy and use it. Consumed by POST /matches/{id}/blind-peek
+    # (services/match_service.use_blind_peek): lets the buyer alone see the
+    # other side's real profile in a still-anonymous blind match, without the
+    # other side ever finding out. See soodamate-blind-chat-open-decisions-
+    # style product note: this one-sidedly breaks Blind Chat's "mutual
+    # consent to reveal" promise, so the same disclosure was added to
+    # terms.html (Article 6).
+    "blind_peek_1": {
+        "name": "몰래보기권 1회",
+        "credit_kind": "blind_peek",
+        "credits": 1,
+        "price_usd_cents": 299,
+    },
     # Real recurring Stripe Subscriptions (mode="subscription" below), not
     # one-time top-ups — create_checkout_session/handle_webhook_event branch
     # on credit_kind == "membership" to use the subscription path. Also
@@ -138,6 +152,10 @@ _PRODUCT_NAMES: dict[str, dict[str, str]] = {
     "ai_match_pack_5": {
         "ko": "AI 매칭권 5회", "en": "AI Match x5", "es": "5 Matches con IA",
         "zh": "AI匹配 x5", "ja": "AIマッチ ×5",
+    },
+    "blind_peek_1": {
+        "ko": "몰래보기권 1회", "en": "Secret Peek x1", "es": "1 Vistazo secreto",
+        "zh": "偷看卡 x1", "ja": "こっそり閲覧 ×1",
     },
     "unlimited_matching_week": {
         "ko": "무제한 매칭 1주일", "en": "Unlimited Matching — 1 week", "es": "Matching ilimitado — 1 semana",
@@ -363,6 +381,8 @@ async def handle_webhook_event(db: AsyncSession, payload: bytes, sig_header: str
             profile.boost_credits += product["credits"]
         elif product["credit_kind"] == "ai_match":
             profile.ai_match_credits += product["credits"]
+        elif product["credit_kind"] == "blind_peek":
+            profile.stealth_peek_credits += product["credits"]
         elif product["credit_kind"] == "unlimited_matching_days":
             # Stacks on top of remaining time, same as superlike/boost credits —
             # unlike membership below, this isn't a subscription that replaces

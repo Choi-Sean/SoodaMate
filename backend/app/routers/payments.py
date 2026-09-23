@@ -56,6 +56,7 @@ async def get_balance(
         boost_active_until=profile.boost_active_until if profile else None,
         ai_match_credits=profile.ai_match_credits if profile else 0,
         unlimited_matching_until=profile.unlimited_matching_until if profile else None,
+        stealth_peek_credits=profile.stealth_peek_credits if profile else 0,
     )
 
 

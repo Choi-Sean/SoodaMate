@@ -29,6 +29,7 @@ export function usePurchaseReturnWatch() {
         const gainedPremium = fresh.is_premium_member && !before.isPremium;
         const gainedAiMatch = fresh.ai_match_credits - before.aiMatchCredits;
         const gainedUnlimitedMatching = fresh.is_unlimited_matching_active && !before.unlimitedMatchingActive;
+        const gainedStealthPeek = fresh.stealth_peek_credits - before.stealthPeekCredits;
 
         if (gainedPremium) {
           showAlert(t("profile.purchaseSuccessTitle"), t("profile.purchasePremiumSuccess"));
@@ -36,6 +37,8 @@ export function usePurchaseReturnWatch() {
           showAlert(t("profile.purchaseSuccessTitle"), t("profile.purchaseUnlimitedMatchingSuccess"));
         } else if (gainedAiMatch > 0) {
           showAlert(t("profile.purchaseSuccessTitle"), t("profile.purchaseAiMatchSuccess", { count: gainedAiMatch }));
+        } else if (gainedStealthPeek > 0) {
+          showAlert(t("profile.purchaseSuccessTitle"), t("profile.purchaseStealthPeekSuccess", { count: gainedStealthPeek }));
         } else if (gainedSuperlike > 0) {
           showAlert(t("profile.purchaseSuccessTitle"), t("profile.purchaseSuperlikeSuccess", { count: gainedSuperlike }));
         } else if (gainedBoost > 0) {

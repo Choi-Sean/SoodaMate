@@ -1,0 +1,139 @@
+import uuid as uuid_mod
+
+import pytest
+
+from tests.helpers import create_user_with_profile
+
+pytestmark = pytest.mark.asyncio
+
+
+async def _grant_peek_credits(user_id: str, count: int) -> None:
+    from app.database import async_session_factory
+    from app.models.profile import Profile
+
+    async with async_session_factory() as session:
+        profile = await session.get(Profile, uuid_mod.UUID(user_id))
+        profile.stealth_peek_credits = count
+        await session.commit()
+
+
+async def _pair_via_blind_chat(client, a_headers, b_headers) -> str:
+    await client.post("/blind-chat/queue", headers=a_headers, json={"categories": ["travel"]})
+    r = await client.post("/blind-chat/queue", headers=b_headers, json={"categories": ["travel"]})
+    assert r.json()["status"] == "matched"
+    return r.json()["match_id"]
+
+
+async def test_peeking_reveals_real_profile_to_buyer_but_leaves_peer_fully_masked(client):
+    a_id, a_headers = await create_user_with_profile(
+        client, "peekA1@example.com", display_name="Ahyeon", gender="male", interested_in="female"
+    )
+    b_id, b_headers = await create_user_with_profile(
+        client, "peekB1@example.com", display_name="Bora", gender="female", interested_in="male"
+    )
+    match_id = await _pair_via_blind_chat(client, a_headers, b_headers)
+    await _grant_peek_credits(a_id, 1)
+
+    peek_resp = await client.post(f"/matches/{match_id}/blind-peek", headers=a_headers)
+    assert peek_resp.status_code == 200
+    peeked = peek_resp.json()
+    assert peeked["has_peeked"] is True
+    assert peeked["other_display_name"] == "Bora"  # real name, not "B***"
+    assert peeked["blind_revealed"] is False  # never flips the shared flag
+
+    # The peeker can now also reach the full profile endpoint (previously 403).
+    profile_resp = await client.get(f"/matches/{match_id}/profile", headers=a_headers)
+    assert profile_resp.status_code == 200
+    assert profile_resp.json()["display_name"] == "Bora"
+
+    # 1 credit was actually spent.
+    my_profile = (await client.get("/profiles/me", headers=a_headers)).json()
+    assert my_profile["stealth_peek_credits"] == 0
+
+    # The peer's own view is completely unaffected: still masked, no
+    # has_peeked flag, no reveal, and the full-profile endpoint still 403s.
+    b_matches = (await client.get("/matches", headers=b_headers)).json()
+    b_view = next(m for m in b_matches if m["id"] == match_id)
+    assert b_view["has_peeked"] is False
+    assert b_view["blind_revealed"] is False
+    assert b_view["other_display_name"].endswith("***")
+    assert b_view["other_display_name"] != "Ahyeon"
+
+    b_profile_resp = await client.get(f"/matches/{match_id}/profile", headers=b_headers)
+    assert b_profile_resp.status_code == 403
+
+
+async def test_peeking_twice_does_not_spend_a_second_credit(client):
+    a_id, a_headers = await create_user_with_profile(client, "peekA2@example.com", gender="male", interested_in="female")
+    _, b_headers = await create_user_with_profile(client, "peekB2@example.com", gender="female", interested_in="male")
+    match_id = await _pair_via_blind_chat(client, a_headers, b_headers)
+    await _grant_peek_credits(a_id, 2)
+
+    r1 = await client.post(f"/matches/{match_id}/blind-peek", headers=a_headers)
+    assert r1.status_code == 200
+    r2 = await client.post(f"/matches/{match_id}/blind-peek", headers=a_headers)
+    assert r2.status_code == 200
+    assert r2.json()["has_peeked"] is True
+
+    my_profile = (await client.get("/profiles/me", headers=a_headers)).json()
+    assert my_profile["stealth_peek_credits"] == 1  # only the first call charged
+
+
+async def test_peeking_without_credits_returns_402(client):
+    _, a_headers = await create_user_with_profile(client, "peekA3@example.com", gender="male", interested_in="female")
+    _, b_headers = await create_user_with_profile(client, "peekB3@example.com", gender="female", interested_in="male")
+    match_id = await _pair_via_blind_chat(client, a_headers, b_headers)
+
+    resp = await client.post(f"/matches/{match_id}/blind-peek", headers=a_headers)
+    assert resp.status_code == 402
+
+
+async def test_cannot_peek_a_non_blind_match(client):
+    a_id, a_headers = await create_user_with_profile(client, "peekA4@example.com", gender="male", interested_in="female")
+    b_id, b_headers = await create_user_with_profile(client, "peekB4@example.com", gender="female", interested_in="male")
+    await _grant_peek_credits(a_id, 1)
+
+    r1 = await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
+    assert r1.json()["matched"] is False
+    r2 = await client.post("/interactions/superlike", headers=b_headers, json={"to_user_id": a_id})
+    assert r2.json()["matched"] is True
+    match_id = r2.json()["match_id"]
+
+    resp = await client.post(f"/matches/{match_id}/blind-peek", headers=a_headers)
+    assert resp.status_code == 400
+    # Credit is untouched — nothing was spent on a request that never peeked anything.
+    my_profile = (await client.get("/profiles/me", headers=a_headers)).json()
+    assert my_profile["stealth_peek_credits"] == 1
+
+
+async def test_cannot_peek_an_already_revealed_blind_match(client):
+    a_id, a_headers = await create_user_with_profile(client, "peekA5@example.com", gender="male", interested_in="female")
+    _, b_headers = await create_user_with_profile(client, "peekB5@example.com", gender="female", interested_in="male")
+    match_id = await _pair_via_blind_chat(client, a_headers, b_headers)
+    await _grant_peek_credits(a_id, 1)
+
+    # Mutual reveal, same flow test_blind_chat.py uses elsewhere.
+    matches = (await client.get("/matches", headers=a_headers)).json()
+    eligible_headers = a_headers if next(m for m in matches if m["id"] == match_id)["can_request_reveal"] else b_headers
+    other_headers = b_headers if eligible_headers is a_headers else a_headers
+    await client.post(f"/matches/{match_id}/blind-reveal/request", headers=eligible_headers)
+    await client.post(f"/matches/{match_id}/blind-reveal/accept", headers=other_headers)
+
+    resp = await client.post(f"/matches/{match_id}/blind-peek", headers=a_headers)
+    assert resp.status_code == 400  # already fully revealed — nothing left to peek
+    my_profile = (await client.get("/profiles/me", headers=a_headers)).json()
+    assert my_profile["stealth_peek_credits"] == 1  # untouched
+
+
+async def test_peek_by_non_participant_returns_404(client):
+    _, a_headers = await create_user_with_profile(client, "peekA6@example.com", gender="male", interested_in="female")
+    _, b_headers = await create_user_with_profile(client, "peekB6@example.com", gender="female", interested_in="male")
+    match_id = await _pair_via_blind_chat(client, a_headers, b_headers)
+
+    stranger_id, stranger_headers = await create_user_with_profile(
+        client, "peekStranger6@example.com", gender="male", interested_in="female"
+    )
+    await _grant_peek_credits(stranger_id, 1)
+
+    resp = await client.post(f"/matches/{match_id}/blind-peek", headers=stranger_headers)
+    assert resp.status_code == 404

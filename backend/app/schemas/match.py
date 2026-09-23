@@ -55,6 +55,12 @@ class MatchOut(BaseModel):
     can_request_reveal: bool = False
     has_incoming_reveal_request: bool = False
     reveal_requested_by_me: bool = False
+    # Stealth peek (services/match_service.use_blind_peek): true only for the
+    # viewer who spent their own credit on THIS match — never the peer's.
+    # When true, other_display_name/other_photo_url/other_bio2/other_bio3
+    # above are already the real, unmasked values for this viewer even
+    # though blind_revealed is still false.
+    has_peeked: bool = False
 
 
 class SwipeLimitOut(BaseModel):

@@ -51,6 +51,7 @@ export interface Profile {
   ai_match_credits: number;
   unlimited_matching_until: string | null;
   is_unlimited_matching_active: boolean;
+  stealth_peek_credits: number;
   is_incognito: boolean;
   travel_lat: number | null;
   travel_lng: number | null;
@@ -160,6 +161,11 @@ export interface Match {
   can_request_reveal: boolean;
   has_incoming_reveal_request: boolean;
   reveal_requested_by_me: boolean;
+  // Stealth peek (shop item blind_peek_1) — true only when I personally spent
+  // a credit on this match; when true, other_display_name/other_photo_url
+  // above are already my own unmasked view, even though blind_revealed is
+  // still false (the peer's own view is untouched).
+  has_peeked: boolean;
 }
 
 export interface BlindChatQueueStatus {

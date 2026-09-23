@@ -25,6 +25,7 @@ export function openShop(queryClient: QueryClient): void {
       isPremium: profile.is_premium_member,
       aiMatchCredits: profile.ai_match_credits,
       unlimitedMatchingActive: profile.is_unlimited_matching_active,
+      stealthPeekCredits: profile.stealth_peek_credits,
     });
   }
   openExternalUrl(`${env.marketingSiteUrl}/shop.html#token=${encodeURIComponent(token)}`);

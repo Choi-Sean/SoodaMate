@@ -19,8 +19,16 @@ import { useTranslation } from "react-i18next";
 import BlindChatFeedbackModal from "../../components/BlindChatFeedbackModal";
 import ChatBubble from "../../components/ChatBubble";
 import { getMessageHistory } from "../../api/messages";
-import { acceptBlindReveal, deleteMatch, getIcebreaker, requestBlindReveal, submitBlindFeedback } from "../../api/matches";
+import {
+  acceptBlindReveal,
+  deleteMatch,
+  getIcebreaker,
+  requestBlindReveal,
+  spendBlindPeek,
+  submitBlindFeedback,
+} from "../../api/matches";
 import { getMyProfile } from "../../api/profiles";
+import { openShop } from "../../utils/openShop";
 import { presignChatImage, uploadToPresignedUrl } from "../../api/uploads";
 import { blockUser, reportUser } from "../../api/safety";
 import { MBTI_COMPATIBLE_TYPE, type MbtiType } from "../../constants/mbtiTypes";
@@ -59,9 +67,17 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
   // has loaded — live match data (masked "S***" pre-reveal, real name once
   // blind_revealed flips) always wins once available.
   const otherDisplayName = match?.other_display_name ?? otherDisplayNameParam;
+  // Mutual reveal only — both sides agreed. This is the one that must gate
+  // video calling: a call exposes a live face/voice to the PEER too, so it
+  // must never unlock just because *I* privately peeked (see canOpenProfile
+  // below) — that would blow the whole point of a stealth peek.
+  const mutuallyRevealed = !!match && (!match.is_blind || match.blind_revealed);
   // Same gate the backend uses for other_display_name/other_photo_url masking
-  // (services/match_service.py's hide_identity) — nothing to show yet before this.
-  const canViewFullProfile = !!match && (!match.is_blind || match.blind_revealed);
+  // (services/match_service.py's hide_identity) — true once EITHER side has
+  // mutually revealed OR I personally spent a stealth-peek credit on this
+  // match (has_peeked is always my own, never the peer's — see MatchOut's
+  // docstring). Only for one-way things: opening the header/MatchedProfileScreen.
+  const canOpenProfile = mutuallyRevealed || !!match?.has_peeked;
 
   // Cheap cache read in practice — RootNavigator already populated this exact
   // key on app open. Only needed here for the MBTI-compatibility hint below.
@@ -86,6 +102,38 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
     } catch (e: any) {
       showAlert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? "");
     }
+  }
+
+  const [peeking, setPeeking] = useState(false);
+
+  async function doPeek() {
+    setPeeking(true);
+    try {
+      await spendBlindPeek(matchId);
+      await queryClient.invalidateQueries({ queryKey: ["matches"] });
+      await queryClient.invalidateQueries({ queryKey: ["myProfile"] });
+    } catch (e: any) {
+      if (e?.response?.status === 402) {
+        // No credits left — same "go buy some" flow as everywhere else in
+        // the app that hits a 402 (blind chat's AI-match, superlikes, ...).
+        showAlert(t("blindChat.peekNoCreditsTitle"), t("blindChat.peekNoCreditsBody"), [
+          { text: t("common.cancel"), style: "cancel" },
+          { text: t("blindChat.peekBuyCta"), onPress: () => openShop(queryClient) },
+        ]);
+      } else {
+        showAlert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? "");
+      }
+    } finally {
+      setPeeking(false);
+    }
+  }
+
+  function handlePeek() {
+    if (peeking) return;
+    showAlert(t("blindChat.peekConfirmTitle"), t("blindChat.peekConfirmBody"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("blindChat.peekConfirm"), onPress: doPeek },
+    ]);
   }
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -325,7 +373,7 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
   // ws_chat.py::_handle_call_offer): can_send_first_message already encodes
   // it for messaging, and the two are deliberately the same underlying state.
   const canCall =
-    webrtcAvailable && canViewFullProfile && !isExpired && !!match?.can_send_first_message && call.phase === "idle";
+    webrtcAvailable && mutuallyRevealed && !isExpired && !!match?.can_send_first_message && call.phase === "idle";
 
   function handleStartCall() {
     if (!canCall) return;
@@ -336,8 +384,8 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
     navigation.setOptions({
       headerTitle: () => (
         <Pressable
-          onPress={canViewFullProfile ? () => navigation.navigate("MatchedProfile", { matchId }) : undefined}
-          disabled={!canViewFullProfile}
+          onPress={canOpenProfile ? () => navigation.navigate("MatchedProfile", { matchId }) : undefined}
+          disabled={!canOpenProfile}
           hitSlop={8}
           style={styles.headerTitleRow}
         >
@@ -356,7 +404,7 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
       ),
       headerRight: () => (
         <View style={styles.headerRightRow}>
-          {webrtcAvailable && canViewFullProfile && !isExpired && (
+          {webrtcAvailable && mutuallyRevealed && !isExpired && (
             <Pressable
               onPress={handleStartCall}
               disabled={!canCall}
@@ -373,7 +421,17 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
       ),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation, otherUserId, otherDisplayName, match?.other_gender, canViewFullProfile, matchId, canCall, isExpired]);
+  }, [
+    navigation,
+    otherUserId,
+    otherDisplayName,
+    match?.other_gender,
+    canOpenProfile,
+    mutuallyRevealed,
+    matchId,
+    canCall,
+    isExpired,
+  ]);
 
   function handleSend() {
     const content = input.trim();
@@ -477,6 +535,26 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
                   <Text style={styles.blindBannerButtonText}>{t("blindChat.requestReveal")}</Text>
                 </Pressable>
               )
+            )}
+            {/* Independent of the mutual-reveal flow above — a private, one-sided
+                peek nobody else here ever finds out about. */}
+            {match.has_peeked ? (
+              <Pressable onPress={() => navigation.navigate("MatchedProfile", { matchId })} hitSlop={8}>
+                <Text style={styles.blindBannerPeekedText}>{t("blindChat.peekedAlready")}</Text>
+              </Pressable>
+            ) : (
+              <Pressable
+                style={styles.blindBannerSecondaryButton}
+                onPress={handlePeek}
+                disabled={peeking}
+                hitSlop={8}
+              >
+                {peeking ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.blindBannerSecondaryButtonText}>{t("blindChat.peekButton")}</Text>
+                )}
+              </Pressable>
             )}
           </View>
         )}
@@ -587,6 +665,19 @@ const styles = StyleSheet.create({
   blindBannerCategories: { fontSize: 11.5, color: "rgba(255,255,255,0.75)", textAlign: "center" },
   blindBannerText: { fontSize: 13, color: "#fff", textAlign: "center", fontWeight: "600" },
   blindBannerButton: { backgroundColor: colors.accent, borderRadius: 20, paddingVertical: 9, paddingHorizontal: 20 },
+  blindBannerSecondaryButton: {
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.5)",
+    borderRadius: 20,
+    paddingVertical: 7,
+    paddingHorizontal: 16,
+    minHeight: 30,
+    minWidth: 30,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  blindBannerSecondaryButtonText: { color: "#fff", fontWeight: "600", fontSize: 12.5 },
+  blindBannerPeekedText: { color: "rgba(255,255,255,0.75)", fontSize: 12, textDecorationLine: "underline" },
   blindBannerButtonText: { color: "#fff", fontWeight: "700", fontSize: 13.5 },
   inputBar: {
     flexDirection: "row",

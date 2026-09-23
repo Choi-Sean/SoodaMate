@@ -41,6 +41,7 @@ class BalanceResponse(BaseModel):
     boost_active_until: datetime | None
     ai_match_credits: int
     unlimited_matching_until: datetime | None
+    stealth_peek_credits: int
 
 
 class PurchaseHistoryItemOut(BaseModel):

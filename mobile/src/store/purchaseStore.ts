@@ -11,6 +11,7 @@ export interface EntitlementSnapshot {
   isPremium: boolean;
   aiMatchCredits: number;
   unlimitedMatchingActive: boolean;
+  stealthPeekCredits: number;
 }
 
 interface PurchaseState {
