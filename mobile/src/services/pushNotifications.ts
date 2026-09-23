@@ -6,7 +6,17 @@ import { navigateFromNotification } from "../navigation/navigationRef";
 /** @react-native-firebase/messaging has no web implementation and needs a
  * real Firebase project (google-services.json / GoogleService-Info.plist,
  * see docs/ENV_VARS.md) to even initialize — everything here is a no-op
- * until that exists, same defensive pattern as the backend's push_service.py. */
+ * until that exists, same defensive pattern as the backend's push_service.py.
+ *
+ * v26 of this package dropped the old namespaced `messaging()` default
+ * export entirely — it's modular-only now (`getMessaging()`, `getToken(messaging)`,
+ * `requestPermission(messaging)`, ...). This file used to do
+ * `require(...).default` and call it as a function; `.default` is `undefined`
+ * on this version, so that threw a TypeError on every call, was swallowed by
+ * this file's own "unconfigured Firebase" catch block, and made
+ * getPushPermissionStatus() report "unavailable" unconditionally — no crash,
+ * just a permanently missing Settings row and a registerForPushNotifications()
+ * that silently never ran. Fixed by using the module's named exports directly. */
 
 export type PushPermissionStatus = "granted" | "denied" | "not-determined" | "unavailable";
 
@@ -15,8 +25,10 @@ export type PushPermissionStatus = "granted" | "denied" | "not-determined" | "un
 function loadMessaging() {
   if (Platform.OS === "web") return null;
   try {
-    const messagingModule = require("@react-native-firebase/messaging").default;
-    return { messaging: messagingModule(), AuthorizationStatus: messagingModule.AuthorizationStatus };
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const mod = require("@react-native-firebase/messaging");
+    const instance = mod.getMessaging();
+    return { mod, instance };
   } catch {
     return null;
   }
@@ -28,11 +40,12 @@ export async function getPushPermissionStatus(): Promise<PushPermissionStatus> {
   const loaded = loadMessaging();
   if (!loaded) return "unavailable";
   try {
-    const status = await loaded.messaging.hasPermission();
-    if (status === loaded.AuthorizationStatus.AUTHORIZED || status === loaded.AuthorizationStatus.PROVISIONAL) {
+    const { mod, instance } = loaded;
+    const status = await mod.hasPermission(instance);
+    if (status === mod.AuthorizationStatus.AUTHORIZED || status === mod.AuthorizationStatus.PROVISIONAL) {
       return "granted";
     }
-    if (status === loaded.AuthorizationStatus.NOT_DETERMINED) return "not-determined";
+    if (status === mod.AuthorizationStatus.NOT_DETERMINED) return "not-determined";
     return "denied";
   } catch {
     return "unavailable";
@@ -66,29 +79,36 @@ export async function registerForPushNotifications(): Promise<PushPermissionStat
   // no-op-until-configured guarantee this function's own docstring above
   // already promises.
   try {
-    const { messaging, AuthorizationStatus } = loaded;
-    const authStatus = await messaging.requestPermission();
-    const enabled = authStatus === AuthorizationStatus.AUTHORIZED || authStatus === AuthorizationStatus.PROVISIONAL;
+    const { mod, instance } = loaded;
+    const authStatus = await mod.requestPermission(instance);
+    const enabled = authStatus === mod.AuthorizationStatus.AUTHORIZED || authStatus === mod.AuthorizationStatus.PROVISIONAL;
     if (!enabled) return "denied";
 
-    const fcmToken = await messaging.getToken();
+    // Explicit APNs registration. Usually implicit after requestPermission(),
+    // but calling it directly is documented, cheap, and a no-op if the device
+    // is already registered — kept as a defensive belt-and-suspenders step.
+    if (Platform.OS === "ios" && typeof mod.registerDeviceForRemoteMessages === "function") {
+      await mod.registerDeviceForRemoteMessages(instance);
+    }
+
+    const fcmToken = await mod.getToken(instance);
     await apiClient.post("/devices/register", {
       fcm_token: fcmToken,
       platform: Platform.OS === "ios" ? "ios" : "android",
     });
 
-    messaging.onMessage(async (remoteMessage: any) => {
+    mod.onMessage(instance, async (remoteMessage: any) => {
       // Foreground messages don't show a system notification automatically;
       // a real app would surface an in-app banner here. Left as a no-op hook
       // for now — the important behavior (tap-to-open) is background/quit.
       void remoteMessage;
     });
 
-    messaging.onNotificationOpenedApp((remoteMessage: any) => {
+    mod.onNotificationOpenedApp(instance, (remoteMessage: any) => {
       navigateFromNotification(remoteMessage?.data ?? {});
     });
 
-    const initialNotification = await messaging.getInitialNotification();
+    const initialNotification = await mod.getInitialNotification(instance);
     if (initialNotification?.data) {
       navigateFromNotification(initialNotification.data);
     }

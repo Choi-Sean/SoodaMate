@@ -11,8 +11,13 @@ import App from './App';
 if (Platform.OS !== 'web') {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const messaging = require('@react-native-firebase/messaging').default;
-    messaging().setBackgroundMessageHandler(async () => {
+    const mod = require('@react-native-firebase/messaging');
+    // v26 dropped the old `messaging()` namespaced default export — it's
+    // modular-only now. `.default` is undefined on this version, so calling
+    // it as a function threw here every time (silently swallowed below,
+    // meaning this handler was NEVER actually registered). See the matching
+    // fix + writeup in src/services/pushNotifications.ts.
+    mod.setBackgroundMessageHandler(mod.getMessaging(), async () => {
       // FCM already displays the system notification for data+notification
       // payloads; nothing extra to do here for v1.
     });
