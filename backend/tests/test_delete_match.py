@@ -1,6 +1,6 @@
 import pytest
 
-from tests.helpers import create_ordinary_match, create_user_with_profile
+from tests.helpers import create_ordinary_match, create_user_with_profile, record_swipe_direct
 
 
 @pytest.mark.asyncio
@@ -8,40 +8,45 @@ async def test_deleting_a_match_lets_the_same_pair_match_again(client):
     a_id, a_headers = await create_user_with_profile(client, "delmatch-a@example.com", gender="male", interested_in="female")
     b_id, b_headers = await create_user_with_profile(client, "delmatch-b@example.com", gender="female", interested_in="male")
 
-    first = await create_ordinary_match(a_id, b_id)
-    assert first.json()["matched"] is True
-    match_id = first.json()["match_id"]
+    match_id = await create_ordinary_match(a_id, b_id)
 
     delete_resp = await client.delete(f"/matches/{match_id}", headers=a_headers)
     assert delete_resp.status_code == 204
 
     # Gone from both sides' match list, and the swipe history was cleared —
     # a fresh like/like round trip matches them again with a NEW match id.
+    # (/interactions/like itself is discontinued — see routers/interactions.py
+    # — so "liking again" is exercised the same way create_ordinary_match
+    # above did: record_swipe called directly, same real match-creation logic.)
     assert match_id not in [m["id"] for m in (await client.get("/matches", headers=a_headers)).json()]
     assert match_id not in [m["id"] for m in (await client.get("/matches", headers=b_headers)).json()]
 
-    again_a = await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-    assert again_a.json()["matched"] is False  # only one side so far, same as any fresh pair
-    again_b = await client.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-    assert again_b.json()["matched"] is True
-    assert again_b.json()["match_id"] != match_id
+    again_a = await record_swipe_direct(a_id, b_id, "like")
+    assert again_a["matched"] is False  # only one side so far, same as any fresh pair
+    again_b = await record_swipe_direct(b_id, a_id, "like")
+    assert again_b["matched"] is True
+    assert again_b["match_id"] != match_id
 
 
 @pytest.mark.asyncio
 async def test_deleting_a_match_after_blocking_does_not_allow_a_rematch(client):
+    from fastapi import HTTPException
+
     a_id, a_headers = await create_user_with_profile(client, "delmatch-c@example.com", gender="male", interested_in="female")
     b_id, b_headers = await create_user_with_profile(client, "delmatch-d@example.com", gender="female", interested_in="male")
 
-    await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-    match_id = (await client.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})).json()["match_id"]
+    match_id = await create_ordinary_match(a_id, b_id)
 
     assert (await client.post("/safety/block", headers=a_headers, json={"user_id": b_id})).status_code == 204
     assert (await client.delete(f"/matches/{match_id}", headers=a_headers)).status_code == 204
 
     # B still can't reach A at all (blocked), and — the actual point of this
     # test — trying to like A again doesn't quietly re-open the door either.
-    again = await client.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})
-    assert again.status_code == 403
+    # record_swipe raises HTTPException directly (same as the discontinued
+    # router used to translate into a 403 response) rather than returning one.
+    with pytest.raises(HTTPException) as exc_info:
+        await record_swipe_direct(b_id, a_id, "like")
+    assert exc_info.value.status_code == 403
 
 
 @pytest.mark.asyncio
@@ -49,8 +54,7 @@ async def test_deleting_a_match_after_reporting_only_keeps_discovery_exclusion(c
     a_id, a_headers = await create_user_with_profile(client, "delmatch-e@example.com", gender="male", interested_in="female")
     b_id, b_headers = await create_user_with_profile(client, "delmatch-f@example.com", gender="female", interested_in="male")
 
-    await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-    match_id = (await client.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})).json()["match_id"]
+    match_id = await create_ordinary_match(a_id, b_id)
 
     assert (
         await client.post("/safety/report", headers=a_headers, json={"user_id": b_id, "reason": "harassment"})
@@ -74,8 +78,7 @@ async def test_deleting_a_match_removes_its_messages_and_a_stranger_cannot_delet
     b_id, b_headers = await create_user_with_profile(client, "delmatch-h@example.com", gender="female", interested_in="male")
     stranger_id, stranger_headers = await create_user_with_profile(client, "delmatch-i@example.com", gender="male", interested_in="female")
 
-    await client.post("/interactions/like", headers=a_headers, json={"to_user_id": b_id})
-    match_id = (await client.post("/interactions/like", headers=b_headers, json={"to_user_id": a_id})).json()["match_id"]
+    match_id = await create_ordinary_match(a_id, b_id)
 
     not_found = await client.delete(f"/matches/{match_id}", headers=stranger_headers)
     assert not_found.status_code == 404

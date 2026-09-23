@@ -687,8 +687,7 @@ async def test_blind_feedback_rejects_non_blind_match(client):
     b_id, b_headers = await create_user_with_profile(
         client, "fbSwipeB@example.com", gender="female", interested_in="male"
     )
-    matched = await create_ordinary_match(a_id, b_id)
-    match_id = matched.json()["match_id"]
+    match_id = await create_ordinary_match(a_id, b_id)
 
     resp = await client.post(
         f"/matches/{match_id}/blind-feedback", headers=a_headers, json={"rating": 4, "tags": []}
