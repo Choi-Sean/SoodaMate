@@ -41,8 +41,26 @@ function formatPrice(cents: number): string {
 export default function MyProfileScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
-  const { data: profile, refetch, isRefetching } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
+  const { data: profile, refetch } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
   const [canceling, setCanceling] = useState(false);
+  // Deliberately NOT react-query's own `isRefetching` — that flag is true for
+  // *any* background refetch of ["myProfile"], including ones this screen
+  // never asked for (another screen calling invalidateQueries after a
+  // purchase/peek/edit, or react-query's own automatic refetch-on-focus) and
+  // their retries (react-query retries a failed query 3x by default, with
+  // backoff up to ~30s). Tying RefreshControl to that made the pull-to-refresh
+  // spinner appear to "freeze" at the top on a flaky connection, for a fetch
+  // the user never triggered. This tracks only OUR OWN manual refresh.
+  const [manualRefreshing, setManualRefreshing] = useState(false);
+
+  async function handleManualRefresh() {
+    setManualRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setManualRefreshing(false);
+    }
+  }
 
   // Only relevant (and only polled) while the account isn't active yet —
   // becoming active flips profile.face_verified, at which point this query
@@ -121,14 +139,14 @@ export default function MyProfileScreen({ navigation }: Props) {
   return (
     <ScrollView
       contentContainerStyle={styles.container}
-      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={manualRefreshing} onRefresh={handleManualRefresh} tintColor={colors.accent} />}
     >
       <ScreenHeader
         title={t("tabs.profile")}
         right={
           <View style={styles.headerButtons}>
-            <Pressable style={styles.gearButton} onPress={() => refetch()} hitSlop={8} disabled={isRefetching}>
-              {isRefetching ? (
+            <Pressable style={styles.gearButton} onPress={handleManualRefresh} hitSlop={8} disabled={manualRefreshing}>
+              {manualRefreshing ? (
                 <ActivityIndicator size="small" color={colors.navy} />
               ) : (
                 <Ionicons name="refresh" size={20} color={colors.navy} />

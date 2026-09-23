@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ActivityIndicator, FlatList, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
@@ -25,10 +26,24 @@ const ICON_BY_KIND: Record<string, keyof typeof Ionicons.glyphMap> = {
  * utils/openShop.ts). */
 export default function PurchaseHistoryScreen() {
   const { t, i18n } = useTranslation();
-  const { data: items, isLoading, refetch, isRefetching } = useQuery({
+  const { data: items, isLoading, refetch } = useQuery({
     queryKey: ["purchaseHistory"],
     queryFn: getPurchaseHistory,
   });
+  // Not react-query's own `isRefetching` — see MyProfileScreen's identical
+  // fix for why (it stays true through any background refetch, including
+  // ones this screen didn't ask for, and their default retries, which made
+  // the pull-to-refresh spinner look stuck). Tracks only our own manual pull.
+  const [manualRefreshing, setManualRefreshing] = useState(false);
+
+  async function handleManualRefresh() {
+    setManualRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setManualRefreshing(false);
+    }
+  }
 
   function formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString(i18n.language, { year: "numeric", month: "long", day: "numeric" });
@@ -53,8 +68,8 @@ export default function PurchaseHistoryScreen() {
       data={items}
       keyExtractor={(item, i) => `${item.product_id}-${item.created_at}-${i}`}
       contentContainerStyle={styles.list}
-      onRefresh={refetch}
-      refreshing={isRefetching}
+      onRefresh={handleManualRefresh}
+      refreshing={manualRefreshing}
       ListEmptyComponent={
         <View style={styles.centered}>
           <Ionicons name="receipt-outline" size={40} color={colors.muted} />
