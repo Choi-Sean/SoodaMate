@@ -8,7 +8,7 @@ async def test_swipe_limit_decrements_and_blocks_at_20(client):
     _, a_headers = await create_user_with_profile(client, "limit-a@example.com", gender="male", interested_in="female")
 
     status0 = (await client.get("/interactions/swipe-limit", headers=a_headers)).json()
-    assert status0 == {"remaining": 20, "limit": 20, "resets_at": None, "unlimited": False}
+    assert status0 == {"remaining": 20, "limit": 20, "resets_at": None, "unlimited": False, "bonus_available": True}
 
     # sp_RecordSwipe only needs a valid FK on the target, not a complete
     # profile — bare signups are enough here and cut the request count way
@@ -28,6 +28,22 @@ async def test_swipe_limit_decrements_and_blocks_at_20(client):
     resp21 = await client.post("/interactions/pass", headers=a_headers, json={"to_user_id": one_more})
     assert resp21.status_code == 429
     assert resp21.json()["detail"]["resets_at"] is not None
+
+
+@pytest.mark.asyncio
+async def test_swipe_ad_bonus_grants_one_extra_swipe_once_per_day(client):
+    _, headers = await create_user_with_profile(client, "swipeadbonus@example.com")
+
+    limit0 = (await client.get("/interactions/swipe-limit", headers=headers)).json()
+    assert limit0 == {"remaining": 20, "limit": 20, "resets_at": None, "unlimited": False, "bonus_available": True}
+
+    claimed = (await client.post("/interactions/swipe-limit/ad-bonus", headers=headers)).json()
+    assert claimed == {"remaining": 21, "limit": 21, "resets_at": None, "unlimited": False, "bonus_available": False}
+
+    # Watching a second ad the same day doesn't stack a second bonus.
+    claimed_again = (await client.post("/interactions/swipe-limit/ad-bonus", headers=headers)).json()
+    assert claimed_again["limit"] == 21
+    assert claimed_again["bonus_available"] is False
 
 
 @pytest.mark.asyncio

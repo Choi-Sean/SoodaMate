@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import and_, delete, exists, func, or_, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.core.user_lock import user_lock
 from app.models.interaction import Block, Match, Report, Swipe
 from app.models.profile import Photo, Profile
@@ -29,22 +30,51 @@ SWIPE_LIMIT = 20
 async def get_swipe_limit_status(db: AsyncSession, user_id: uuid.UUID) -> SwipeLimitOut:
     """Premium members skip the limit entirely (one of the real, functional
     perks premium actually grants, not just marketing copy). Everyone else
-    gets SWIPE_LIMIT swipes per UTC calendar day."""
+    gets SWIPE_LIMIT swipes per UTC calendar day, plus +1 if today's
+    rewarded-ad bonus has been claimed (see claim_swipe_ad_bonus)."""
     profile = await db.get(Profile, user_id)
     if profile is not None and is_premium(profile.premium_until):
         return SwipeLimitOut(remaining=SWIPE_LIMIT, limit=SWIPE_LIMIT, resets_at=None, unlimited=True)
 
+    today = datetime.now(timezone.utc).date()
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    bonus_claimed_today = profile is not None and profile.swipe_bonus_ad_watched_on == today
+    effective_limit = SWIPE_LIMIT + (1 if bonus_claimed_today else 0)
+
     count = await db.scalar(
         select(func.count())
         .select_from(Swipe)
         .where(Swipe.from_user_id == user_id, Swipe.created_at >= today_start)
     )
-    remaining = max(0, SWIPE_LIMIT - (count or 0))
+    remaining = max(0, effective_limit - (count or 0))
     resets_at = None
     if remaining == 0:
         resets_at = today_start + timedelta(days=1)
-    return SwipeLimitOut(remaining=remaining, limit=SWIPE_LIMIT, resets_at=resets_at)
+    return SwipeLimitOut(
+        remaining=remaining,
+        limit=effective_limit,
+        resets_at=resets_at,
+        bonus_available=not bonus_claimed_today,
+    )
+
+
+async def claim_swipe_ad_bonus(db: AsyncSession, user_id: uuid.UUID) -> SwipeLimitOut:
+    """Grants today's +1 rewarded-ad swipe bonus — called after the client
+    confirms a rewarded ad was watched to completion (EARNED_REWARD), never
+    just for opening/attempting one. Mirrors
+    blind_chat_service.claim_blind_chat_ad_bonus exactly, including the SSV
+    gate: with AD_BONUS_REQUIRES_SSV on, this is just a status read while
+    routers/ads.py's signed callback is what actually grants the bonus."""
+    profile = await db.get(Profile, user_id)
+    if profile is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "complete your profile first")
+    if settings.ad_bonus_requires_ssv:
+        return await get_swipe_limit_status(db, user_id)
+    today = date.today()
+    if profile.swipe_bonus_ad_watched_on != today:
+        profile.swipe_bonus_ad_watched_on = today
+        await db.commit()
+    return await get_swipe_limit_status(db, user_id)
 
 
 async def _consume_superlike_allowance(db: AsyncSession, user_id: uuid.UUID) -> None:

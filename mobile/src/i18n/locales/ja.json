@@ -604,7 +604,12 @@
     "limitReached": "{{time}}後に再度スワイプできます",
     "limitReachedEmpty": "本日のスワイプ回数はなくなりました。またあとで確認してください！",
     "continue": "続ける",
-    "sponsored": "広告"
+    "sponsored": "広告",
+    "watchAdForBonus": "広告を見て+1回もらう",
+    "adBonusTitle": "ボーナススワイプ",
+    "adBonusSuccess": "本日のスワイプ回数が1回増えました！",
+    "adBonusUnavailable": "今は広告を読み込めません。しばらくしてからもう一度お試しください。",
+    "adBonusPending": "ご視聴ありがとうございます！ボーナススワイプを確認中です。数秒後に反映されます。"
   },
   "likes": {
     "title": "いいね",

@@ -604,7 +604,12 @@
     "limitReached": "{{time}} 후에 다시 스와이프할 수 있어요",
     "limitReachedEmpty": "오늘의 스와이프를 다 썼어요 — 곧 다시 돌아와주세요!",
     "continue": "계속하기",
-    "sponsored": "광고"
+    "sponsored": "광고",
+    "watchAdForBonus": "광고 보고 +1 받기",
+    "adBonusTitle": "보너스 스와이프",
+    "adBonusSuccess": "오늘의 스와이프 횟수가 1회 늘었어요!",
+    "adBonusUnavailable": "지금은 광고를 불러올 수 없어요. 잠시 후 다시 시도해주세요.",
+    "adBonusPending": "시청해 주셔서 감사해요! 보너스 스와이프를 확인하는 중이에요. 몇 초 뒤에 반영돼요."
   },
   "likes": {
     "title": "좋아요",

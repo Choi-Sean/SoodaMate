@@ -604,7 +604,12 @@
     "limitReached": "{{time}} 后可继续滑动",
     "limitReachedEmpty": "滑动次数已用完，稍后再来看看吧！",
     "continue": "继续",
-    "sponsored": "广告"
+    "sponsored": "广告",
+    "watchAdForBonus": "看广告 +1 次",
+    "adBonusTitle": "额外滑动",
+    "adBonusSuccess": "今天多获得了1次滑动机会！",
+    "adBonusUnavailable": "暂时无法加载广告，请稍后再试。",
+    "adBonusPending": "感谢观看！正在确认你的额外滑动，几秒后就会到账。"
   },
   "likes": {
     "title": "喜欢我的人",

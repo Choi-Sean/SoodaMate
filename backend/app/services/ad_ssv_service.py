@@ -113,7 +113,16 @@ async def verify_and_grant(db: AsyncSession, raw_query: str) -> None:
     if profile is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "unknown user")
 
+    # custom_data tells us which bonus this ad request was for (see
+    # rewardedAd.ts's callers) — default to blind_chat for any older client
+    # build that doesn't send it yet, so existing installs keep working.
     today = datetime.now(timezone.utc).date()
-    if profile.blind_chat_bonus_ad_watched_on != today:
-        profile.blind_chat_bonus_ad_watched_on = today
-        await db.commit()
+    bonus_kind = params.get("custom_data") or "blind_chat"
+    if bonus_kind == "swipe":
+        if profile.swipe_bonus_ad_watched_on != today:
+            profile.swipe_bonus_ad_watched_on = today
+            await db.commit()
+    else:
+        if profile.blind_chat_bonus_ad_watched_on != today:
+            profile.blind_chat_bonus_ad_watched_on = today
+            await db.commit()

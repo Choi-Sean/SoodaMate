@@ -11,14 +11,16 @@ const rewardedUnitId = realUnitId || TestIds.REWARDED;
  * resolve false) — callers must treat false as "no bonus", never retry
  * automatically. Same "" -> TestIds fallback as AdCard.native.tsx / rewarded
  * unit ids are a separate AdMob inventory from the native ad card's. */
-export function showRewardedAd(userId?: string | null): Promise<boolean> {
+export function showRewardedAd(userId?: string | null, customData?: string): Promise<boolean> {
   return new Promise((resolve) => {
     // serverSideVerificationOptions makes AdMob call our backend (GET /ads/ssv)
     // when the ad really completes, echoing this user id: that signed callback,
     // not this client saying "I watched it", is what grants the bonus.
+    // customData tells the callback which bonus this ad was for (see
+    // ad_ssv_service.verify_and_grant) — omitted, it defaults to blind_chat.
     const rewarded = RewardedAd.createForAdRequest(
       rewardedUnitId,
-      userId ? { serverSideVerificationOptions: { userId } } : undefined
+      userId ? { serverSideVerificationOptions: { userId, customData } } : undefined
     );
     let earned = false;
     let settled = false;

@@ -322,7 +322,7 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
   async function handleWatchAdForBonus() {
     setClaimingBonus(true);
     try {
-      const earned = await showRewardedAd(userId);
+      const earned = await showRewardedAd(userId, "blind_chat");
       if (!earned) {
         showAlert(t("blindChat.adBonusTitle"), t("blindChat.adBonusUnavailable"));
         return;

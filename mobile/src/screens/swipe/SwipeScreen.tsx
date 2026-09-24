@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { ActivityIndicator, Image, Pressable, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFonts, Fredoka_600SemiBold } from "@expo-google-fonts/fredoka";
 import { useTranslation } from "react-i18next";
@@ -14,7 +15,10 @@ import MatchCelebrationModal from "../matches/MatchCelebrationModal";
 import { useCandidates } from "../../hooks/useCandidates";
 import { useSwipeAction } from "../../hooks/useSwipeAction";
 import { useSwipeLimit } from "../../hooks/useSwipeLimit";
-import type { SwipeAction } from "../../api/interactions";
+import { claimSwipeAdBonus, getSwipeLimit, type SwipeAction } from "../../api/interactions";
+import { showRewardedAd } from "../../services/rewardedAd";
+import { useAuthStore } from "../../store/authStore";
+import { showAlert } from "../../utils/alert";
 import { colors } from "../../theme";
 
 // A sponsored card takes the place of the next real candidate every 5
@@ -40,10 +44,13 @@ export default function SwipeScreen() {
   const { data: swipeLimit } = useSwipeLimit();
   const swipeMutation = useSwipeAction();
   const navigation = useNavigation<any>();
+  const queryClient = useQueryClient();
+  const userId = useAuthStore((s) => s.userId);
 
   const swipeCountRef = useRef(0);
   const [showAd, setShowAd] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [claimingBonus, setClaimingBonus] = useState(false);
 
   const [matchInfo, setMatchInfo] = useState<{
     matchId: string;
@@ -54,6 +61,33 @@ export default function SwipeScreen() {
 
   const current = candidates?.[0];
   const limitReached = swipeLimit?.remaining === 0;
+
+  async function handleWatchAdForBonus() {
+    setClaimingBonus(true);
+    try {
+      const earned = await showRewardedAd(userId, "swipe");
+      if (!earned) {
+        showAlert(t("swipe.adBonusTitle"), t("swipe.adBonusUnavailable"));
+        return;
+      }
+      let limit = await claimSwipeAdBonus();
+      // With server-side ad verification the bonus lands when AdMob's callback
+      // reaches the backend (usually 1-3 s after the ad closes), so poll briefly.
+      for (let i = 0; i < 6 && limit.bonus_available; i++) {
+        await new Promise((r) => setTimeout(r, 1500));
+        limit = await getSwipeLimit();
+      }
+      await queryClient.invalidateQueries({ queryKey: ["swipeLimit"] });
+      showAlert(
+        t("swipe.adBonusTitle"),
+        limit.bonus_available ? t("swipe.adBonusPending") : t("swipe.adBonusSuccess")
+      );
+    } catch {
+      showAlert(t("common.somethingWentWrong"));
+    } finally {
+      setClaimingBonus(false);
+    }
+  }
 
   function handleAction(action: SwipeAction) {
     if (!current || swipeMutation.isPending || limitReached) return;
@@ -108,13 +142,27 @@ export default function SwipeScreen() {
         </View>
       </View>
       {swipeLimit && (
-        <Text style={styles.limitText}>
-          {swipeLimit.unlimited
-            ? t("swipe.unlimited")
-            : limitReached
-              ? t("swipe.limitReached", { time: formatCountdown(swipeLimit.resets_at!) })
-              : t("swipe.remaining", { count: swipeLimit.remaining, limit: swipeLimit.limit })}
-        </Text>
+        <View style={styles.limitRow}>
+          <Text style={styles.limitText}>
+            {swipeLimit.unlimited
+              ? t("swipe.unlimited")
+              : limitReached
+                ? t("swipe.limitReached", { time: formatCountdown(swipeLimit.resets_at!) })
+                : t("swipe.remaining", { count: swipeLimit.remaining, limit: swipeLimit.limit })}
+          </Text>
+          {limitReached && swipeLimit.bonus_available && (
+            <Pressable style={styles.adBonusButton} onPress={handleWatchAdForBonus} disabled={claimingBonus}>
+              {claimingBonus ? (
+                <ActivityIndicator size="small" color={colors.accentDark} />
+              ) : (
+                <>
+                  <Ionicons name="play-circle" size={14} color={colors.accentDark} />
+                  <Text style={styles.adBonusButtonText}>{t("swipe.watchAdForBonus")}</Text>
+                </>
+              )}
+            </Pressable>
+          )}
+        </View>
       )}
 
       <View style={styles.cardArea}>
@@ -200,7 +248,26 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
-  limitText: { fontSize: 12.5, fontWeight: "600", color: colors.muted, paddingHorizontal: 20, paddingBottom: 6 },
+  limitRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingBottom: 6,
+  },
+  limitText: { fontSize: 12.5, fontWeight: "600", color: colors.muted },
+  adBonusButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: colors.accentSoft,
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  adBonusButtonText: { fontSize: 12, color: colors.accentDark, fontWeight: "700" },
   cardArea: { flex: 1, padding: 0 },
   centered: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
   emptyText: { color: colors.muted, textAlign: "center" },

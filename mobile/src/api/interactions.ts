@@ -12,6 +12,7 @@ export interface SwipeLimit {
   limit: number;
   resets_at: string | null;
   unlimited: boolean;
+  bonus_available: boolean;
 }
 
 export async function swipe(action: SwipeAction, toUserId: string): Promise<SwipeResult> {
@@ -21,5 +22,10 @@ export async function swipe(action: SwipeAction, toUserId: string): Promise<Swip
 
 export async function getSwipeLimit(): Promise<SwipeLimit> {
   const resp = await apiClient.get<SwipeLimit>("/interactions/swipe-limit");
+  return resp.data;
+}
+
+export async function claimSwipeAdBonus(): Promise<SwipeLimit> {
+  const resp = await apiClient.post<SwipeLimit>("/interactions/swipe-limit/ad-bonus");
   return resp.data;
 }

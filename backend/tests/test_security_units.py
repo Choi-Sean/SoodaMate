@@ -162,12 +162,14 @@ def test_oversized_body_is_refused_before_parsing(monkeypatch):
 # ------------------------------------------------ AdMob server-side verification (signature logic)
 
 
-def _signed_query(key, unit, user_id, ts_ms=None, tamper=False):
+def _signed_query(key, unit, user_id, ts_ms=None, tamper=False, custom_data=None):
     ts_ms = ts_ms or int(time.time() * 1000)
     query = (
         f"ad_network=5450213213286189855&ad_unit={unit}&reward_amount=1&reward_item=bonus"
         f"&timestamp={ts_ms}&transaction_id={uuid.uuid4().hex}&user_id={user_id}"
     )
+    if custom_data:
+        query += f"&custom_data={custom_data}"
     sig = base64.urlsafe_b64encode(key.sign(query.encode(), ec.ECDSA(hashes.SHA256()))).decode().rstrip("=")
     if tamper:
         query = query.replace("reward_amount=1", "reward_amount=99")
@@ -176,6 +178,7 @@ def _signed_query(key, unit, user_id, ts_ms=None, tamper=False):
 
 class _FakeProfile:
     blind_chat_bonus_ad_watched_on = None
+    swipe_bonus_ad_watched_on = None
 
 
 class _FakeDb:
@@ -221,6 +224,33 @@ async def test_ssv_verifies_signature_unit_age_and_user(monkeypatch):
         monkeypatch.setattr(settings, "admob_rewarded_unit_ids", "")
         with pytest.raises(HTTPException):  # no pinned units configured => nothing is accepted
             await call(_signed_query(key, unit, uid))
+    finally:
+        ad_ssv_service.set_test_keys(None)
+
+
+@pytest.mark.asyncio
+async def test_ssv_custom_data_routes_to_the_right_bonus(monkeypatch):
+    """One SSV callback endpoint serves two different rewarded-ad placements
+    (Blind Chat's extra match, the swipe limit's extra swipe) — custom_data
+    is how the signed callback says which one this ad was for. Missing/
+    unrecognized custom_data must fall back to blind_chat, not swipe, so an
+    older client build that never sends it keeps working unchanged."""
+    key = ec.generate_private_key(ec.SECP256R1())
+    pem = key.public_key().public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo).decode()
+    ad_ssv_service.set_test_keys({"42": pem})
+    unit = "ca-app-pub-1111111111111111/2222222222"
+    monkeypatch.setattr(settings, "admob_rewarded_unit_ids", unit)
+    uid = str(uuid.uuid4())
+    try:
+        db_swipe = _FakeDb(_FakeProfile())
+        await ad_ssv_service.verify_and_grant(db_swipe, _signed_query(key, unit, uid, custom_data="swipe"))
+        assert db_swipe.profile.swipe_bonus_ad_watched_on is not None
+        assert db_swipe.profile.blind_chat_bonus_ad_watched_on is None
+
+        db_default = _FakeDb(_FakeProfile())
+        await ad_ssv_service.verify_and_grant(db_default, _signed_query(key, unit, uid))
+        assert db_default.profile.blind_chat_bonus_ad_watched_on is not None
+        assert db_default.profile.swipe_bonus_ad_watched_on is None
     finally:
         ad_ssv_service.set_test_keys(None)
 

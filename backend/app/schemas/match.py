@@ -68,6 +68,10 @@ class SwipeLimitOut(BaseModel):
     limit: int
     resets_at: datetime | None = None
     unlimited: bool = False
+    # Whether today's rewarded-ad bonus swipe hasn't been claimed yet — lets
+    # the client decide whether to show the "watch ad for +1" CTA at all.
+    # Always False when unlimited (nothing to claim).
+    bonus_available: bool = False
 
 
 class BlindChatQueueRequest(BaseModel):

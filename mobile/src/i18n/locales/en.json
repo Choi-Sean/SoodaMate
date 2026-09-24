@@ -604,7 +604,12 @@
     "limitReached": "Come back in {{time}} for more swipes",
     "limitReachedEmpty": "You're out of swipes for now — check back soon!",
     "continue": "Continue",
-    "sponsored": "Sponsored"
+    "sponsored": "Sponsored",
+    "watchAdForBonus": "Watch an ad for +1",
+    "adBonusTitle": "Bonus swipe",
+    "adBonusSuccess": "You've got 1 extra swipe today!",
+    "adBonusUnavailable": "No ad available right now. Try again in a bit.",
+    "adBonusPending": "Thanks for watching! Your bonus swipe is being confirmed — it should show up in a few seconds."
   },
   "likes": {
     "title": "Likes",

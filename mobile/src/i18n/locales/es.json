@@ -604,7 +604,12 @@
     "limitReached": "Vuelve en {{time}} para más deslizamientos",
     "limitReachedEmpty": "Te quedaste sin deslizamientos por ahora — ¡vuelve pronto!",
     "continue": "Continuar",
-    "sponsored": "Patrocinado"
+    "sponsored": "Patrocinado",
+    "watchAdForBonus": "Ver un anuncio por +1",
+    "adBonusTitle": "Swipe extra",
+    "adBonusSuccess": "¡Tienes 1 swipe extra hoy!",
+    "adBonusUnavailable": "No hay ningún anuncio disponible ahora. Inténtalo de nuevo en un momento.",
+    "adBonusPending": "¡Gracias por verlo! Estamos confirmando tu swipe extra; aparecerá en unos segundos."
   },
   "likes": {
     "title": "Me gusta",

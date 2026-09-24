@@ -101,6 +101,13 @@ class Profile(Base):
     blind_chat_bonus_ad_watched_on: Mapped[date | None] = mapped_column(
         "BlindChatBonusAdWatchedOn", Date, nullable=True
     )
+    # Same rewarded-ad bonus pattern as above, for the swipe limit instead of
+    # Blind Chat: watching one ad grants +1 swipe for that calendar day (UTC
+    # — see get_swipe_limit_status), capped at 1/day rather than unlimited
+    # re-watches for the same reason (see match_service.SWIPE_LIMIT).
+    swipe_bonus_ad_watched_on: Mapped[date | None] = mapped_column(
+        "SwipeBonusAdWatchedOn", Date, nullable=True
+    )
 
     # Phase 18 — incognito + travel mode (free, not paywalled per product decision)
     is_incognito: Mapped[bool] = mapped_column("IsIncognito", Boolean, default=False, nullable=False)
