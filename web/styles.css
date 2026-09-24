@@ -267,16 +267,6 @@ button { font-family: inherit; }
   height: 52px;
   opacity: 0.9;
 }
-.phone-category-chip {
-  background: var(--white);
-  color: var(--navy);
-  font-size: 12px;
-  font-weight: 700;
-  padding: 8px 14px;
-  border-radius: 999px;
-  box-shadow: 0 6px 14px rgba(43,33,24,0.14);
-}
-
 .hero-float-card {
   position: absolute;
   z-index: 3;
@@ -366,6 +356,7 @@ section { padding: 88px 24px; }
 }
 .rule h2 { font-size: clamp(24px, 3vw, 32px); font-weight: 900; margin-bottom: 16px; }
 .rule p { color: rgba(255,255,255,0.8); font-size: 15px; margin-bottom: 12px; }
+.rule-intro { color: #fff; font-weight: 700; font-size: 15.5px; }
 .rule-badge {
   display: inline-flex; align-items: center; gap: 8px;
   background: rgba(255,255,255,0.12); padding: 7px 14px; border-radius: 999px;

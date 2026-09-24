@@ -20,37 +20,30 @@ VALID_ACTIONS = {"like", "pass", "superlike"}
 
 # Every swipe (like/pass/superlike) counts against this — a deliberate,
 # separate throttle from the Phase 17 superlike-credit system below, which
-# only ever gates superlikes specifically.
+# only ever gates superlikes specifically. Calendar-day (UTC) reset, same
+# convention as get_blind_chat_limit_status, not a rolling window — a fixed
+# midnight boundary is what "20 free a day" actually means to a user.
 SWIPE_LIMIT = 20
-SWIPE_LIMIT_WINDOW = timedelta(hours=6)
 
 
 async def get_swipe_limit_status(db: AsyncSession, user_id: uuid.UUID) -> SwipeLimitOut:
-    """Rolling window, not a fixed clock-aligned one: your 21st swipe is
-    blocked until your oldest swipe in the last 6h ages out, not until a
-    fixed boundary — so resets_at is that oldest swipe's timestamp + 6h.
-    Premium members skip the limit entirely (one of the real, functional
-    perks premium actually grants, not just marketing copy)."""
+    """Premium members skip the limit entirely (one of the real, functional
+    perks premium actually grants, not just marketing copy). Everyone else
+    gets SWIPE_LIMIT swipes per UTC calendar day."""
     profile = await db.get(Profile, user_id)
     if profile is not None and is_premium(profile.premium_until):
         return SwipeLimitOut(remaining=SWIPE_LIMIT, limit=SWIPE_LIMIT, resets_at=None, unlimited=True)
 
-    window_start = datetime.now(timezone.utc) - SWIPE_LIMIT_WINDOW
-    timestamps = (
-        await db.execute(
-            select(Swipe.created_at)
-            .where(Swipe.from_user_id == user_id, Swipe.created_at >= window_start)
-            .order_by(Swipe.created_at.asc())
-        )
-    ).scalars().all()
-
-    remaining = max(0, SWIPE_LIMIT - len(timestamps))
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    count = await db.scalar(
+        select(func.count())
+        .select_from(Swipe)
+        .where(Swipe.from_user_id == user_id, Swipe.created_at >= today_start)
+    )
+    remaining = max(0, SWIPE_LIMIT - (count or 0))
     resets_at = None
     if remaining == 0:
-        oldest = timestamps[0]
-        if oldest.tzinfo is None:
-            oldest = oldest.replace(tzinfo=timezone.utc)
-        resets_at = oldest + SWIPE_LIMIT_WINDOW
+        resets_at = today_start + timedelta(days=1)
     return SwipeLimitOut(remaining=remaining, limit=SWIPE_LIMIT, resets_at=resets_at)
 
 
@@ -91,7 +84,7 @@ async def record_swipe(
         raise HTTPException(
             status.HTTP_429_TOO_MANY_REQUESTS,
             {
-                "message": f"swipe limit reached ({SWIPE_LIMIT} per {int(SWIPE_LIMIT_WINDOW.total_seconds() // 3600)}h)",
+                "message": f"swipe limit reached ({SWIPE_LIMIT} per day)",
                 "resets_at": limit_status.resets_at.isoformat() if limit_status.resets_at else None,
             },
         )
