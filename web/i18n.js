@@ -423,11 +423,11 @@ const translations = {
     ja: "<strong>位置情報</strong> — ご自身で選択した、または同意のうえ端末から提供されるおおよその位置（緯度・経度）。他のユーザーとのおおよその距離の計算にのみ使用します。相手に表示されるのは約2km単位に丸めた位置を基準とした整数km単位の距離のみで、正確な位置は公開されません",
   },
   "privacy.s1.li4": {
-    ko: "<strong>활동 정보</strong> — 매칭 내역, 블라인드 채팅 선택 항목·후기, 채팅 메시지(글·사진) 내용과 전송 시각, 직접 올린 모먼트·커플 스토리",
-    en: "<strong>Activity</strong> — matches, Blind Chat choices and feedback, chat messages (text and photos) and their timestamps, and the moments and couple stories you post",
-    es: "<strong>Actividad</strong> — matches, opciones y valoraciones del Chat a ciegas, mensajes de chat (texto y fotos) con su fecha y hora, y los momentos e historias de pareja que publiques",
-    zh: "<strong>活动信息</strong> — 配对记录、盲聊选择与反馈、聊天消息（文字和照片）及发送时间，以及你发布的动态和情侣故事",
-    ja: "<strong>アクティビティ情報</strong> — マッチ履歴、ブラインドチャットの選択内容・フィードバック、チャットメッセージ（テキスト・写真）と送信日時、投稿したモーメントやカップルストーリー",
+    ko: "<strong>활동 정보</strong> — 좋아요·패스 기록, 매칭 내역, 블라인드 채팅 선택 항목·후기, 채팅 메시지(글·사진) 내용과 전송 시각, 직접 올린 모먼트·커플 스토리",
+    en: "<strong>Activity</strong> — likes and passes, matches, Blind Chat choices and feedback, chat messages (text and photos) and their timestamps, and the moments and couple stories you post",
+    es: "<strong>Actividad</strong> — likes y descartes, matches, opciones y valoraciones del Chat a ciegas, mensajes de chat (texto y fotos) con su fecha y hora, y los momentos e historias de pareja que publiques",
+    zh: "<strong>活动信息</strong> — 喜欢·跳过记录、配对记录、盲聊选择与反馈、聊天消息（文字和照片）及发送时间，以及你发布的动态和情侣故事",
+    ja: "<strong>アクティビティ情報</strong> — いいね・パスの記録、マッチ履歴、ブラインドチャットの選択内容・フィードバック、チャットメッセージ（テキスト・写真）と送信日時、投稿したモーメントやカップルストーリー",
   },
   "privacy.s1.li5": {
     ko: "<strong>기기·기술 정보</strong> — 푸시 알림용 기기 토큰, 운영체제(iOS/Android), 앱 오류·충돌 보고서, (iOS에서 추적을 허용한 경우) 광고 식별자",

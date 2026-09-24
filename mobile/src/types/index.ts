@@ -24,6 +24,10 @@ export interface PremiumFilters {
   relationship_goal_filter: string[];
   wants_kids_filter: string[];
   has_kids_filter: string[];
+  occupation_filter: string[];
+  education_filter: string[];
+  hometown_filter: string[];
+  mbti_filter: string[];
 }
 
 export interface Profile {
@@ -52,6 +56,11 @@ export interface Profile {
   unlimited_matching_until: string | null;
   is_unlimited_matching_active: boolean;
   stealth_peek_credits: number;
+  // Women only (0 for everyone else) — free monthly allowance, spent before
+  // stealth_peek_credits. Always the current effective count (the backend
+  // recomputes it read-only even if the 30-day window already rolled over).
+  free_peek_remaining: number;
+  free_peek_reset_at: string | null;
   is_incognito: boolean;
   travel_lat: number | null;
   travel_lng: number | null;

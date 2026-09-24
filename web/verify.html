@@ -35,7 +35,7 @@
       overflow: hidden; display: flex; flex-direction: column;
     }
     .card .photos { display: grid; grid-template-columns: 1fr 1fr; }
-    .card .photos figure { margin: 0; position: relative; }
+    .card .photos figure { margin: 0; position: relative; cursor: zoom-in; }
     .card .photos img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--cream-deep); display: block; }
     .card .photos figcaption {
       position: absolute; bottom: 0; left: 0; right: 0; text-align: center;
@@ -43,7 +43,15 @@
     }
     .card .body { padding: 12px 14px; }
     .card .name { font-weight: 800; color: var(--navy); font-size: 14px; margin-bottom: 2px; }
+    .card .birthdate { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
     .card .date { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+
+    .zoom-backdrop {
+      position: fixed; inset: 0; background: rgba(11,41,68,0.85); display: none;
+      align-items: center; justify-content: center; padding: 24px; z-index: 60; cursor: zoom-out;
+    }
+    .zoom-backdrop.open { display: flex; }
+    .zoom-backdrop img { max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
     .card .actions { display: flex; gap: 8px; }
     .card button {
       flex: 1; border: none; border-radius: 8px; padding: 8px; font-weight: 700; font-size: 13px; cursor: pointer;
@@ -87,6 +95,10 @@
     <div class="grid" id="grid"></div>
     <p class="empty" id="emptyMsg" style="display:none">Nothing here.</p>
   </main>
+
+  <div class="zoom-backdrop" id="zoomBackdrop">
+    <img id="zoomImg" src="" alt="" />
+  </div>
 
   <script>
     const API_BASE_URL =
@@ -182,11 +194,12 @@
           (item) => `
         <div class="card" data-id="${item.id}">
           <div class="photos">
-            <figure><img src="${item.selfie_view_url}" alt="" /><figcaption>Selfie</figcaption></figure>
-            <figure><img src="${item.id_photo_view_url || ''}" alt="" /><figcaption>ID</figcaption></figure>
+            <figure><img src="${item.selfie_view_url}" data-full="${item.selfie_view_url}" alt="" /><figcaption>Selfie</figcaption></figure>
+            <figure><img src="${item.id_photo_view_url || ''}" data-full="${item.id_photo_view_url || ''}" alt="" /><figcaption>ID</figcaption></figure>
           </div>
           <div class="body">
-            <div class="name">${escapeHtml(item.display_name || "(no name)")}</div>
+            <div class="name">${escapeHtml(item.legal_first_name || item.display_name || "(no name)")}</div>
+            <div class="birthdate">${item.birth_date ? "Born " + item.birth_date : ""}</div>
             <div class="date">${new Date(item.submitted_at).toLocaleString()}</div>
             ${
               item.status === "pending"
@@ -223,7 +236,25 @@
       grid.querySelectorAll("button[data-action='reject-open']").forEach((btn) => {
         btn.addEventListener("click", () => openRejectForm(btn.closest(".actions-wrap")));
       });
+
+      grid.querySelectorAll(".photos figure img").forEach((img) => {
+        img.addEventListener("click", () => openZoom(img.getAttribute("data-full")));
+      });
     }
+
+    const zoomBackdrop = document.getElementById("zoomBackdrop");
+    const zoomImg = document.getElementById("zoomImg");
+
+    function openZoom(src) {
+      if (!src) return;
+      zoomImg.src = src;
+      zoomBackdrop.classList.add("open");
+    }
+
+    zoomBackdrop.addEventListener("click", () => {
+      zoomBackdrop.classList.remove("open");
+      zoomImg.src = "";
+    });
 
     function openRejectForm(wrap) {
       const options = REJECT_REASONS.map((r) => `<option value="${r.key}">${escapeHtml(r.label)}</option>`).join("");

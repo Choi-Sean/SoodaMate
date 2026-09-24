@@ -82,10 +82,17 @@ class Profile(Base):
     # Blind-chat "stealth peek" item (see services/match_service.use_blind_peek):
     # 1 credit lets the buyer alone see the other side's real profile in an
     # otherwise still-anonymous blind match, without the other side ever being
-    # told. Gender-neutral, unlike the Bumble first-message/first-call rules —
-    # anyone can buy and use it. Same consumable-credit shape as the fields
-    # above.
+    # told. Gender-neutral to buy — anyone can purchase credits here. Same
+    # consumable-credit shape as the fields above.
     stealth_peek_credits: Mapped[int] = mapped_column("StealthPeekCredits", Integer, default=0, nullable=False)
+    # Free daily allowance, any gender: 1 free peek per rolling 24h window,
+    # consumed before stealth_peek_credits (see match_service.use_blind_peek).
+    # Lazily refilled — no scheduler, same convention as every other timed
+    # reset in this app (blind chat's daily limit, Bumble match expiry, ...).
+    # free_peek_reset_at is when the CURRENT window's unused peek expires and
+    # the next 1 becomes available; NULL means "never granted yet".
+    free_peek_remaining: Mapped[int] = mapped_column("FreePeekRemaining", Integer, default=0, nullable=False)
+    free_peek_reset_at: Mapped[datetime | None] = mapped_column("FreePeekResetAt", DateTime(timezone=True), nullable=True)
     # Rewarded-ad bonus: watching one ad grants +1 blind match for that
     # calendar day (UTC — see get_blind_chat_limit_status), same
     # once-per-day date-stamp pattern as free_superlike_used_on above,
@@ -163,9 +170,13 @@ class Profile(Base):
     premium_filters_json: Mapped[str | None] = mapped_column("PremiumFiltersJson", Unicode(2000), nullable=True)
 
     # Optional extended profile fields — all free-text category strings
-    # (like race_ethnicity/religion above), collected at signup but not
-    # filterable/searchable in v1. interests/languages are comma-separated
-    # lists, same storage convention as race_filter/religion_filter.
+    # (like race_ethnicity/religion above). interests/languages are
+    # comma-separated lists, same storage convention as race_filter/
+    # religion_filter. Every field here now has a matching discovery filter
+    # dimension somewhere (Basic tab for height/interests/languages, premium
+    # premium_filters_json for occupation/education/hometown below — see
+    # discovery_service.py's _basic_filters/_LIST_FILTER_COLUMNS) — "every
+    # profile field is filterable for premium" is the product goal.
     height_cm: Mapped[int | None] = mapped_column("HeightCm", Integer, nullable=True)
     occupation: Mapped[str | None] = mapped_column("Occupation", Unicode(100), nullable=True)
     education: Mapped[str | None] = mapped_column("Education", Unicode(100), nullable=True)
@@ -193,7 +204,9 @@ class Profile(Base):
     # this model: existing profiles predate it and shouldn't be retroactively
     # locked out. See constants/mbtiCompatibility.ts (mobile) /
     # mbti.py (backend) for the compatibility table blind_chat_service uses
-    # when a user opts into the "mbti_match" blind-chat category.
+    # when a user opts into the "mbti_match" blind-chat category. Also a
+    # premium discovery filter dimension (mbti_filter, premium_filters_json)
+    # independent of that blind-chat compatibility matching.
     mbti: Mapped[str | None] = mapped_column("Mbti", Unicode(4), nullable=True)
     # K-content taste tags (K-drama/K-pop/webtoon/K-movie favorites) — same
     # comma-separated storage convention as interests/languages above, own

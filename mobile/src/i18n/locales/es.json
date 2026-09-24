@@ -211,6 +211,8 @@
   },
   "chat": {
     "title": "Chats",
+    "blindChatBannerTitle": "Chat a ciegas",
+    "blindChatBannerSubtitle": "Habla primero, sin mostrar fotos todavía",
     "expired": "Expirado",
     "expiredBanner": "Este match expiró tras 24 horas sin respuesta.",
     "empty": "Aún no tienes matches — ¡sigue explorando!",
@@ -719,6 +721,7 @@
     "peekButton": "Vistazo secreto 👀",
     "peekConfirmTitle": "¿Usar un vistazo secreto?",
     "peekConfirmBody": "Esto gasta 1 crédito de Vistazo secreto para ver su perfil real. Nunca se le avisará de esto.",
+    "peekConfirmBodyFree": "Te queda {{count}} Vistazo secreto gratis hoy — este es gratis. Nunca se le avisará de esto.",
     "peekConfirm": "Usar vistazo secreto",
     "peekedAlready": "Ver el perfil que espiaste",
     "peekNoCreditsTitle": "Sin créditos de Vistazo secreto",
@@ -772,7 +775,13 @@
     "label": "MBTI",
     "placeholder": "Selecciona tu tipo de MBTI",
     "dontKnow": "¿No sabes tu MBTI?",
-    "findOutCta": "Haz el test"
+    "findOutCta": "Haz el test",
+    "type": {
+      "ISTJ": "ISTJ", "ISFJ": "ISFJ", "INFJ": "INFJ", "INTJ": "INTJ",
+      "ISTP": "ISTP", "ISFP": "ISFP", "INFP": "INFP", "INTP": "INTP",
+      "ESTP": "ESTP", "ESFP": "ESFP", "ENFP": "ENFP", "ENTP": "ENTP",
+      "ESTJ": "ESTJ", "ESFJ": "ESFJ", "ENFJ": "ENFJ", "ENTJ": "ENTJ"
+    }
   },
   "mbtiQuiz": {
     "title": "Test de tipo MBTI",

@@ -23,6 +23,8 @@ import {
   SMOKING_KEYS,
   WANTS_KIDS_KEYS,
 } from "../constants/demographicOptions";
+import { EDUCATION_KEYS } from "../constants/educationLevels";
+import { MBTI_TYPE_KEYS } from "../constants/mbtiTypes";
 import { INTEREST_KEYS, LANGUAGE_KEYS } from "../constants/interestsAndLanguages";
 import { K_CONTENT_KEYS } from "../constants/kContentTags";
 import { colors } from "../theme";
@@ -71,6 +73,8 @@ export default function FilterModal({ visible, onClose }: Props) {
   const [relationshipGoalFilter, setRelationshipGoalFilter] = useState<string[]>([]);
   const [wantsKidsFilter, setWantsKidsFilter] = useState<string[]>([]);
   const [hasKidsFilter, setHasKidsFilter] = useState<string[]>([]);
+  const [educationFilter, setEducationFilter] = useState<string[]>([]);
+  const [mbtiFilter, setMbtiFilter] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   // Re-sync local state from the server every time the modal opens, so a
@@ -98,6 +102,8 @@ export default function FilterModal({ visible, onClose }: Props) {
     setRelationshipGoalFilter(profile.premium_filters.relationship_goal_filter);
     setWantsKidsFilter(profile.premium_filters.wants_kids_filter);
     setHasKidsFilter(profile.premium_filters.has_kids_filter);
+    setEducationFilter(profile.premium_filters.education_filter);
+    setMbtiFilter(profile.premium_filters.mbti_filter);
   }, [visible, profile]);
 
   const handleOpenShop = () => openShop(queryClient);
@@ -134,6 +140,8 @@ export default function FilterModal({ visible, onClose }: Props) {
           relationship_goal_filter: relationshipGoalFilter,
           wants_kids_filter: wantsKidsFilter,
           has_kids_filter: hasKidsFilter,
+          education_filter: educationFilter,
+          mbti_filter: mbtiFilter,
         });
       }
       await queryClient.invalidateQueries({ queryKey: ["myProfile"] });
@@ -270,6 +278,8 @@ export default function FilterModal({ visible, onClose }: Props) {
               <MultiChipSelect label={t("profileSetup.relationshipGoal")} options={RELATIONSHIP_GOAL_KEYS} translatePrefix="profileSetup.relationshipGoalOption" values={relationshipGoalFilter} onChange={setRelationshipGoalFilter} />
               <MultiChipSelect label={t("profileSetup.wantsKids")} options={WANTS_KIDS_KEYS} translatePrefix="profileSetup.wantsKidsOption" values={wantsKidsFilter} onChange={setWantsKidsFilter} />
               <MultiChipSelect label={t("profileSetup.hasKids")} options={HAS_KIDS_KEYS} translatePrefix="profileSetup.hasKidsOption" values={hasKidsFilter} onChange={setHasKidsFilter} />
+              <MultiChipSelect label={t("profileSetup.education")} options={EDUCATION_KEYS} translatePrefix="profileSetup.educationOption" values={educationFilter} onChange={setEducationFilter} />
+              <MultiChipSelect label={t("mbti.label")} options={MBTI_TYPE_KEYS} translatePrefix="mbti.type" values={mbtiFilter} onChange={setMbtiFilter} />
             </View>
           ) : (
             <View style={styles.lockedCard}>

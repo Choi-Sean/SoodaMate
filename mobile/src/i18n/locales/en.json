@@ -211,6 +211,8 @@
   },
   "chat": {
     "title": "Chats",
+    "blindChatBannerTitle": "Blind Chat",
+    "blindChatBannerSubtitle": "Talk first, no photos revealed yet",
     "expired": "Expired",
     "expiredBanner": "This match expired after 24 hours with no reply.",
     "empty": "No matches yet — keep browsing!",
@@ -719,6 +721,7 @@
     "peekButton": "Secret peek 👀",
     "peekConfirmTitle": "Use a secret peek?",
     "peekConfirmBody": "This spends 1 Secret Peek credit to see their real profile. They will never be told about it.",
+    "peekConfirmBodyFree": "You have {{count}} free Secret Peek left today — this one's free. They will never be told about it.",
     "peekConfirm": "Use secret peek",
     "peekedAlready": "View the profile you peeked at",
     "peekNoCreditsTitle": "No Secret Peek credits",
@@ -772,7 +775,13 @@
     "label": "MBTI",
     "placeholder": "Select your MBTI type",
     "dontKnow": "Don't know your MBTI?",
-    "findOutCta": "Take the quiz"
+    "findOutCta": "Take the quiz",
+    "type": {
+      "ISTJ": "ISTJ", "ISFJ": "ISFJ", "INFJ": "INFJ", "INTJ": "INTJ",
+      "ISTP": "ISTP", "ISFP": "ISFP", "INFP": "INFP", "INTP": "INTP",
+      "ESTP": "ESTP", "ESFP": "ESFP", "ENFP": "ENFP", "ENTP": "ENTP",
+      "ESTJ": "ESTJ", "ESFJ": "ESFJ", "ENFJ": "ENFJ", "ENTJ": "ENTJ"
+    }
   },
   "mbtiQuiz": {
     "title": "MBTI Type Quiz",

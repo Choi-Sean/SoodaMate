@@ -44,6 +44,10 @@ class PremiumFilters(BaseModel):
     relationship_goal_filter: _FilterList = []
     wants_kids_filter: _FilterList = []
     has_kids_filter: _FilterList = []
+    occupation_filter: _FilterList = []
+    education_filter: _FilterList = []
+    hometown_filter: _FilterList = []
+    mbti_filter: _FilterList = []
 
 
 class ProfileUpdate(BaseModel):
@@ -134,6 +138,9 @@ class ProfileOut(BaseModel):
     ai_match_credits: int = 0
     unlimited_matching_until: datetime | None = None
     stealth_peek_credits: int = 0
+    # Read-only, computed effective value — see match_service._current_free_peek_remaining.
+    free_peek_remaining: int = 0
+    free_peek_reset_at: datetime | None = None
     is_incognito: bool = False
     travel_lat: float | None = None
     travel_lng: float | None = None
@@ -281,6 +288,14 @@ class PremiumFilterUpdate(BaseModel):
     relationship_goal_filter: _FilterList = Field(default_factory=list)
     wants_kids_filter: _FilterList = Field(default_factory=list)
     has_kids_filter: _FilterList = Field(default_factory=list)
+    # Rounds out "every profile field is filterable for premium" — occupation/
+    # education/hometown/mbti were collected at signup but had no matching
+    # filter dimension until now (see Profile.occupation/education/hometown/
+    # mbti's own comments).
+    occupation_filter: _FilterList = Field(default_factory=list)
+    education_filter: _FilterList = Field(default_factory=list)
+    hometown_filter: _FilterList = Field(default_factory=list)
+    mbti_filter: _FilterList = Field(default_factory=list)
 
 
 class AgeFilterUpdate(BaseModel):

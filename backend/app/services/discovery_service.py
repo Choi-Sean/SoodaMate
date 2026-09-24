@@ -26,6 +26,10 @@ _LIST_FILTER_COLUMNS = {
     "relationship_goal_filter": Profile.relationship_goal,
     "wants_kids_filter": Profile.wants_kids,
     "has_kids_filter": Profile.has_kids,
+    "occupation_filter": Profile.occupation,
+    "education_filter": Profile.education,
+    "hometown_filter": Profile.hometown,
+    "mbti_filter": Profile.mbti,
 }
 
 

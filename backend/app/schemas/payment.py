@@ -42,6 +42,7 @@ class BalanceResponse(BaseModel):
     ai_match_credits: int
     unlimited_matching_until: datetime | None
     stealth_peek_credits: int
+    free_peek_remaining: int
 
 
 class PurchaseHistoryItemOut(BaseModel):

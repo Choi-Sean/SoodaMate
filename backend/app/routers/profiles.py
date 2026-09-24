@@ -25,7 +25,7 @@ from app.schemas.profile import (
     TravelModeRequest,
 )
 from app.schemas.moment import MomentOut
-from app.services import moment_service, storage_service
+from app.services import match_service, moment_service, storage_service
 from app.services.payment_service import is_premium_member
 
 router = APIRouter(prefix="/profiles", tags=["profiles"])
@@ -56,6 +56,10 @@ async def _load_profile_out(db: AsyncSession, user_id) -> ProfileOut:
     out = ProfileOut.model_validate(profile)
     out.photos = [PhotoOut.model_validate(p) for p in photos]
     out.moments = [MomentOut.model_validate(m) for m in moments]
+    # Read-only recompute so a stale window (nobody's used one in >30 days)
+    # still shows 5 here instead of 0 — the real DB write only happens when a
+    # peek is actually spent (match_service.use_blind_peek).
+    out.free_peek_remaining = match_service._current_free_peek_remaining(profile)
     return out
 
 
@@ -262,6 +266,10 @@ async def set_premium_filters(
         "relationship_goal_filter": body.relationship_goal_filter,
         "wants_kids_filter": body.wants_kids_filter,
         "has_kids_filter": body.has_kids_filter,
+        "occupation_filter": body.occupation_filter,
+        "education_filter": body.education_filter,
+        "hometown_filter": body.hometown_filter,
+        "mbti_filter": body.mbti_filter,
     }
     extra = {k: v for k, v in extra.items() if v}
     profile.premium_filters_json = json.dumps(extra) if extra else None

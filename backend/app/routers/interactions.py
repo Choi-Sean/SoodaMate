@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import rate_limit
@@ -19,22 +19,12 @@ async def swipe_limit(
     return await get_swipe_limit_status(db, user.id)
 
 
-# Like/Super Like discontinued: Classic Matching's swipe/discovery UI has no
-# reachable entry point anywhere in the app anymore (see MyProfileScreen.tsx's
-# comment on why those link cards were removed) — nobody can ever hit these,
-# so they're discontinued outright rather than left live-but-unreachable.
-# match_service.record_swipe still accepts "like"/"superlike" as actions (the
-# stored proc and match-creation semantics are unchanged internally, and
-# tests still exercise it directly — see tests/helpers.create_ordinary_match)
-# — it's only this public HTTP surface that's closed off. /pass stays open:
-# it's still the free-tier swipe-limit's own subject (GET /interactions/
-# swipe-limit) and has no monetization/notification baggage to discontinue.
-_DISCONTINUED_DETAIL = "Classic Matching's Like/Super Like has been discontinued"
-
-
-@router.post("/like", include_in_schema=False)
-async def like() -> None:
-    raise HTTPException(status.HTTP_410_GONE, _DISCONTINUED_DETAIL)
+@router.post("/like", response_model=SwipeResponse, dependencies=[Depends(rate_limit.limit_user("swipe", 600, 600))])
+async def like(
+    body: SwipeRequest, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
+) -> SwipeResponse:
+    async with user_lock(f"swipe:{user.id}"):
+        return await record_swipe(db, user.id, body.to_user_id, "like")
 
 
 @router.post("/pass", response_model=SwipeResponse, dependencies=[Depends(rate_limit.limit_user("swipe", 600, 600))])
@@ -45,6 +35,11 @@ async def pass_(
         return await record_swipe(db, user.id, body.to_user_id, "pass")
 
 
-@router.post("/superlike", include_in_schema=False)
-async def superlike() -> None:
-    raise HTTPException(status.HTTP_410_GONE, _DISCONTINUED_DETAIL)
+@router.post("/superlike", response_model=SwipeResponse, dependencies=[Depends(rate_limit.limit_user("swipe", 600, 600))])
+async def superlike(
+    body: SwipeRequest, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
+) -> SwipeResponse:
+    # Lock order is always swipe -> credits, so this can never deadlock against
+    # a webhook grant (which only takes the credits lock).
+    async with user_lock(f"swipe:{user.id}"), user_lock(f"credits:{user.id}"):
+        return await record_swipe(db, user.id, body.to_user_id, "superlike")

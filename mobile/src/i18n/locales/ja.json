@@ -211,6 +211,8 @@
   },
   "chat": {
     "title": "チャット",
+    "blindChatBannerTitle": "ブラインドチャット",
+    "blindChatBannerSubtitle": "写真を公開せず、まずは会話から",
     "expired": "期限切れ",
     "expiredBanner": "24時間返信がなかったため、このマッチは無効になりました。",
     "empty": "まだマッチがありません — 見て回りましょう！",
@@ -719,6 +721,7 @@
     "peekButton": "こっそり見る 👀",
     "peekConfirmTitle": "こっそり閲覧を使いますか？",
     "peekConfirmBody": "こっそり閲覧権を1回使って相手の本当のプロフィールを見ます。相手にこのことが伝わることは一切ありません。",
+    "peekConfirmBodyFree": "本日の無料こっそり閲覧が残り{{count}}回あります — 今回は無料です。相手にこのことが伝わることは一切ありません。",
     "peekConfirm": "こっそり閲覧を使う",
     "peekedAlready": "こっそり確認したプロフィールを見る",
     "peekNoCreditsTitle": "こっそり閲覧権がありません",
@@ -772,7 +775,13 @@
     "label": "MBTI",
     "placeholder": "MBTIタイプを選択してください",
     "dontKnow": "自分のMBTIが分からない方は",
-    "findOutCta": "診断テストへ"
+    "findOutCta": "診断テストへ",
+    "type": {
+      "ISTJ": "ISTJ", "ISFJ": "ISFJ", "INFJ": "INFJ", "INTJ": "INTJ",
+      "ISTP": "ISTP", "ISFP": "ISFP", "INFP": "INFP", "INTP": "INTP",
+      "ESTP": "ESTP", "ESFP": "ESFP", "ENFP": "ENFP", "ENTP": "ENTP",
+      "ESTJ": "ESTJ", "ESFJ": "ESFJ", "ENFJ": "ENFJ", "ENTJ": "ENTJ"
+    }
   },
   "mbtiQuiz": {
     "title": "MBTI診断テスト",

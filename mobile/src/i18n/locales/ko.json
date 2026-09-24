@@ -211,6 +211,8 @@
   },
   "chat": {
     "title": "채팅",
+    "blindChatBannerTitle": "블라인드 채팅",
+    "blindChatBannerSubtitle": "얼굴 공개 없이, 대화부터 먼저 시작해요",
     "expired": "만료됨",
     "expiredBanner": "24시간 동안 답장이 없어 이 매칭은 만료됐어요.",
     "empty": "아직 매칭이 없어요 — 계속 둘러보세요!",
@@ -719,6 +721,7 @@
     "peekButton": "몰래보기 👀",
     "peekConfirmTitle": "몰래보기를 사용할까요?",
     "peekConfirmBody": "몰래보기권 1개를 사용해서 상대방의 프로필을 확인해요. 상대방에게는 이 사실이 전혀 알려지지 않아요.",
+    "peekConfirmBodyFree": "오늘 무료 몰래보기가 {{count}}개 남아있어요 — 무료로 상대방의 프로필을 확인해요. 상대방에게는 이 사실이 전혀 알려지지 않아요.",
     "peekConfirm": "몰래보기 사용",
     "peekedAlready": "몰래 확인한 프로필 보기",
     "peekNoCreditsTitle": "몰래보기권이 없어요",
@@ -772,7 +775,13 @@
     "label": "MBTI",
     "placeholder": "MBTI를 선택해주세요",
     "dontKnow": "내 MBTI를 모르겠어요",
-    "findOutCta": "성향 파악하러 가기"
+    "findOutCta": "성향 파악하러 가기",
+    "type": {
+      "ISTJ": "ISTJ", "ISFJ": "ISFJ", "INFJ": "INFJ", "INTJ": "INTJ",
+      "ISTP": "ISTP", "ISFP": "ISFP", "INFP": "INFP", "INTP": "INTP",
+      "ESTP": "ESTP", "ESFP": "ESFP", "ENFP": "ENFP", "ENTP": "ENTP",
+      "ESTJ": "ESTJ", "ESFJ": "ESFJ", "ENFJ": "ENFJ", "ENTJ": "ENTJ"
+    }
   },
   "mbtiQuiz": {
     "title": "MBTI 성향 테스트",

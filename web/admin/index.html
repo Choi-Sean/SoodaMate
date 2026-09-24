@@ -51,6 +51,35 @@
     .chart-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin-bottom: 24px; }
     .chart-card h3 { font-size: 14px; font-weight: 800; color: var(--navy); margin-bottom: 12px; }
     .chart-card canvas { max-height: 260px; }
+    .chart-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 4px; }
+    .chart-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .metric-select {
+      border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; font-size: 12.5px;
+      font-weight: 700; color: var(--navy); background: var(--white); font-family: inherit;
+    }
+    .period-row { display: flex; gap: 4px; flex-wrap: wrap; }
+    .period-btn {
+      border: 1px solid var(--border); background: var(--white); border-radius: 999px;
+      padding: 5px 12px; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer;
+    }
+    .period-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .chart-pct { font-size: 13px; font-weight: 800; margin: 10px 0 8px; }
+    .chart-pct.up { color: #1E7A34; }
+    .chart-pct.down { color: #B3261E; }
+    .chart-pct.flat { color: var(--muted); }
+
+    .demo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .demo-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
+    .demo-card h4 { font-size: 13px; font-weight: 800; color: var(--navy); margin-bottom: 12px; }
+    .demo-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; }
+    .demo-row .demo-label { width: 84px; flex-shrink: 0; color: var(--muted); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .demo-row .demo-bar-wrap { flex: 1; background: var(--cream); border-radius: 6px; overflow: hidden; height: 14px; }
+    .demo-row .demo-bar { height: 100%; background: var(--accent); border-radius: 6px; }
+    .demo-row .demo-count { width: 34px; text-align: right; font-weight: 800; color: var(--navy); flex-shrink: 0; }
+    .demo-empty { color: var(--muted); font-size: 12px; }
+    .mbti-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+    .mbti-table th { text-align: left; color: var(--muted); font-weight: 700; padding: 4px 6px; }
+    .mbti-table td { padding: 4px 6px; border-top: 1px solid var(--border); }
 
     .filter-row { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
     .filter-chip {
@@ -119,6 +148,7 @@
 
     <div class="tabs">
       <button class="tab-btn active" data-panel="dashboard">대시보드</button>
+      <button class="tab-btn" data-panel="demographics">통계</button>
       <button class="tab-btn" data-panel="reports">신고 관리<span class="tab-dot" id="reportsDot" style="display:none"></span></button>
       <button class="tab-btn" data-panel="inquiries">문의함<span class="tab-dot" id="inquiriesDot" style="display:none"></span></button>
       <button class="tab-btn" data-panel="promotions">프로모션</button>
@@ -127,9 +157,27 @@
     <div class="panel active" id="panel-dashboard">
       <div class="stat-grid" id="statGrid"></div>
       <div class="chart-card">
-        <h3>최근 30일 신규 가입자</h3>
+        <div class="chart-header">
+          <h3 id="chartTitle">신규 가입자</h3>
+          <div class="chart-controls">
+            <div class="period-row" id="periodRow">
+              <button class="period-btn" data-period="1w">1주</button>
+              <button class="period-btn active" data-period="1m">1달</button>
+              <button class="period-btn" data-period="3m">3달</button>
+              <button class="period-btn" data-period="ytd">YTD</button>
+              <button class="period-btn" data-period="1y">1년</button>
+              <button class="period-btn" data-period="3y">3년</button>
+              <button class="period-btn" data-period="all">전체</button>
+            </div>
+          </div>
+        </div>
+        <div class="chart-pct" id="chartPct"></div>
         <canvas id="signupChart"></canvas>
       </div>
+    </div>
+
+    <div class="panel" id="panel-demographics">
+      <div class="demo-grid" id="demoGrid"></div>
     </div>
 
     <div class="panel" id="panel-reports">
@@ -223,6 +271,8 @@
       loginBox.style.display = "none";
       mainView.style.display = "block";
       loadDashboard();
+      loadTimeseries();
+      loadDemographics();
       loadReports();
       loadInquiries();
       loadPromotions();
@@ -306,10 +356,12 @@
 
       const tiles = [
         { label: "전체 유저", value: s.total_users },
+        { label: "오늘 접속자", value: s.active_today },
         { label: "오늘 신규가입", value: s.new_users_today },
         { label: "7일 신규가입", value: s.new_users_7d },
         { label: "30일 신규가입", value: s.new_users_30d },
         { label: "오픈 신고", value: s.open_reports, sub: `전체 ${s.total_reports}건` },
+        { label: "신고된 유저", value: s.reported_users },
         { label: "정지된 유저", value: s.banned_users },
         { label: "대기중 본인인증", value: s.pending_face_verifications },
         { label: "신규 문의", value: s.new_inquiries },
@@ -325,18 +377,128 @@
           }</div>`
         )
         .join("");
+    }
+
+    // --- Timeseries (stock-chart-style period picker) --------------------
+    // metric is signups-only for now — a churn toggle is held back pending
+    // a new AccountDeletionLogs table on the backend.
+
+    const currentMetric = "signups";
+    let currentPeriod = "1m";
+
+    document.querySelectorAll("#periodRow .period-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#periodRow .period-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentPeriod = btn.dataset.period;
+        loadTimeseries();
+      });
+    });
+
+    async function loadTimeseries() {
+      const resp = await authedFetch(`/admin/timeseries?metric=${currentMetric}&period=${currentPeriod}`);
+      if (!resp.ok) return;
+      const s = await resp.json();
+
+      const pctEl = document.getElementById("chartPct");
+      if (s.pct_change == null) {
+        pctEl.textContent = `이 기간 합계: ${s.total_in_period}건`;
+        pctEl.className = "chart-pct flat";
+      } else {
+        const sign = s.pct_change > 0 ? "+" : "";
+        const cls = s.pct_change > 0 ? "up" : s.pct_change < 0 ? "down" : "flat";
+        const arrow = s.pct_change > 0 ? "▲" : s.pct_change < 0 ? "▼" : "―";
+        pctEl.textContent = `이 기간 합계 ${s.total_in_period}건 · 직전 동일 기간 대비 ${arrow} ${sign}${s.pct_change}%`;
+        pctEl.className = `chart-pct ${cls}`;
+      }
 
       if (window.Chart) {
         const ctx = document.getElementById("signupChart").getContext("2d");
-        const labels = s.signups_by_day.map((d) => d.day.slice(5));
-        const counts = s.signups_by_day.map((d) => d.count);
+        const labels = s.points.map((d) => d.day.slice(5));
+        const counts = s.points.map((d) => d.count);
+        const label = currentMetric === "signups" ? "신규 가입" : "탈퇴";
+        const color = currentMetric === "signups" ? "#e2914d" : "#B3261E";
         if (signupChart) signupChart.destroy();
         signupChart = new Chart(ctx, {
-          type: "bar",
-          data: { labels, datasets: [{ label: "신규 가입", data: counts, backgroundColor: "#e2914d" }] },
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label,
+                data: counts,
+                borderColor: color,
+                backgroundColor: color + "33",
+                fill: true,
+                tension: 0.25,
+                pointRadius: labels.length > 60 ? 0 : 2,
+              },
+            ],
+          },
           options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
         });
       }
+    }
+
+    // --- Demographics ------------------------------------------------------
+
+    const DEMO_SECTIONS = [
+      { key: "gender", title: "성별" },
+      { key: "race_ethnicity", title: "인종/민족" },
+      { key: "religion", title: "종교" },
+      { key: "political_view", title: "정치 성향" },
+      { key: "education", title: "학력" },
+      { key: "smoking", title: "흡연" },
+      { key: "cannabis", title: "대마초" },
+      { key: "exercise_frequency", title: "운동 빈도" },
+      { key: "relationship_goal", title: "연애 목표" },
+      { key: "wants_kids", title: "자녀 희망" },
+      { key: "has_kids", title: "자녀 유무" },
+      { key: "height_cm", title: "키 (cm)" },
+      { key: "verified_badge", title: "인증 뱃지" },
+      { key: "premium_member", title: "프리미엄 여부" },
+    ];
+
+    function renderBucketCard(title, buckets) {
+      if (!buckets || buckets.length === 0) {
+        return `<div class="demo-card"><h4>${title}</h4><p class="demo-empty">데이터 없음</p></div>`;
+      }
+      const max = Math.max(...buckets.map((b) => b.count), 1);
+      const rows = buckets
+        .map(
+          (b) => `<div class="demo-row">
+            <div class="demo-label" title="${escapeHtml(b.key)}">${escapeHtml(b.key)}</div>
+            <div class="demo-bar-wrap"><div class="demo-bar" style="width:${(b.count / max) * 100}%"></div></div>
+            <div class="demo-count">${b.count}</div>
+          </div>`
+        )
+        .join("");
+      return `<div class="demo-card"><h4>${title}</h4>${rows}</div>`;
+    }
+
+    function renderMbtiCard(buckets) {
+      if (!buckets || buckets.length === 0) {
+        return `<div class="demo-card"><h4>MBTI (성별 구분)</h4><p class="demo-empty">데이터 없음</p></div>`;
+      }
+      const rows = buckets
+        .map(
+          (b) => `<tr><td>${escapeHtml(b.key)}</td><td>${b.male + b.female + b.other}</td><td>${b.female}</td><td>${b.male}</td></tr>`
+        )
+        .join("");
+      return `<div class="demo-card"><h4>MBTI (성별 구분)</h4>
+        <table class="mbti-table">
+          <thead><tr><th>유형</th><th>전체</th><th>여성</th><th>남성</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+    }
+
+    async function loadDemographics() {
+      const resp = await authedFetch("/admin/demographics");
+      if (!resp.ok) return;
+      const d = await resp.json();
+      const cards = DEMO_SECTIONS.map((sec) => renderBucketCard(sec.title, d[sec.key])).join("");
+      document.getElementById("demoGrid").innerHTML = cards + renderMbtiCard(d.mbti);
     }
 
     // --- Reports ------------------------------------------------------

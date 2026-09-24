@@ -1,14 +1,11 @@
-import { useState } from "react";
 import { Image, Pressable, Text, View, StyleSheet } from "react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-import BlindChatCategoryPopup from "../components/BlindChatCategoryPopup";
 import { getMyProfile } from "../api/profiles";
-import { showAlert } from "../utils/alert";
-import { calculateProfileCompleteness, isAccountActive, MIN_COMPLETENESS_FOR_ACTIVE } from "../utils/profileCompleteness";
+import { isAccountActive } from "../utils/profileCompleteness";
 import { colors } from "../theme";
 
 const REAL_TAB_ICONS: Record<string, string> = {
@@ -20,45 +17,23 @@ const REAL_TAB_LABEL_KEYS: Record<string, string> = {
   Profile: "tabs.profile",
 };
 
-/** Blind Chat is the app's primary flow now (Discover/classic Matching/Likes
- * were demoted to secondary links inside Profile — see ProfileStack), so it
- * gets an Instagram/Tinder-style elevated center button instead of being
- * just another tab. Tapping it doesn't navigate directly — it pops the cute
- * category picker (BlindChatCategoryPopup), and picking a category is what
- * navigates, straight into ChatStack's BlindChatQueue screen. MainTabs keeps
- * exactly 2 flanking tabs (Chat, Profile) so this button's center position
- * never lands on top of a real tab's icon/label/touch target. */
+/** Button-click Swipe matching is the app's primary flow again (Blind Chat
+ * is demoted to a secondary entry point — see ChatListScreen's banner), so
+ * it gets an Instagram/Tinder-style elevated center button instead of being
+ * just another tab. Tapping it navigates straight into ProfileStack's
+ * ClassicSwipe screen. MainTabs keeps exactly 2 flanking tabs (Chat, Profile)
+ * so this button's center position never lands on top of a real tab's icon/
+ * label/touch target. */
 export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const [popupVisible, setPopupVisible] = useState(false);
   // Cached alongside every other screen's ["myProfile"] query — this never
   // triggers its own network request in the common case.
   const { data: profile } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
   const needsActivation = profile != null && !isAccountActive(profile);
 
   function handleCenterPress() {
-    if (profile != null && !profile.face_verified) {
-      showAlert(t("blindChat.verificationRequiredTitle"), t("blindChat.verificationRequiredBody"), [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("blindChat.verificationRequiredCta"),
-          onPress: () => navigation.navigate("Profile", { screen: "FaceVerification" } as never),
-        },
-      ]);
-      return;
-    }
-    if (profile != null && calculateProfileCompleteness(profile) < MIN_COMPLETENESS_FOR_ACTIVE) {
-      showAlert(t("blindChat.profileIncompleteTitle"), t("blindChat.profileIncompleteBody"), [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("blindChat.profileIncompleteCta"),
-          onPress: () => navigation.navigate("Profile", { screen: "EditProfile" } as never),
-        },
-      ]);
-      return;
-    }
-    setPopupVisible(true);
+    navigation.navigate("Profile", { screen: "ClassicSwipe" } as never);
   }
 
   return (
@@ -112,16 +87,8 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
         <Image source={require("../../assets/logo-mascot.png")} style={styles.centerButtonIcon} resizeMode="contain" />
       </Pressable>
       <Text style={styles.centerLabel} numberOfLines={1}>
-        {t("tabs.blindChat")}
+        {t("tabs.matches")}
       </Text>
-
-      <BlindChatCategoryPopup
-        visible={popupVisible}
-        onClose={() => setPopupVisible(false)}
-        onSelectCategory={(key) =>
-          navigation.navigate("Chat", { screen: "BlindChatQueue", params: { initialCategories: [key] } } as never)
-        }
-      />
     </View>
   );
 }

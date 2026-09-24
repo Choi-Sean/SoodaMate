@@ -91,6 +91,10 @@ export interface PremiumFilterInput {
   relationship_goal_filter?: string[];
   wants_kids_filter?: string[];
   has_kids_filter?: string[];
+  occupation_filter?: string[];
+  education_filter?: string[];
+  hometown_filter?: string[];
+  mbti_filter?: string[];
 }
 
 /** Full replace, not a merge — 402s if the caller isn't an active premium

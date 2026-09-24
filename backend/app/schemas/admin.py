@@ -101,3 +101,48 @@ class DashboardStatsOut(BaseModel):
     pending_face_verifications: int
     new_inquiries: int
     total_revenue_cents_30d: int
+    active_today: int
+    reported_users: int
+
+
+class DemographicBucket(BaseModel):
+    key: str
+    count: int
+
+
+class GenderSplitBucket(BaseModel):
+    key: str
+    male: int
+    female: int
+    other: int
+
+
+class DemographicsOut(BaseModel):
+    gender: list[DemographicBucket]
+    race_ethnicity: list[DemographicBucket]
+    religion: list[DemographicBucket]
+    political_view: list[DemographicBucket]
+    education: list[DemographicBucket]
+    smoking: list[DemographicBucket]
+    cannabis: list[DemographicBucket]
+    exercise_frequency: list[DemographicBucket]
+    relationship_goal: list[DemographicBucket]
+    wants_kids: list[DemographicBucket]
+    has_kids: list[DemographicBucket]
+    mbti: list[GenderSplitBucket]
+    height_cm: list[DemographicBucket]
+    verified_badge: list[DemographicBucket]
+    premium_member: list[DemographicBucket]
+
+
+class TimeseriesPoint(BaseModel):
+    day: date
+    count: int
+
+
+class TimeseriesOut(BaseModel):
+    points: list[TimeseriesPoint]
+    total_in_period: int
+    # None only when there's no comparable prior period to diff against
+    # (period="all", or a brand-new app with no history before this window).
+    pct_change: float | None

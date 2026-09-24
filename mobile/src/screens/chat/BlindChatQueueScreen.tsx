@@ -84,8 +84,8 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
   const [aiMatching, setAiMatching] = useState(false);
   const [claimingBonus, setClaimingBonus] = useState(false);
   // The wait for a match is genuine idle time (no active conversation to
-  // interrupt), unlike the chat itself — the one ad surface left now that
-  // swipe/Classic Matching is out of the concept entirely. Hidden outright
+  // interrupt), unlike the chat itself — one of the app's ad surfaces
+  // alongside the Swipe deck's own in-stack sponsored cards. Hidden outright
   // on failure to load rather than leaving a dead/broken box.
   const [adUnavailable, setAdUnavailable] = useState(false);
   // When the current queue attempt started (Date.now()) — the anchor both
@@ -215,10 +215,10 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
     return detail ?? e?.message ?? "";
   }
 
-  // Defense-in-depth — CustomTabBar's center button already blocks getting
-  // here at all when unverified, but this screen is also reachable directly
-  // (e.g. a deep link), so the actual "interact with other profiles" calls
-  // below re-check rather than trusting how the screen was reached.
+  // Defense-in-depth — ChatListScreen's banner already blocks getting here
+  // at all when unverified, but this screen is also reachable directly (e.g.
+  // a deep link), so the actual "interact with other profiles" calls below
+  // re-check rather than trusting how the screen was reached.
   function requireVerified(): boolean {
     if (profile == null) return true;
     if (!profile.face_verified) {

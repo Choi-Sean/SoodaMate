@@ -15,7 +15,7 @@ from app.schemas.payment import (
     ProductOut,
     PurchaseHistoryOut,
 )
-from app.services import payment_service
+from app.services import match_service, payment_service
 
 router = APIRouter(prefix="/payments", tags=["payments"])
 
@@ -57,6 +57,7 @@ async def get_balance(
         ai_match_credits=profile.ai_match_credits if profile else 0,
         unlimited_matching_until=profile.unlimited_matching_until if profile else None,
         stealth_peek_credits=profile.stealth_peek_credits if profile else 0,
+        free_peek_remaining=match_service._current_free_peek_remaining(profile) if profile else 0,
     )
 
 

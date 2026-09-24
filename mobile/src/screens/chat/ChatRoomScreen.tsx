@@ -130,7 +130,14 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
 
   function handlePeek() {
     if (peeking) return;
-    showAlert(t("blindChat.peekConfirmTitle"), t("blindChat.peekConfirmBody"), [
+    // Everyone gets 1 free peek/day, spent before any purchased credit (see
+    // match_service.use_blind_peek) — say so up front so "사용" doesn't
+    // surprise someone who still has today's free one left, or someone with
+    // none left into thinking this one's free when it'll spend a purchased
+    // credit.
+    const freeRemaining = myProfile?.free_peek_remaining ?? 0;
+    const body = freeRemaining > 0 ? t("blindChat.peekConfirmBodyFree", { count: freeRemaining }) : t("blindChat.peekConfirmBody");
+    showAlert(t("blindChat.peekConfirmTitle"), body, [
       { text: t("common.cancel"), style: "cancel" },
       { text: t("blindChat.peekConfirm"), onPress: doPeek },
     ]);

@@ -87,9 +87,25 @@ export default function SwipeScreen() {
           <Image source={require("../../../assets/icon.png")} style={styles.logo} />
           <Text style={[styles.brandTitle, brandFontLoaded && styles.brandTitleFredoka]}>SooDaMate</Text>
         </View>
-        <Pressable style={styles.filterIconButton} onPress={() => setShowFilters(true)} hitSlop={6}>
-          <Ionicons name="options-outline" size={20} color={colors.navy} />
-        </Pressable>
+        <View style={styles.brandIconRow}>
+          <Pressable
+            style={styles.filterIconButton}
+            onPress={() => navigation.navigate("Likes")}
+            hitSlop={6}
+          >
+            <Ionicons name="heart-outline" size={20} color={colors.navy} />
+          </Pressable>
+          <Pressable
+            style={styles.filterIconButton}
+            onPress={() => navigation.navigate("ClassicDiscover")}
+            hitSlop={6}
+          >
+            <Ionicons name="grid-outline" size={20} color={colors.navy} />
+          </Pressable>
+          <Pressable style={styles.filterIconButton} onPress={() => setShowFilters(true)} hitSlop={6}>
+            <Ionicons name="options-outline" size={20} color={colors.navy} />
+          </Pressable>
+        </View>
       </View>
       {swipeLimit && (
         <Text style={styles.limitText}>
@@ -167,6 +183,7 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  brandIconRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   logo: { width: 30, height: 30, borderRadius: 8 },
   brandTitle: { fontSize: 22, fontWeight: "800", color: colors.navy },
   brandTitleFredoka: { fontFamily: "Fredoka_600SemiBold", fontWeight: "normal" },

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
 
@@ -81,6 +81,13 @@ class FaceVerificationAdminOut(BaseModel):
     status: str
     submitted_at: datetime
     display_name: str | None = None
+    # Legal name + birth date — the actual identity-verification fields (see
+    # Profile.legal_first_name's own docstring: collected for this exact
+    # purpose, never shown to other users), distinct from display_name
+    # (public nickname) above. Lets soodamate.com/verify's reviewer compare
+    # against the submitted ID photo directly instead of only a nickname.
+    legal_first_name: str | None = None
+    birth_date: date | None = None
     rejection_reason: str | None = None
     rejection_reason_key: str | None = None
 

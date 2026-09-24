@@ -263,13 +263,41 @@ async def accept_blind_reveal(db: AsyncSession, match_id: uuid.UUID, user_id: uu
     return await get_match_out(db, match_id, user_id)
 
 
+FREE_PEEK_DAILY_ALLOWANCE = 1
+FREE_PEEK_WINDOW = timedelta(days=1)
+
+
+def _free_peek_reset_at_aware(profile: Profile) -> datetime | None:
+    reset_at = profile.free_peek_reset_at
+    if reset_at is not None and reset_at.tzinfo is None:
+        reset_at = reset_at.replace(tzinfo=timezone.utc)
+    return reset_at
+
+
+def _current_free_peek_remaining(profile: Profile) -> int:
+    """Read-only: what profile.free_peek_remaining WOULD be right now if the
+    daily window were refreshed, without writing anything — used to show an
+    accurate count on GET /profiles/me even when the window rolled over since
+    the last actual peek (see routers/profiles.py). Gender-neutral (product
+    decision) — the real write only ever happens inside use_blind_peek's own
+    transaction, when a peek is actually spent."""
+    reset_at = _free_peek_reset_at_aware(profile)
+    if reset_at is None or datetime.now(timezone.utc) >= reset_at:
+        return FREE_PEEK_DAILY_ALLOWANCE
+    return profile.free_peek_remaining
+
+
 async def use_blind_peek(db: AsyncSession, match_id: uuid.UUID, user_id: uuid.UUID) -> MatchOut | None:
-    """Spends 1 Profile.stealth_peek_credits to let `user_id` alone see the
-    other side's real profile in a still-anonymous blind match — deliberately
-    the mirror image of request_blind_reveal/accept_blind_reveal above:
-    no peer consent, no WS event, no push, and blind_revealed never flips.
+    """Lets `user_id` alone see the other side's real profile in a still-
+    anonymous blind match — deliberately the mirror image of
+    request_blind_reveal/accept_blind_reveal above: no peer consent, no WS
+    event, no push, and blind_revealed never flips. Spends, in order: (1) a
+    free daily peek if the user (any gender) has one left this rolling 24h
+    window (refilled lazily right here — no scheduler, same
+    convention as every other timed reset in this app), then (2) 1
+    Profile.stealth_peek_credits. 402s only once both are exhausted.
     Idempotent — peeking again on a match already peeked just re-returns the
-    current state, free (never double-charges, never re-checks the credit
+    current state, free (never double-charges, never re-checks either
     balance the second time)."""
     match = await db.get(Match, match_id)
     if match is None or user_id not in (match.user_a_id, match.user_b_id):
@@ -284,9 +312,22 @@ async def use_blind_peek(db: AsyncSession, match_id: uuid.UUID, user_id: uuid.UU
     # another spend) and lose an update — same convention as payment_service.
     async with user_lock(f"credits:{user_id}"):
         profile = await db.get(Profile, user_id)
-        if profile is None or profile.stealth_peek_credits < 1:
+        if profile is None:
             raise HTTPException(status.HTTP_402_PAYMENT_REQUIRED, "no stealth peek credits")
-        profile.stealth_peek_credits -= 1
+
+        reset_at = _free_peek_reset_at_aware(profile)
+        now = datetime.now(timezone.utc)
+        if reset_at is None or now >= reset_at:
+            profile.free_peek_remaining = FREE_PEEK_DAILY_ALLOWANCE
+            profile.free_peek_reset_at = now + FREE_PEEK_WINDOW
+
+        if profile.free_peek_remaining > 0:
+            profile.free_peek_remaining -= 1
+        elif profile.stealth_peek_credits > 0:
+            profile.stealth_peek_credits -= 1
+        else:
+            raise HTTPException(status.HTTP_402_PAYMENT_REQUIRED, "no stealth peek credits")
+
         if match.user_a_id == user_id:
             match.blind_peeked_by_user_a = True
         else:

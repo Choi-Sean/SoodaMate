@@ -265,11 +265,11 @@ export default function MyProfileScreen({ navigation }: Props) {
         ))}
       </View>
 
-      {/* Classic Matching ("매칭 둘러보기") and Likes ("나를 좋아요한 사람") link
-          cards removed per product decision — swipe-based matching doesn't
-          fit the Blind Chat concept, so both entry points are hidden for now.
-          The underlying ClassicDiscover/ClassicSwipe/Likes routes and screens
-          are untouched in ProfileStack, just unreachable from here. */}
+      {/* No Classic Matching/Likes link cards here — button-click Swipe
+          matching is the app's primary flow again, reached from the bottom
+          nav's elevated center button (see CustomTabBar), with Discover
+          (grid) and Likes one tap away from its own header icons. Blind
+          Chat is the demoted one now — see ChatListScreen's banner. */}
 
       <Pressable style={styles.coupleStoryCard} onPress={() => navigation.navigate("CoupleStoriesFeed")}>
         <View style={styles.coupleStoryIconBubble}>

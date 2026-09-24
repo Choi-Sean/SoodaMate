@@ -25,13 +25,12 @@ export type ProfileStackParamList = {
   MyCoupleStories: undefined;
   PurchaseHistory: undefined;
   Settings: undefined;
-  // Discover/classic swipe matching and Likes are no longer bottom tabs
-  // (Blind Chat is the app's primary flow now, with just Chat/Profile
-  // flanking its elevated center button — see MainTabs/CustomTabBar; a 3rd
-  // bottom tab would sit dead-center under that button and collide with it)
-  // but none of this functionality is gone, just demoted to secondary links
-  // from MyProfileScreen, so existing monetization (superlike/boost/
-  // who-liked-me) keeps working.
+  // ClassicSwipe (button-click Like/Pass/SuperLike) is the app's primary
+  // flow again, reached via MainTabs/CustomTabBar's elevated center button
+  // rather than as a 3rd bottom tab (which would sit dead-center under that
+  // button and collide with it). ClassicDiscover (grid browse) and Likes
+  // (who-liked-me) are one tap away from ClassicSwipe's own header icons.
+  // Blind Chat is the demoted one now — see ChatListScreen's banner.
   ClassicDiscover: undefined;
   ClassicSwipe: undefined;
   Likes: undefined;
@@ -66,9 +65,12 @@ export default function ProfileStack() {
         options={{ title: t("purchaseHistory.title") }}
       />
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t("settings.title") }} />
-      <Stack.Screen name="ClassicDiscover" component={DiscoverScreen} options={{ title: t("tabs.discover") }} />
-      <Stack.Screen name="ClassicSwipe" component={SwipeScreen} options={{ title: t("tabs.matches") }} />
-      <Stack.Screen name="Likes" component={LikesScreen} options={{ title: t("tabs.likes") }} />
+      {/* Discover/Likes render their own big ScreenHeader title in-body (see
+          components/ScreenHeader.tsx) — the native header here is kept only
+          for its back chevron (empty title so it doesn't duplicate that). */}
+      <Stack.Screen name="ClassicDiscover" component={DiscoverScreen} options={{ title: "", headerBackTitle: "" }} />
+      <Stack.Screen name="ClassicSwipe" component={SwipeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Likes" component={LikesScreen} options={{ title: "", headerBackTitle: "" }} />
     </Stack.Navigator>
   );
 }

@@ -211,6 +211,8 @@
   },
   "chat": {
     "title": "聊天",
+    "blindChatBannerTitle": "盲聊",
+    "blindChatBannerSubtitle": "先聊天，暂不公开照片",
     "expired": "已失效",
     "expiredBanner": "24小时内无人回复，此配对已失效。",
     "empty": "还没有配对 — 继续浏览吧！",
@@ -719,6 +721,7 @@
     "peekButton": "偷看一下 👀",
     "peekConfirmTitle": "要使用偷看卡吗？",
     "peekConfirmBody": "将消耗1张偷看卡查看对方的真实资料，对方完全不会收到任何通知。",
+    "peekConfirmBodyFree": "今天还剩{{count}}次免费偷看机会——这次免费。对方完全不会收到任何通知。",
     "peekConfirm": "使用偷看卡",
     "peekedAlready": "查看已偷看的资料",
     "peekNoCreditsTitle": "没有偷看卡了",
@@ -772,7 +775,13 @@
     "label": "MBTI",
     "placeholder": "请选择你的MBTI类型",
     "dontKnow": "不知道自己的MBTI？",
-    "findOutCta": "去测试"
+    "findOutCta": "去测试",
+    "type": {
+      "ISTJ": "ISTJ", "ISFJ": "ISFJ", "INFJ": "INFJ", "INTJ": "INTJ",
+      "ISTP": "ISTP", "ISFP": "ISFP", "INFP": "INFP", "INTP": "INTP",
+      "ESTP": "ESTP", "ESFP": "ESFP", "ENFP": "ENFP", "ENTP": "ENTP",
+      "ESTJ": "ESTJ", "ESFJ": "ESFJ", "ENFJ": "ENFJ", "ENTJ": "ENTJ"
+    }
   },
   "mbtiQuiz": {
     "title": "MBTI性格测试",

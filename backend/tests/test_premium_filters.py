@@ -252,6 +252,60 @@ async def test_exercise_filter_still_premium_and_excludes_non_matching_candidate
 
 
 @pytest.mark.asyncio
+async def test_education_filter_still_premium_and_excludes_non_matching_candidates(client, monkeypatch):
+    viewer_id, viewer_headers = await create_user_with_profile(
+        client, "viewer_education@example.com", gender="male", interested_in="female"
+    )
+    await _grant_membership(client, monkeypatch, viewer_id, event_id="evt_education_1")
+    await _set_basic_filters(client, viewer_headers)
+    filter_resp = await client.put(
+        "/profiles/me/premium-filters",
+        headers=viewer_headers,
+        json={"education_filter": ["bachelor"]},
+    )
+    assert filter_resp.json()["premium_filters"]["education_filter"] == ["bachelor"]
+
+    matching_id, _ = await create_user_with_profile(
+        client, "match_education@example.com", gender="female", interested_in="male", education="bachelor"
+    )
+    wrong_education_id, _ = await create_user_with_profile(
+        client, "nomatch_education@example.com", gender="female", interested_in="male", education="master"
+    )
+
+    resp = await client.get("/discovery/candidates", headers=viewer_headers)
+    ids = [c["user_id"] for c in resp.json()]
+    assert matching_id in ids
+    assert wrong_education_id not in ids
+
+
+@pytest.mark.asyncio
+async def test_mbti_filter_still_premium_and_excludes_non_matching_candidates(client, monkeypatch):
+    viewer_id, viewer_headers = await create_user_with_profile(
+        client, "viewer_mbti@example.com", gender="male", interested_in="female"
+    )
+    await _grant_membership(client, monkeypatch, viewer_id, event_id="evt_mbti_1")
+    await _set_basic_filters(client, viewer_headers)
+    filter_resp = await client.put(
+        "/profiles/me/premium-filters",
+        headers=viewer_headers,
+        json={"mbti_filter": ["INTJ"]},
+    )
+    assert filter_resp.json()["premium_filters"]["mbti_filter"] == ["INTJ"]
+
+    matching_id, _ = await create_user_with_profile(
+        client, "match_mbti@example.com", gender="female", interested_in="male", mbti="INTJ"
+    )
+    wrong_mbti_id, _ = await create_user_with_profile(
+        client, "nomatch_mbti@example.com", gender="female", interested_in="male", mbti="ENFP"
+    )
+
+    resp = await client.get("/discovery/candidates", headers=viewer_headers)
+    ids = [c["user_id"] for c in resp.json()]
+    assert matching_id in ids
+    assert wrong_mbti_id not in ids
+
+
+@pytest.mark.asyncio
 async def test_premium_filters_full_replace_clears_omitted_dimensions(client, monkeypatch):
     viewer_id, viewer_headers = await create_user_with_profile(
         client, "viewer_replace@example.com", gender="male", interested_in="female"
