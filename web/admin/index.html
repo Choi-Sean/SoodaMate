@@ -160,6 +160,10 @@
         <div class="chart-header">
           <h3 id="chartTitle">신규 가입자</h3>
           <div class="chart-controls">
+            <select class="metric-select" id="metricSelect">
+              <option value="signups">신규 가입</option>
+              <option value="churn">탈퇴</option>
+            </select>
             <div class="period-row" id="periodRow">
               <button class="period-btn" data-period="1w">1주</button>
               <button class="period-btn active" data-period="1m">1달</button>
@@ -363,6 +367,7 @@
         { label: "오픈 신고", value: s.open_reports, sub: `전체 ${s.total_reports}건` },
         { label: "신고된 유저", value: s.reported_users },
         { label: "정지된 유저", value: s.banned_users },
+        { label: "탈퇴 유저", value: s.churned_users, sub: `탈퇴율 ${s.churn_rate_pct}%` },
         { label: "대기중 본인인증", value: s.pending_face_verifications },
         { label: "신규 문의", value: s.new_inquiries },
         { label: "활성 매칭", value: s.active_matches, sub: `전체 ${s.total_matches}건` },
@@ -380,11 +385,15 @@
     }
 
     // --- Timeseries (stock-chart-style period picker) --------------------
-    // metric is signups-only for now — a churn toggle is held back pending
-    // a new AccountDeletionLogs table on the backend.
 
-    const currentMetric = "signups";
+    let currentMetric = "signups";
     let currentPeriod = "1m";
+
+    document.getElementById("metricSelect").addEventListener("change", (e) => {
+      currentMetric = e.target.value;
+      document.getElementById("chartTitle").textContent = currentMetric === "signups" ? "신규 가입자" : "탈퇴 유저";
+      loadTimeseries();
+    });
 
     document.querySelectorAll("#periodRow .period-btn").forEach((btn) => {
       btn.addEventListener("click", () => {

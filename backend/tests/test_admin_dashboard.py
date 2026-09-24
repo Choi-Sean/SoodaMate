@@ -80,13 +80,47 @@ async def test_30_day_revenue_reflects_actual_discounted_charge_not_list_price(c
     assert after - before == 150
 
 
-async def test_dashboard_stats_includes_dau_and_reported_fields(client):
+async def test_dashboard_stats_includes_dau_reported_and_churn_fields(client):
     admin_id, admin_headers = await create_user_with_profile(client, "admin_dau@example.com")
     await _make_admin(admin_id)
 
     stats = (await client.get("/admin/stats", headers=admin_headers)).json()
-    for key in ("active_today", "reported_users"):
+    for key in ("active_today", "reported_users", "churned_users", "churn_rate_pct"):
         assert key in stats
+
+
+async def test_churned_users_counts_self_deleted_accounts_not_banned_ones(client):
+    from app.database import async_session_factory
+    from app.models.user import AccountDeletionLog
+    from sqlalchemy import select
+
+    admin_id, admin_headers = await create_user_with_profile(client, "admin_churn@example.com")
+    await _make_admin(admin_id)
+
+    before = (await client.get("/admin/stats", headers=admin_headers)).json()["churned_users"]
+
+    _, deleter_headers = await create_user_with_profile(client, "deleter_churn@example.com")
+    resp = await client.request("DELETE", "/account/me", headers=deleter_headers)
+    assert resp.status_code == 204
+
+    try:
+        after = (await client.get("/admin/stats", headers=admin_headers)).json()["churned_users"]
+        assert after == before + 1
+    finally:
+        # AccountDeletionLog carries no user_id (see that model's docstring),
+        # so it's outside track_test_user's own cleanup reach — this is a
+        # shared production DB (reference_qa_suite), so the row this test
+        # just created gets removed by hand rather than permanently
+        # inflating the real churn count by one.
+        async with async_session_factory() as session:
+            newest = (
+                await session.scalars(
+                    select(AccountDeletionLog).order_by(AccountDeletionLog.deleted_at.desc()).limit(1)
+                )
+            ).first()
+            if newest is not None:
+                await session.delete(newest)
+                await session.commit()
 
 
 async def test_demographics_gender_and_mbti_gender_split(client):

@@ -103,6 +103,8 @@ class DashboardStatsOut(BaseModel):
     total_revenue_cents_30d: int
     active_today: int
     reported_users: int
+    churned_users: int
+    churn_rate_pct: float
 
 
 class DemographicBucket(BaseModel):

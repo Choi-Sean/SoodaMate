@@ -76,6 +76,25 @@ class User(Base):
         return self.phone_verified_at is not None
 
 
+class AccountDeletionLog(Base):
+    """One row per voluntary account deletion (routers/account.py::
+    delete_my_account), written just before the User row itself is hard-
+    deleted — that delete leaves no trace at all otherwise (cascades wipe
+    everything, including User.updated_at), so there was previously no way
+    to answer "how many people have deleted their account" or "when" (see
+    routers/admin.py's churned_users/churn_rate_pct and the churn timeseries
+    metric). Deliberately carries no user_id/FK and no other identifying
+    data — the account is gone, and this table's only job is a count and a
+    date, not a record of who."""
+
+    __tablename__ = "AccountDeletionLogs"
+
+    id: Mapped[uuid.UUID] = mapped_column("Id", Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    deleted_at: Mapped[datetime] = mapped_column(
+        "DeletedAt", DateTime(timezone=True), server_default=utc_now_default, default=utc_now
+    )
+
+
 class AuthProvider(Base):
     __tablename__ = "AuthProviders"
     __table_args__ = (

@@ -14,7 +14,7 @@ from app.models.message import Message
 from app.models.iap import PaymentTransaction
 from app.models.profile import FaceVerification, Profile
 from app.models.promotion import Promotion
-from app.models.user import User
+from app.models.user import AccountDeletionLog, User
 from app.schemas.admin import (
     ConversationMessageOut,
     DailyCount,
@@ -351,6 +351,16 @@ async def get_dashboard_stats(
     # not distinct people.
     reported_users = await db.scalar(select(func.count(func.distinct(Report.reported_id)))) or 0
 
+    # A voluntary account deletion hard-deletes the User row (routers/
+    # account.py::delete_my_account) — nothing about it survives on Users
+    # itself, hence the dedicated AccountDeletionLog (see that model's own
+    # comment). Rate is against everyone who ever signed up (still-active +
+    # churned), not just today's total_users, since churned users no longer
+    # count toward that.
+    churned_users = await db.scalar(select(func.count()).select_from(AccountDeletionLog)) or 0
+    ever_signed_up = total_users + churned_users
+    churn_rate_pct = round(100 * churned_users / ever_signed_up, 2) if ever_signed_up else 0.0
+
     return DashboardStatsOut(
         total_users=total_users,
         new_users_today=new_users_today,
@@ -370,6 +380,8 @@ async def get_dashboard_stats(
         total_revenue_cents_30d=total_revenue_cents_30d,
         active_today=active_today,
         reported_users=reported_users,
+        churned_users=churned_users,
+        churn_rate_pct=churn_rate_pct,
     )
 
 
@@ -536,7 +548,7 @@ async def _daily_counts(db: AsyncSession, date_column, start: datetime | None, e
 
 @router.get("/timeseries", response_model=TimeseriesOut)
 async def get_timeseries(
-    metric: str = Query(pattern="^(signups)$"),
+    metric: str = Query(pattern="^(signups|churn)$"),
     period: str = Query(default="1m", pattern="^(1w|1m|3m|ytd|1y|3y|all)$"),
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
@@ -544,12 +556,12 @@ async def get_timeseries(
     """Daily counts for the selected window, stock-chart style, plus
     pct_change against the immediately preceding period of the same length
     (this week vs last week, etc.) — period="all"/"ytd" have no well-defined
-    "previous period" of the same length, so pct_change is None for those.
-    metric is only ever "signups" for now — a "churn" metric is held back
-    pending a new AccountDeletionLogs table (see git history/PR notes)."""
+    "previous period" of the same length, so pct_change is None for those."""
     now = datetime.now(timezone.utc)
     start = _period_start(period, now)
-    date_column = User.created_at
+    # churn's "date" is AccountDeletionLog.deleted_at (see that model's own
+    # comment on why Users itself has no surviving signal for this).
+    date_column = User.created_at if metric == "signups" else AccountDeletionLog.deleted_at
 
     async def _count_between(lo: datetime | None, hi: datetime) -> int:
         where = [date_column < hi]

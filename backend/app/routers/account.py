@@ -12,7 +12,7 @@ from app.database import get_db
 from app.deps import get_current_user
 from app.models.couple_story import CoupleStoryReport
 from app.models.interaction import Block, Match, Report, Swipe
-from app.models.user import User
+from app.models.user import AccountDeletionLog, User
 from app.services import payment_service, storage_service
 
 router = APIRouter(prefix="/account", tags=["account"])
@@ -130,6 +130,7 @@ async def delete_my_account(
     await db.execute(delete(Block).where(or_(Block.blocker_id == user.id, Block.blocked_id == user.id)))
     await db.execute(delete(Report).where(or_(Report.reporter_id == user.id, Report.reported_id == user.id)))
     await db.execute(delete(CoupleStoryReport).where(CoupleStoryReport.reporter_id == user.id))
+    db.add(AccountDeletionLog())
     user_id = user.id
     await db.delete(user)
     await db.commit()
