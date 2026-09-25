@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { AiMatchResult, BlindChatFilters, BlindChatLimit, BlindChatQueueStatus } from "../types";
+import type { AiMatchResult, BlindChatFilters, BlindChatLimit, BlindChatQueueStats, BlindChatQueueStatus } from "../types";
 
 export async function joinBlindChatQueue(
   categories: string[],
@@ -16,6 +16,13 @@ export async function getBlindChatQueueStatus(): Promise<BlindChatQueueStatus> {
 
 export async function leaveBlindChatQueue(): Promise<void> {
   await apiClient.delete("/blind-chat/queue");
+}
+
+/** Live per-category headcount of who's waiting right now, for the picker
+ * screen — see routers/blind_chat.py::queue_stats. */
+export async function getBlindChatQueueStats(): Promise<BlindChatQueueStats> {
+  const resp = await apiClient.get<BlindChatQueueStats>("/blind-chat/queue-stats");
+  return resp.data;
 }
 
 export async function getBlindChatLimit(): Promise<BlindChatLimit> {

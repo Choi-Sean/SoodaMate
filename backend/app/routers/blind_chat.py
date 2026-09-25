@@ -13,6 +13,7 @@ from app.schemas.match import (
     AiMatchRequest,
     BlindChatLimitOut,
     BlindChatQueueRequest,
+    BlindChatQueueStatsOut,
     BlindChatQueueStatusOut,
 )
 from app.services import blind_chat_service, match_service
@@ -63,6 +64,13 @@ async def queue_status(
 @router.delete("/queue", status_code=204)
 async def leave_queue(db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)) -> None:
     await blind_chat_service.cancel_queue(db, user.id)
+
+
+@router.get("/queue-stats", response_model=BlindChatQueueStatsOut)
+async def queue_stats(
+    db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
+) -> BlindChatQueueStatsOut:
+    return await blind_chat_service.get_queue_stats(db, user.id)
 
 
 @router.get("/limit", response_model=BlindChatLimitOut)

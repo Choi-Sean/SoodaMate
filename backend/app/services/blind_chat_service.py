@@ -15,6 +15,7 @@ from app.schemas.match import (
     BlindChatFeedbackCreate,
     BlindChatFeedbackOut,
     BlindChatLimitOut,
+    BlindChatQueueStatsOut,
     BlindChatQueueStatusOut,
 )
 from app.services import llm_match_service, push_service
@@ -512,6 +513,33 @@ async def use_ai_match(
     viewer_profile.ai_match_credits -= 1
     partner_entry, partner_profile = found
     return await _create_match(db, user, viewer_profile, categories, partner_entry, partner_profile)
+
+
+async def get_queue_stats(db: AsyncSession, user_id: uuid.UUID) -> BlindChatQueueStatsOut:
+    """Shown on the picker screen (routers/blind_chat.py's /queue-stats) so
+    "start matching" isn't a shot in the dark: how many people are waiting
+    overall, and in which categories — including ones the caller hasn't
+    picked, so an empty selected category can be paired with "X has people
+    right now" instead. Same staleness cutoff as the real matcher
+    (STALE_QUEUE_ENTRY) so an abandoned entry doesn't count as a live
+    waiter; excludes the caller's own entry (harmless either way, since the
+    picker screen is only reachable before joining)."""
+    cutoff = datetime.now(timezone.utc) - STALE_QUEUE_ENTRY
+    rows = (
+        await db.execute(
+            select(BlindChatQueueEntry.categories).where(
+                BlindChatQueueEntry.matched_id.is_(None),
+                BlindChatQueueEntry.created_at >= cutoff,
+                BlindChatQueueEntry.user_id != user_id,
+            )
+        )
+    ).scalars().all()
+    counts: dict[str, int] = {}
+    for csv in rows:
+        for category in csv.split(","):
+            if category:
+                counts[category] = counts.get(category, 0) + 1
+    return BlindChatQueueStatsOut(counts=counts, total=len(rows))
 
 
 async def get_queue_status(db: AsyncSession, user_id: uuid.UUID) -> BlindChatQueueStatusOut:

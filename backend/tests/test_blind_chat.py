@@ -118,6 +118,35 @@ async def test_cancel_queue(client):
 
 
 @pytest.mark.asyncio
+async def test_queue_stats_counts_by_category_and_excludes_self(client):
+    _, viewer_headers = await create_user_with_profile(client, "blindStatsViewer@example.com")
+    # Before anyone's waiting: empty.
+    empty = await client.get("/blind-chat/queue-stats", headers=viewer_headers)
+    assert empty.status_code == 200
+    assert empty.json() == {"counts": {}, "total": 0}
+
+    _, a_headers = await create_user_with_profile(
+        client, "blindStatsA@example.com", gender="male", interested_in="female"
+    )
+    _, b_headers = await create_user_with_profile(
+        client, "blindStatsB@example.com", gender="male", interested_in="female"
+    )
+    await client.post("/blind-chat/queue", headers=a_headers, json={"categories": ["travel", "music"]})
+    await client.post("/blind-chat/queue", headers=b_headers, json={"categories": ["music"]})
+
+    stats = await client.get("/blind-chat/queue-stats", headers=viewer_headers)
+    assert stats.status_code == 200
+    body = stats.json()
+    assert body["total"] == 2
+    assert body["counts"] == {"travel": 1, "music": 2}
+
+    # The viewer's own entry (once they join) never counts toward their own view.
+    await client.post("/blind-chat/queue", headers=viewer_headers, json={"categories": ["travel"]})
+    stats_after_self_join = await client.get("/blind-chat/queue-stats", headers=viewer_headers)
+    assert stats_after_self_join.json()["total"] == 2
+
+
+@pytest.mark.asyncio
 async def test_repeated_queue_call_is_idempotent(client):
     _, headers = await create_user_with_profile(client, "blindDupe@example.com")
     r1 = await client.post("/blind-chat/queue", headers=headers, json={"categories": ["travel"]})

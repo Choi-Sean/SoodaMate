@@ -104,6 +104,20 @@ class BlindChatQueueStatusOut(BaseModel):
     match_id: uuid.UUID | None = None
 
 
+class BlindChatQueueStatsOut(BaseModel):
+    """Live headcount of people currently waiting in the blind-chat queue, by
+    category — shown on the picker screen before joining so the choice isn't
+    blind. counts only lists categories with >=1 waiter; a category absent
+    from the dict has nobody in it right now. total is the number of distinct
+    waiting people (not sum(counts.values()) — one entry can count toward
+    several categories at once, see blind_chat_service.get_queue_stats).
+    Deliberately a raw headcount, not gender/age/distance-filtered like the
+    real matcher — good enough for "is anyone here at all," and cheap."""
+
+    counts: dict[str, int] = {}
+    total: int = 0
+
+
 class BlindChatLimitOut(BaseModel):
     """Mirrors SwipeLimitOut's shape — see
     blind_chat_service.get_blind_chat_limit_status."""

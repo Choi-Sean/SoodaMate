@@ -202,6 +202,11 @@ export interface BlindChatFilters {
   max_distance_km?: number | null;
 }
 
+export interface BlindChatQueueStats {
+  counts: Record<string, number>;
+  total: number;
+}
+
 export interface BlindChatLimit {
   remaining: number;
   limit: number;

@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import {
   claimBlindChatAdBonus,
   getBlindChatLimit,
+  getBlindChatQueueStats,
   getBlindChatQueueStatus,
   joinBlindChatQueue,
   leaveBlindChatQueue,
@@ -109,6 +110,25 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
 
   const { data: profile } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
   const { data: limit } = useQuery({ queryKey: ["blindChatLimit"], queryFn: getBlindChatLimit });
+  // Live per-category headcount for the picker screen — off while waiting
+  // (that screen shows its own spinner, this number would just be stale
+  // noise by the time anyone looked at it).
+  const { data: queueStats } = useQuery({
+    queryKey: ["blindChatQueueStats"],
+    queryFn: getBlindChatQueueStats,
+    enabled: !waiting && isFocused,
+    refetchInterval: !waiting && isFocused ? 15000 : false,
+  });
+  const selectedWaitingCount = selected.reduce((sum, key) => sum + (queueStats?.counts[key] ?? 0), 0);
+  // Only suggest alternatives once at least one category is picked and none
+  // of them have anyone waiting — an empty selection has nothing to compare.
+  const otherWaitingCategories =
+    selected.length > 0 && selectedWaitingCount === 0
+      ? Object.entries(queueStats?.counts ?? {})
+          .filter(([key]) => !selected.includes(key))
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3)
+      : [];
 
   // Preselect the categories chosen at signup (or last saved on Edit
   // Profile) so a returning user doesn't have to re-pick every time — but
@@ -405,6 +425,32 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.intro}>{t("blindChat.intro")}</Text>
 
+      <View style={styles.liveNoticeCard}>
+        <Ionicons name="radio-outline" size={14} color={colors.accentDark} />
+        <Text style={styles.liveNoticeText}>{t("blindChat.liveMatchingNotice")}</Text>
+      </View>
+
+      {queueStats && (
+        <View style={styles.queueStatsCard}>
+          <Text style={styles.queueStatsText}>
+            {queueStats.total > 0
+              ? t("blindChat.queueCountSummary", { count: queueStats.total })
+              : t("blindChat.queueCountNone")}
+          </Text>
+          {otherWaitingCategories.length > 0 && (
+            <Text style={styles.queueSuggestText}>
+              {t("blindChat.queueSuggestOthers", {
+                categories: otherWaitingCategories
+                  .map(([key, count]) =>
+                    t("blindChat.categoryWaitingCount", { category: t(`blindChatCategories.${key}`), count })
+                  )
+                  .join(", "),
+              })}
+            </Text>
+          )}
+        </View>
+      )}
+
       {limit && !limit.unlimited && (
         <View style={styles.limitRow}>
           <View style={styles.limitBanner}>
@@ -503,6 +549,27 @@ export default function BlindChatQueueScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   container: { padding: 20, gap: 8 },
   intro: { fontSize: 14, color: colors.muted, lineHeight: 20, marginBottom: 8 },
+  liveNoticeCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 6,
+    backgroundColor: colors.accentSoft,
+    borderRadius: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+  liveNoticeText: { flex: 1, fontSize: 12, color: colors.accentDark, lineHeight: 17 },
+  queueStatsCard: {
+    backgroundColor: colors.creamDeep,
+    borderRadius: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    gap: 4,
+  },
+  queueStatsText: { fontSize: 12.5, color: colors.navy, fontWeight: "600" },
+  queueSuggestText: { fontSize: 12, color: colors.muted, lineHeight: 16 },
   limitBanner: {
     flexDirection: "row",
     alignItems: "center",
