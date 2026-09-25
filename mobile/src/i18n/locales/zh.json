@@ -565,8 +565,6 @@
   "phoneVerification": {
     "title": "验证手机号码",
     "subtitle": "为了防止虚假账号，注册前需要先验证您的手机号码。",
-    "countryKorea": "韩国",
-    "countryUs": "美国",
     "sendCode": "发送验证码",
     "codeSentTo": "验证码已发送至 {{phone}}",
     "codePlaceholder": "验证码",

@@ -565,8 +565,6 @@
   "phoneVerification": {
     "title": "電話番号認証",
     "subtitle": "不正なアカウントを防ぐため、登録前に電話番号を確認します。",
-    "countryKorea": "韓国",
-    "countryUs": "アメリカ",
     "sendCode": "認証コードを送信",
     "codeSentTo": "{{phone}} に認証コードを送信しました",
     "codePlaceholder": "認証コード",

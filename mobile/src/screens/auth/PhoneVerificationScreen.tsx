@@ -10,25 +10,16 @@ interface Props {
   onVerified: () => void;
 }
 
-type Country = "KR" | "US";
+// US-only for now, per explicit product direction — no country picker.
+const DIAL_CODE = "+1";
 
-// Scoped to the app's two launch markets (see LocationPicker's own KR/US
-// scoping) — not a general international picker.
-const DIAL_CODE: Record<Country, string> = { KR: "+82", US: "+1" };
-
-/** Local-format input -> E.164. KR mobile numbers are written locally with a
- * leading 0 (010-1234-5678) that E.164 drops; US just strips formatting. */
-function toE164(country: Country, local: string): string {
-  const digits = local.replace(/\D/g, "");
-  if (country === "KR") {
-    return `+82${digits.replace(/^0/, "")}`;
-  }
-  return `+1${digits}`;
+/** Local-format input -> E.164. */
+function toE164(local: string): string {
+  return `+1${local.replace(/\D/g, "")}`;
 }
 
 export default function PhoneVerificationScreen({ onVerified }: Props) {
   const { t } = useTranslation();
-  const [country, setCountry] = useState<Country>("KR");
   const [localNumber, setLocalNumber] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"phone" | "code">("phone");
@@ -36,7 +27,7 @@ export default function PhoneVerificationScreen({ onVerified }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const e164 = toE164(country, localNumber);
+  const e164 = toE164(localNumber);
 
   async function handleSendCode() {
     setError(null);
@@ -74,26 +65,13 @@ export default function PhoneVerificationScreen({ onVerified }: Props) {
 
       {step === "phone" ? (
         <>
-          <View style={styles.row}>
-            {(["KR", "US"] as Country[]).map((c) => (
-              <Pressable
-                key={c}
-                style={[styles.chip, country === c && styles.chipSelected]}
-                onPress={() => setCountry(c)}
-              >
-                <Text style={country === c ? styles.chipTextSelected : styles.chipText}>
-                  {c === "KR" ? t("phoneVerification.countryKorea") : t("phoneVerification.countryUs")} ({DIAL_CODE[c]})
-                </Text>
-              </Pressable>
-            ))}
-          </View>
           <View style={styles.phoneInputRow}>
             <View style={styles.dialCodeBox}>
-              <Text style={styles.dialCodeText}>{DIAL_CODE[country]}</Text>
+              <Text style={styles.dialCodeText}>{DIAL_CODE}</Text>
             </View>
             <TextInput
               style={styles.phoneInput}
-              placeholder={country === "KR" ? "010-1234-5678" : "(213) 123-4567"}
+              placeholder="(213) 123-4567"
               placeholderTextColor={colors.muted}
               value={localNumber}
               onChangeText={setLocalNumber}
@@ -138,11 +116,6 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: "700", textAlign: "center", marginBottom: 8, color: colors.navy },
   subtitle: { color: colors.muted, textAlign: "center", marginBottom: 28, lineHeight: 20 },
   error: { color: colors.danger, marginBottom: 12, textAlign: "center" },
-  row: { flexDirection: "row", gap: 8, marginBottom: 16, justifyContent: "center" },
-  chip: { borderWidth: 1, borderColor: colors.border, borderRadius: 20, paddingVertical: 8, paddingHorizontal: 16 },
-  chipSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
-  chipText: { color: colors.ink },
-  chipTextSelected: { color: "#fff", fontWeight: "600" },
   phoneInputRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
   dialCodeBox: {
     borderWidth: 1,

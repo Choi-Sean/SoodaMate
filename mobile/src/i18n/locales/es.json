@@ -565,8 +565,6 @@
   "phoneVerification": {
     "title": "Verifica tu número de teléfono",
     "subtitle": "Para evitar cuentas falsas, verificamos tu número de teléfono antes de registrarte.",
-    "countryKorea": "Corea del Sur",
-    "countryUs": "Estados Unidos",
     "sendCode": "Enviar código",
     "codeSentTo": "Enviamos un código a {{phone}}",
     "codePlaceholder": "Código de verificación",

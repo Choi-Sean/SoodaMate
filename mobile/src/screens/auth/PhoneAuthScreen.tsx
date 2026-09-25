@@ -7,8 +7,6 @@ import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../theme";
 import { phoneErrorMessage } from "../../utils/phoneErrors";
 
-type Country = "KR" | "US";
-
 // Twilio Verify's default code lifetime — not configurable from this repo
 // (it's a Verify Service setting in the Twilio console), so this is a
 // display-only countdown that assumes the default hasn't been changed
@@ -16,40 +14,26 @@ type Country = "KR" | "US";
 // since the real expiry is still enforced server-side by Twilio itself.
 const CODE_TTL_SECONDS = 10 * 60;
 
-// Scoped to the app's two launch markets (see LocationPicker's own KR/US
-// scoping) — not a general international picker.
-const DIAL_CODE: Record<Country, string> = { KR: "+82", US: "+1" };
-const MAX_DIGITS: Record<Country, number> = { KR: 11, US: 10 };
+// US-only for now, per explicit product direction — no country picker.
+const DIAL_CODE = "+1";
+const MAX_DIGITS = 10;
 
-/** Local-format input -> E.164. KR mobile numbers are written locally with a
- * leading 0 (010-1234-5678) that E.164 drops; US just strips formatting. */
-function toE164(country: Country, local: string): string {
-  const digits = local.replace(/\D/g, "");
-  if (country === "KR") {
-    return `+82${digits.replace(/^0/, "")}`;
-  }
-  return `+1${digits}`;
+/** Local-format input -> E.164. */
+function toE164(local: string): string {
+  return `+1${local.replace(/\D/g, "")}`;
 }
 
 /** Digits-only -> auto-hyphenated display string, formatted as the user
- * types (010-1234-5678 for KR, (213) 456-1343 for US). */
-function formatLocalNumber(country: Country, digits: string): string {
-  const d = digits.slice(0, MAX_DIGITS[country]);
-  if (country === "KR") {
-    if (d.length <= 3) return d;
-    if (d.length <= 7) return `${d.slice(0, 3)}-${d.slice(3)}`;
-    return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
-  }
+ * types: (213) 456-1343. */
+function formatLocalNumber(digits: string): string {
+  const d = digits.slice(0, MAX_DIGITS);
   if (d.length <= 3) return d;
   if (d.length <= 6) return `(${d.slice(0, 3)}) ${d.slice(3)}`;
   return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
 }
 
-/** KR mobile numbers are 10-11 digits starting with 01 (010 is standard,
- * 011/016-019 are old grandfathered carriers); US local numbers are a flat
- * 10 digits. Just a shape check — Twilio Verify is the real validator. */
-function isValidLocalNumber(country: Country, digits: string): boolean {
-  if (country === "KR") return digits.startsWith("01") && digits.length >= 10 && digits.length <= 11;
+/** Flat 10-digit shape check — Twilio Verify is the real validator. */
+function isValidLocalNumber(digits: string): boolean {
   return digits.length === 10;
 }
 
@@ -61,7 +45,6 @@ function isValidLocalNumber(country: Country, digits: string): boolean {
 // (returning) — nothing here needs to know which case it is.
 export default function PhoneAuthScreen() {
   const { t } = useTranslation();
-  const [country, setCountry] = useState<Country>("KR");
   const [localNumber, setLocalNumber] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"phone" | "code">("phone");
@@ -74,8 +57,8 @@ export default function PhoneAuthScreen() {
   const login = useAuthStore((s) => s.login);
 
   const digits = localNumber.replace(/\D/g, "");
-  const e164 = toE164(country, localNumber);
-  const numberValid = isValidLocalNumber(country, digits);
+  const e164 = toE164(localNumber);
+  const numberValid = isValidLocalNumber(digits);
   const codeExpired = secondsLeft <= 0;
 
   useEffect(() => {
@@ -87,13 +70,8 @@ export default function PhoneAuthScreen() {
     return () => clearInterval(interval);
   }, [step, codeSentAt]);
 
-  function handleChangeCountry(next: Country) {
-    setCountry(next);
-    setLocalNumber(formatLocalNumber(next, digits));
-  }
-
   function handleChangeLocalNumber(text: string) {
-    setLocalNumber(formatLocalNumber(country, text.replace(/\D/g, "")));
+    setLocalNumber(formatLocalNumber(text.replace(/\D/g, "")));
   }
 
   async function handleSendCode() {
@@ -150,31 +128,18 @@ export default function PhoneAuthScreen() {
 
       {step === "phone" ? (
         <>
-          <View style={styles.row}>
-            {(["KR", "US"] as Country[]).map((c) => (
-              <Pressable
-                key={c}
-                style={[styles.chip, country === c && styles.chipSelected]}
-                onPress={() => handleChangeCountry(c)}
-              >
-                <Text style={country === c ? styles.chipTextSelected : styles.chipText}>
-                  {c === "KR" ? t("phoneVerification.countryKorea") : t("phoneVerification.countryUs")} ({DIAL_CODE[c]})
-                </Text>
-              </Pressable>
-            ))}
-          </View>
           <View style={styles.phoneInputRow}>
             <View style={styles.dialCodeBox}>
-              <Text style={styles.dialCodeText}>{DIAL_CODE[country]}</Text>
+              <Text style={styles.dialCodeText}>{DIAL_CODE}</Text>
             </View>
             <TextInput
               style={styles.phoneInput}
-              placeholder={country === "KR" ? "010-1234-5678" : "(213) 123-4567"}
+              placeholder="(213) 123-4567"
               placeholderTextColor={colors.muted}
               value={localNumber}
               onChangeText={handleChangeLocalNumber}
               keyboardType="phone-pad"
-              maxLength={country === "KR" ? 13 : 14}
+              maxLength={14}
               autoFocus
             />
           </View>
@@ -231,11 +196,6 @@ const styles = StyleSheet.create({
   brand: { fontSize: 30, fontWeight: "800", textAlign: "center", color: colors.accentDark, marginBottom: 8 },
   subtitle: { color: colors.muted, textAlign: "center", marginBottom: 28, lineHeight: 20, paddingHorizontal: 12 },
   error: { color: colors.danger, marginBottom: 12, textAlign: "center" },
-  row: { flexDirection: "row", gap: 8, marginBottom: 16, justifyContent: "center" },
-  chip: { borderWidth: 1, borderColor: colors.border, borderRadius: 20, paddingVertical: 8, paddingHorizontal: 16 },
-  chipSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
-  chipText: { color: colors.ink },
-  chipTextSelected: { color: "#fff", fontWeight: "600" },
   phoneInputRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
   dialCodeBox: {
     borderWidth: 1,

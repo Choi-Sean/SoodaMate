@@ -565,8 +565,6 @@
   "phoneVerification": {
     "title": "휴대폰 번호 인증",
     "subtitle": "인증된 회원만 들어올 수 있도록, 가입 전에 휴대폰 번호를 확인할게요.",
-    "countryKorea": "대한민국",
-    "countryUs": "미국",
     "sendCode": "인증 코드 보내기",
     "codeSentTo": "{{phone}} 로 인증 코드를 보냈어요",
     "codePlaceholder": "인증 코드",
