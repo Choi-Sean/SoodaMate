@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 
 import BlindChatFeedbackModal from "../../components/BlindChatFeedbackModal";
 import ChatBubble from "../../components/ChatBubble";
+import VoiceRecorderBar from "../../components/VoiceRecorderBar";
 import { getMessageHistory } from "../../api/messages";
 import {
   acceptBlindReveal,
@@ -29,7 +30,7 @@ import {
 } from "../../api/matches";
 import { getMyProfile } from "../../api/profiles";
 import { openShop } from "../../utils/openShop";
-import { presignChatImage, uploadToPresignedUrl } from "../../api/uploads";
+import { presignChatImage, presignChatVoice, uploadToPresignedUrl } from "../../api/uploads";
 import { blockUser, reportUser } from "../../api/safety";
 import { MBTI_COMPATIBLE_TYPE, type MbtiType } from "../../constants/mbtiTypes";
 import { useCall } from "../../services/CallContext";
@@ -177,6 +178,7 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
         message_too_long: "chat.messageTooLong",
         rate_limited: "chat.rateLimited",
         invalid_image: "chat.invalidImage",
+        invalid_voice: "chat.invalidVoice",
       };
       const key = rejection[err.code];
       if (key) {
@@ -195,13 +197,13 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
     setMessages((prev) =>
       prev.map((m) =>
         m.id === messageId
-          ? { ...m, message_type: "deleted", content: "", image_url: null, translated_content: null }
+          ? { ...m, message_type: "deleted", content: "", image_url: null, voice_url: null, voice_duration_seconds: null, translated_content: null }
           : m
       )
     );
   }, []);
 
-  const { connected, sendMessage, sendImageMessage, markRead, deleteMessage } = useChatSocket(
+  const { connected, sendMessage, sendImageMessage, sendVoiceMessage, markRead, deleteMessage } = useChatSocket(
     matchId,
     handleIncoming,
     handleSocketError,
@@ -280,6 +282,8 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
           content: "",
           message_type: "image",
           image_url: result.assets[0].uri,
+          voice_url: null,
+          voice_duration_seconds: null,
           original_language: null,
           translated_content: null,
           translated_language: null,
@@ -292,6 +296,46 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
       showAlert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? t("chat.imageSendError"));
     } finally {
       setSendingImage(false);
+    }
+  }
+
+  const [sendingVoice, setSendingVoice] = useState(false);
+  // True while VoiceRecorderBar is recording or showing its send/discard
+  // preview — the image button and text input hide so its bar gets the
+  // composer's full width, same as WhatsApp's mic-takes-over-the-row.
+  const [voiceBarActive, setVoiceBarActive] = useState(false);
+
+  async function handleSendVoice(fileUri: string, durationSeconds: number) {
+    if (composerLocked || sendingVoice) return;
+    setSendingVoice(true);
+    try {
+      const contentType = "audio/m4a";
+      const { upload_url, gcs_object_path } = await presignChatVoice(contentType);
+      await uploadToPresignedUrl(upload_url, fileUri, contentType);
+      sendVoiceMessage(gcs_object_path, durationSeconds);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `local-${Date.now()}`,
+          match_id: matchId,
+          sender_id: userId ?? "",
+          content: "",
+          message_type: "voice",
+          image_url: null,
+          voice_url: fileUri,
+          voice_duration_seconds: durationSeconds,
+          original_language: null,
+          translated_content: null,
+          translated_language: null,
+          sent_at: new Date().toISOString(),
+          delivered_at: null,
+          read_at: null,
+        },
+      ]);
+    } catch (e: any) {
+      showAlert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? t("chat.voiceSendError"));
+    } finally {
+      setSendingVoice(false);
     }
   }
 
@@ -469,6 +513,8 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
         content,
         message_type: "text",
         image_url: null,
+        voice_url: null,
+        voice_duration_seconds: null,
         original_language: null,
         translated_content: null,
         translated_language: null,
@@ -593,29 +639,42 @@ export default function ChatRoomScreen({ route, navigation }: Props) {
         )}
         {!isExpired && (
           <View style={styles.inputBar}>
-            <Pressable
-              style={[styles.imageButton, composerLocked && styles.sendButtonDisabled]}
-              onPress={handleSendImage}
-              disabled={composerLocked || sendingImage}
-            >
-              {sendingImage ? (
-                <ActivityIndicator size="small" color={colors.accentDark} />
-              ) : (
-                <Ionicons name="image-outline" size={22} color={colors.accentDark} />
-              )}
-            </Pressable>
-            <TextInput
-              style={styles.input}
-              value={input}
-              onChangeText={setInput}
-              placeholder={t("chat.messagePlaceholder")}
-              multiline
-              maxLength={2000}
-              editable={!composerLocked}
-            />
-            <Pressable style={[styles.sendButton, composerLocked && styles.sendButtonDisabled]} onPress={handleSend} disabled={composerLocked}>
-              <Text style={styles.sendButtonText}>{t("chat.send")}</Text>
-            </Pressable>
+            {!voiceBarActive && (
+              <>
+                <Pressable
+                  style={[styles.imageButton, composerLocked && styles.sendButtonDisabled]}
+                  onPress={handleSendImage}
+                  disabled={composerLocked || sendingImage}
+                >
+                  {sendingImage ? (
+                    <ActivityIndicator size="small" color={colors.accentDark} />
+                  ) : (
+                    <Ionicons name="image-outline" size={22} color={colors.accentDark} />
+                  )}
+                </Pressable>
+                <TextInput
+                  style={styles.input}
+                  value={input}
+                  onChangeText={setInput}
+                  placeholder={t("chat.messagePlaceholder")}
+                  multiline
+                  maxLength={2000}
+                  editable={!composerLocked}
+                />
+              </>
+            )}
+            {input.trim().length > 0 && !voiceBarActive ? (
+              <Pressable style={[styles.sendButton, composerLocked && styles.sendButtonDisabled]} onPress={handleSend} disabled={composerLocked}>
+                <Text style={styles.sendButtonText}>{t("chat.send")}</Text>
+              </Pressable>
+            ) : (
+              <VoiceRecorderBar
+                disabled={composerLocked}
+                sending={sendingVoice}
+                onSend={handleSendVoice}
+                onActiveChange={setVoiceBarActive}
+              />
+            )}
           </View>
         )}
         <BlindChatFeedbackModal

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from app.core import rate_limit
 from app.deps import get_current_user
 from app.models.user import User
-from app.schemas.message import ImagePresignRequest
+from app.schemas.message import ImagePresignRequest, VoicePresignRequest
 from app.schemas.profile import PresignRequest, PresignResponse
 from app.services import storage_service
 
@@ -28,6 +28,18 @@ async def presign_chat_image(
     /presign (which still allows video, for profile media) since chat
     deliberately never supports video or arbitrary files."""
     object_path = storage_service.build_chat_image_object_path(user.id, body.content_type)
+    upload_url = storage_service.generate_upload_url(object_path, body.content_type)
+    return PresignResponse(upload_url=upload_url, gcs_object_path=object_path)
+
+
+@router.post("/presign-chat-voice", response_model=PresignResponse, dependencies=[Depends(rate_limit.limit_user("presign", 120, 3600))])
+async def presign_chat_voice(
+    body: VoicePresignRequest, user: User = Depends(get_current_user)
+) -> PresignResponse:
+    """Voice messages only (always .m4a) — used by the chat composer's
+    record-and-send button. Same bucket/folder as presign-chat-image, just a
+    different extension."""
+    object_path = storage_service.build_chat_voice_object_path(user.id, body.content_type)
     upload_url = storage_service.generate_upload_url(object_path, body.content_type)
     return PresignResponse(upload_url=upload_url, gcs_object_path=object_path)
 

@@ -233,8 +233,10 @@ export interface ChatMessage {
   match_id: string;
   sender_id: string;
   content: string;
-  message_type: "text" | "image" | "deleted";
+  message_type: "text" | "image" | "voice" | "deleted";
   image_url: string | null;
+  voice_url: string | null;
+  voice_duration_seconds: number | null;
   original_language: string | null;
   translated_content: string | null;
   translated_language: string | null;

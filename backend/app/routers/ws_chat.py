@@ -29,6 +29,10 @@ MAX_CANDIDATE_CHARS = 2_000
 MESSAGES_PER_10S = 30
 FRAMES_PER_10S = 120
 TRANSLATE_CHARS_PER_HOUR = 30_000
+# The recorder UI (VoiceRecorderBar) caps a recording at 120s; this is just a
+# server-side sanity ceiling against a tampered client, generous enough to
+# never reject a real recording.
+MAX_VOICE_SECONDS = 180
 CALL_END_REASONS = {"hangup", "declined", "busy", "missed", "timeout", "peer_offline", "error"}
 # How long an offer rings before it's treated as a missed call if nobody answers.
 RING_TIMEOUT_SECONDS = 45
@@ -54,11 +58,13 @@ async def _error(user_id: uuid.UUID, code: str, **extra) -> None:
 
 async def _handle_message(db: AsyncSession, user: User, data: dict) -> None:
     message_type = data.get("message_type") or "text"
-    if message_type not in ("text", "image"):
+    if message_type not in ("text", "image", "voice"):
         return
     content = data.get("content") if isinstance(data.get("content"), str) else ""
     content = content.strip()
     image_object_path = data.get("image_object_path") if message_type == "image" else None
+    voice_object_path = data.get("voice_object_path") if message_type == "voice" else None
+    voice_duration_seconds = data.get("voice_duration_seconds") if message_type == "voice" else None
     if message_type == "text" and not content:
         return
     try:
@@ -83,6 +89,21 @@ async def _handle_message(db: AsyncSession, user: User, data: dict) -> None:
         problem = await asyncio.to_thread(storage_service.check_uploaded_object, image_object_path)
         if problem:
             await _error(user.id, "invalid_image", match_id=str(match_id))
+            return
+
+    if message_type == "voice":
+        if (
+            not isinstance(voice_object_path, str)
+            or not voice_object_path.endswith(".m4a")
+            or not storage_service.is_valid_user_object_path(voice_object_path, user.id, "chat")
+            or not isinstance(voice_duration_seconds, int)
+            or isinstance(voice_duration_seconds, bool)  # bool is an int subclass in Python
+            or not (0 < voice_duration_seconds <= MAX_VOICE_SECONDS)
+        ):
+            return
+        problem = await asyncio.to_thread(storage_service.check_uploaded_object, voice_object_path)
+        if problem:
+            await _error(user.id, "invalid_voice", match_id=str(match_id))
             return
 
     match = await chat_service.get_active_match_for_user(db, match_id, user.id)
@@ -127,6 +148,8 @@ async def _handle_message(db: AsyncSession, user: User, data: dict) -> None:
         content,
         message_type=message_type,
         image_object_path=image_object_path,
+        voice_object_path=voice_object_path,
+        voice_duration_seconds=voice_duration_seconds,
         original_language=original_language,
         translated_content=translated_content,
         translated_language=translated_language,
@@ -140,6 +163,8 @@ async def _handle_message(db: AsyncSession, user: User, data: dict) -> None:
         "message_type": message_type,
         "content": content,
         "image_url": storage_service.build_public_url(image_object_path) if image_object_path else None,
+        "voice_url": storage_service.build_public_url(voice_object_path) if voice_object_path else None,
+        "voice_duration_seconds": voice_duration_seconds,
         "original_language": original_language,
         "translated_content": translated_content,
         "translated_language": translated_language,

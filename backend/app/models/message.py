@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Index, Unicode, UnicodeText, Uuid
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, Unicode, UnicodeText, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base, utc_now, utc_now_default
@@ -33,6 +33,13 @@ class Message(Base):
     # + schemas/message.py's ImagePresignRequest) — never video, never an
     # arbitrary file.
     image_object_path: Mapped[str | None] = mapped_column("ImageObjectPath", Unicode(512), nullable=True)
+    # R2 object path for a voice message — same convention as image_object_path,
+    # under users/{id}/chat/, always a .m4a (see storage_service.
+    # build_chat_voice_object_path). voice_duration_seconds is the client-
+    # measured recording length, shown on the bubble instead of re-deriving it
+    # from the audio file server-side.
+    voice_object_path: Mapped[str | None] = mapped_column("VoiceObjectPath", Unicode(512), nullable=True)
+    voice_duration_seconds: Mapped[int | None] = mapped_column("VoiceDurationSeconds", Integer, nullable=True)
     # Real-time translation (services/translation_service.py). Only ever set
     # for text messages where the sender's and recipient's preferred_language
     # differ and translation is configured — see routers/ws_chat.py. NULL

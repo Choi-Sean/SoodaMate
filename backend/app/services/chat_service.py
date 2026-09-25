@@ -85,6 +85,8 @@ async def persist_message(
     content: str,
     message_type: str = "text",
     image_object_path: str | None = None,
+    voice_object_path: str | None = None,
+    voice_duration_seconds: int | None = None,
     original_language: str | None = None,
     translated_content: str | None = None,
     translated_language: str | None = None,
@@ -96,6 +98,8 @@ async def persist_message(
             content=content,
             message_type=message_type,
             image_object_path=image_object_path,
+            voice_object_path=voice_object_path,
+            voice_duration_seconds=voice_duration_seconds,
             original_language=original_language,
             translated_content=translated_content,
             translated_language=translated_language,
@@ -131,6 +135,8 @@ async def delete_message(db: AsyncSession, match_id: uuid.UUID, message_id: uuid
     message.message_type = "deleted"
     message.content = ""
     message.image_object_path = None
+    message.voice_object_path = None
+    message.voice_duration_seconds = None
     message.translated_content = None
     message.translated_language = None
     await db.commit()

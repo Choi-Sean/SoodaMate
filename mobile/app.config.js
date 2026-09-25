@@ -204,6 +204,17 @@ module.exports = {
         "@config-plugins/react-native-webrtc",
         { cameraPermission: cameraUsageDescription, microphonePermission: microphoneUsageDescription },
       ],
+      [
+        "expo-audio",
+        {
+          microphonePermission: microphoneUsageDescription,
+          // Chat voice messages never need to keep recording/playing once the
+          // app is backgrounded (unlike a music player) — leave both off
+          // rather than picking up the background-audio entitlement for free.
+          enableBackgroundRecording: false,
+          enableBackgroundPlayback: false,
+        },
+      ],
       ...(hasAndroidFirebase || hasIosFirebase
         ? ["@react-native-firebase/app", "@react-native-firebase/messaging"]
         : []),

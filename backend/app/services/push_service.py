@@ -164,7 +164,11 @@ async def send_message_notification(
     message_type: str = "text",
 ) -> None:
     lang = await _get_language(db, user_id)
-    body_key = "photo_message_body" if message_type == "image" else "message_body"
+    body_key = (
+        "photo_message_body"
+        if message_type == "image"
+        else "voice_message_body" if message_type == "voice" else "message_body"
+    )
     await send_to_user(
         db,
         user_id,

@@ -33,6 +33,10 @@ _EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "v
 # is ever called.
 _IMAGE_EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
 
+# Voice messages only — always m4a regardless of which of the three
+# content_type spellings VoicePresignRequest accepted (see its docstring).
+_VOICE_EXTENSIONS = {"audio/m4a": "m4a", "audio/mp4": "m4a", "audio/x-m4a": "m4a"}
+
 
 def build_object_path(user_id: uuid.UUID, content_type: str) -> str:
     ext = _EXTENSIONS[content_type]
@@ -41,6 +45,11 @@ def build_object_path(user_id: uuid.UUID, content_type: str) -> str:
 
 def build_chat_image_object_path(user_id: uuid.UUID, content_type: str) -> str:
     ext = _IMAGE_EXTENSIONS[content_type]
+    return f"users/{user_id}/chat/{uuid.uuid4()}.{ext}"
+
+
+def build_chat_voice_object_path(user_id: uuid.UUID, content_type: str) -> str:
+    ext = _VOICE_EXTENSIONS[content_type]
     return f"users/{user_id}/chat/{uuid.uuid4()}.{ext}"
 
 
@@ -166,7 +175,7 @@ def delete_prefix(prefix: str) -> int:
 _USER_OBJECT_RE = re.compile(
     r"^users/(?P<uid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/"
     r"(?P<folder>photos|chat|stories|moments)/"
-    r"(?P<name>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.(?P<ext>jpg|png|webp|mp4)$"
+    r"(?P<name>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.(?P<ext>jpg|png|webp|mp4|m4a)$"
 )
 
 # Generous on purpose: the app lets people pick 48 MP photos and 10-second 4K clips
@@ -175,6 +184,10 @@ _USER_OBJECT_RE = re.compile(
 # ceiling only has to stop absurd files, not tune quality.
 MAX_IMAGE_BYTES = 20 * 1024 * 1024
 MAX_VIDEO_BYTES = 150 * 1024 * 1024
+# A voice message is capped to 2 minutes client-side (VoiceRecorderBar) — at
+# HIGH_QUALITY's 128kbps that's ~2 MB. This ceiling is just a sanity backstop
+# against a tampered/oversized upload, not a real-world size target.
+MAX_VOICE_BYTES = 15 * 1024 * 1024
 
 # Top-level atoms a QuickTime/MP4 file may start with. iPhone .mov files usually open
 # with "ftyp", but older or trimmed/exported ones can open with "wide", "moov", "mdat",
@@ -207,7 +220,9 @@ def _magic_ok(ext: str, head: bytes) -> bool:
     extension accepts any of the three image formats."""
     if ext in ("jpg", "png", "webp"):
         return _is_jpeg(head) or _is_png(head) or _is_webp(head)
-    if ext == "mp4":
+    if ext in ("mp4", "m4a"):
+        # m4a is the same MPEG-4 container as mp4 (just audio-only tracks),
+        # so it starts with the same top-level atoms.
         return head[4:8] in _VIDEO_FIRST_ATOMS
     return False
 
@@ -223,7 +238,7 @@ def check_uploaded_object(object_path: str) -> str | None:
     if not settings.verify_uploaded_objects:
         return None
     ext = object_path.rsplit(".", 1)[-1].lower()
-    limit = MAX_VIDEO_BYTES if ext == "mp4" else MAX_IMAGE_BYTES
+    limit = MAX_VIDEO_BYTES if ext == "mp4" else MAX_VOICE_BYTES if ext == "m4a" else MAX_IMAGE_BYTES
     client = _get_client()
     problem: str | None = None
     try:

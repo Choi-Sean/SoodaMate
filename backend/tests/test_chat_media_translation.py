@@ -79,6 +79,102 @@ def test_image_message_round_trips_with_image_url():
         assert image_messages[0]["image_url"] is not None
 
 
+def test_voice_message_round_trips_with_voice_url_and_duration():
+    with TestClient(app) as tc:
+        a_id, a_token = _signup_and_complete_profile(tc, "voiceA@example.com", "male", "female")
+        b_id, b_token = _signup_and_complete_profile(tc, "voiceB@example.com", "female", "male")
+        a_headers = {"Authorization": f"Bearer {a_token}"}
+        b_headers = {"Authorization": f"Bearer {b_token}"}
+
+        match_id = create_ordinary_match_sync(a_id, b_id)
+
+        presign = tc.post(
+            "/uploads/presign-chat-voice", headers=b_headers, json={"content_type": "audio/m4a"}
+        )
+        assert presign.status_code == 200
+        object_path = presign.json()["gcs_object_path"]
+        assert object_path.startswith(f"users/{b_id}/chat/")
+        assert object_path.endswith(".m4a")
+
+        with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
+            with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
+                # B is the female half of a mixed pair — allowed to send first
+                # under Phase 14's Bumble rule.
+                ws_b.send_json(
+                    {
+                        "type": "message",
+                        "match_id": match_id,
+                        "message_type": "voice",
+                        "voice_object_path": object_path,
+                        "voice_duration_seconds": 12,
+                    }
+                )
+                received = ws_a.receive_json()
+                assert received["message_type"] == "voice"
+                assert received["voice_url"] is not None
+                assert object_path in received["voice_url"]
+                assert received["voice_duration_seconds"] == 12
+
+        history = tc.get(f"/matches/{match_id}/messages", headers=a_headers)
+        voice_messages = [m for m in history.json() if m["message_type"] == "voice"]
+        assert len(voice_messages) == 1
+        assert voice_messages[0]["voice_url"] is not None
+        assert voice_messages[0]["voice_duration_seconds"] == 12
+
+
+def test_voice_message_rejects_bad_duration_and_wrong_extension():
+    with TestClient(app) as tc:
+        a_id, a_token = _signup_and_complete_profile(tc, "voiceC@example.com", "male", "female")
+        b_id, b_token = _signup_and_complete_profile(tc, "voiceD@example.com", "female", "male")
+        a_headers = {"Authorization": f"Bearer {a_token}"}
+
+        match_id = create_ordinary_match_sync(a_id, b_id)
+
+        presign = tc.post(
+            "/uploads/presign-chat-voice", headers={"Authorization": f"Bearer {b_token}"}, json={"content_type": "audio/m4a"}
+        )
+        object_path = presign.json()["gcs_object_path"]
+
+        with tc.websocket_connect(f"/ws/chat?token={a_token}") as ws_a:
+            with tc.websocket_connect(f"/ws/chat?token={b_token}") as ws_b:
+                # Duration over the server-side cap — silently dropped, no message persisted.
+                ws_b.send_json(
+                    {
+                        "type": "message",
+                        "match_id": match_id,
+                        "message_type": "voice",
+                        "voice_object_path": object_path,
+                        "voice_duration_seconds": 999,
+                    }
+                )
+                # An image path used as a "voice" message — wrong extension, also dropped.
+                ws_b.send_json(
+                    {
+                        "type": "message",
+                        "match_id": match_id,
+                        "message_type": "voice",
+                        "voice_object_path": f"users/{b_id}/chat/{uuid.uuid4()}.jpg",
+                        "voice_duration_seconds": 5,
+                    }
+                )
+                # A real one, to prove the socket is still alive and only the bad frames were dropped.
+                ws_b.send_json(
+                    {
+                        "type": "message",
+                        "match_id": match_id,
+                        "message_type": "voice",
+                        "voice_object_path": object_path,
+                        "voice_duration_seconds": 5,
+                    }
+                )
+                received = ws_a.receive_json()
+                assert received["voice_duration_seconds"] == 5
+
+        history = tc.get(f"/matches/{match_id}/messages", headers=a_headers)
+        voice_messages = [m for m in history.json() if m["message_type"] == "voice"]
+        assert len(voice_messages) == 1
+
+
 def test_chat_message_is_translated_when_languages_differ(monkeypatch):
     import app.services.translation_service as translation_service
 

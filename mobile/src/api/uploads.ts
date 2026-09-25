@@ -22,6 +22,13 @@ export async function presignChatImage(contentType: string): Promise<PresignResu
   return resp.data;
 }
 
+/** Voice messages only (always .m4a) — used by the chat composer's
+ * record-and-send button. See routers/uploads.py::presign_chat_voice. */
+export async function presignChatVoice(contentType: string): Promise<PresignResult> {
+  const resp = await apiClient.post<PresignResult>("/uploads/presign-chat-voice", { content_type: contentType });
+  return resp.data;
+}
+
 /** Images only — used by the optional couple-story photo. See
  * routers/uploads.py::presign_story_image. */
 export async function presignStoryImage(contentType: string): Promise<PresignResult> {

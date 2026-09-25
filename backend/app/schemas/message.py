@@ -20,6 +20,8 @@ class MessageOut(BaseModel):
     content: str
     message_type: str = "text"
     image_object_path: str | None = None
+    voice_object_path: str | None = None
+    voice_duration_seconds: int | None = None
     original_language: str | None = None
     translated_content: str | None = None
     translated_language: str | None = None
@@ -31,6 +33,11 @@ class MessageOut(BaseModel):
     @property
     def image_url(self) -> str | None:
         return build_public_url(self.image_object_path) if self.image_object_path else None
+
+    @computed_field
+    @property
+    def voice_url(self) -> str | None:
+        return build_public_url(self.voice_object_path) if self.voice_object_path else None
 
 
 class TranslateMessageRequest(BaseModel):
@@ -47,3 +54,14 @@ class ImagePresignRequest(BaseModel):
     — images only (jpeg/png/webp), never video, never an arbitrary file."""
 
     content_type: str = Field(pattern="^image/(jpeg|png|webp)$")
+
+
+class VoicePresignRequest(BaseModel):
+    """Used by /uploads/presign-chat-voice. The recorder (expo-audio's
+    RecordingPresets.HIGH_QUALITY, see mobile/src/components/
+    VoiceRecorderBar.tsx) always produces an m4a container regardless of
+    platform, so this — unlike ImagePresignRequest — has no real choice to
+    make; the field still exists so the client states its intent and the
+    pattern still guards against a stray/malicious content_type."""
+
+    content_type: str = Field(pattern="^audio/(m4a|mp4|x-m4a)$")

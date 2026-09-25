@@ -42,6 +42,8 @@ export function useChatSocket(
           content: data.content,
           message_type: data.message_type ?? "text",
           image_url: data.image_url ?? null,
+          voice_url: data.voice_url ?? null,
+          voice_duration_seconds: data.voice_duration_seconds ?? null,
           original_language: data.original_language ?? null,
           translated_content: data.translated_content ?? null,
           translated_language: data.translated_language ?? null,
@@ -73,6 +75,18 @@ export function useChatSocket(
     [send, matchId]
   );
 
+  const sendVoiceMessage = useCallback(
+    (voiceObjectPath: string, durationSeconds: number) =>
+      send({
+        type: "message",
+        match_id: matchId,
+        message_type: "voice",
+        voice_object_path: voiceObjectPath,
+        voice_duration_seconds: durationSeconds,
+      }),
+    [send, matchId]
+  );
+
   const markRead = useCallback(() => send({ type: "read", match_id: matchId }), [send, matchId]);
 
   // No local echo comes back for this (see routers/ws_chat.py::_handle_message_delete's
@@ -83,5 +97,5 @@ export function useChatSocket(
     [send, matchId]
   );
 
-  return { connected, sendMessage, sendImageMessage, markRead, deleteMessage };
+  return { connected, sendMessage, sendImageMessage, sendVoiceMessage, markRead, deleteMessage };
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ActivityIndicator, Image, Modal, Pressable, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { useTranslation } from "react-i18next";
 
 import { translateMessage } from "../api/messages";
@@ -42,6 +43,13 @@ export default function ChatBubble({ message, isMine, onDelete }: Props) {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [shown, setShown] = useState<{ lang: SupportedLanguage; text: string } | null>(null);
+  // Called unconditionally, before the early returns below, since a message's
+  // type only ever transitions to "deleted" (never voice -> text etc.) — a
+  // voice bubble that gets deleted would otherwise stop calling this hook on
+  // the same component instance, which breaks React's rules of hooks. source
+  // is null for every non-voice message, which useAudioPlayer accepts fine.
+  const voicePlayer = useAudioPlayer(message.message_type === "voice" && message.voice_url ? { uri: message.voice_url } : null);
+  const voicePlayerStatus = useAudioPlayerStatus(voicePlayer);
 
   function confirmDelete() {
     if (!onDelete) return;
@@ -112,6 +120,54 @@ export default function ChatBubble({ message, isMine, onDelete }: Props) {
     );
   }
 
+  if (message.message_type === "voice" && message.voice_url) {
+    const totalSeconds = message.voice_duration_seconds ?? 0;
+    const remaining = voicePlayerStatus.playing
+      ? Math.max(0, Math.ceil(totalSeconds - voicePlayerStatus.currentTime))
+      : totalSeconds;
+    const minutes = Math.floor(remaining / 60);
+    const seconds = Math.floor(remaining % 60);
+    const toggleVoicePlayback = () => {
+      if (voicePlayerStatus.playing) {
+        voicePlayer.pause();
+      } else {
+        // Restart from the top once a full playthrough finished, same as
+        // tapping a voice-memo bubble again in any chat app.
+        if (voicePlayerStatus.didJustFinish || voicePlayerStatus.currentTime >= totalSeconds) {
+          voicePlayer.seekTo(0);
+        }
+        voicePlayer.play();
+      }
+    };
+    return (
+      <View style={[styles.row, isMine ? styles.rowMine : styles.rowTheirs]}>
+        <Pressable
+          style={[styles.voiceBubble, isMine ? styles.bubbleMine : styles.bubbleTheirs]}
+          onPress={toggleVoicePlayback}
+          onLongPress={isMine ? confirmDelete : undefined}
+          delayLongPress={350}
+        >
+          <Ionicons name={voicePlayerStatus.playing ? "pause-circle" : "play-circle"} size={30} color={isMine ? "#fff" : colors.accentDark} />
+          <View style={styles.voiceWaveform}>
+            {Array.from({ length: 18 }).map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.voiceBar,
+                  { height: 6 + ((i * 7) % 13) },
+                  isMine ? styles.voiceBarMine : styles.voiceBarTheirs,
+                ]}
+              />
+            ))}
+          </View>
+          <Text style={isMine ? styles.textMine : styles.textTheirs}>
+            {minutes}:{seconds.toString().padStart(2, "0")}
+          </Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.row, isMine ? styles.rowMine : styles.rowTheirs]}>
       <Pressable
@@ -170,6 +226,11 @@ const styles = StyleSheet.create({
   translateButton: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 },
   translateButtonText: { fontSize: 11, color: colors.muted, fontWeight: "600" },
   image: { width: 200, height: 200, borderRadius: 16, backgroundColor: colors.creamDeep },
+  voiceBubble: { flexDirection: "row", alignItems: "center", gap: 8, minWidth: 170 },
+  voiceWaveform: { flex: 1, flexDirection: "row", alignItems: "center", gap: 2, height: 20 },
+  voiceBar: { width: 2.5, borderRadius: 1.5 },
+  voiceBarMine: { backgroundColor: "rgba(255,255,255,0.7)" },
+  voiceBarTheirs: { backgroundColor: "rgba(11,41,68,0.35)" },
   viewerBackdrop: { flex: 1, backgroundColor: "rgba(11,41,68,0.95)", alignItems: "center", justifyContent: "center" },
   viewerClose: { position: "absolute", top: 50, right: 20, zIndex: 1, padding: 8 },
   viewerImage: { width: "100%", height: "80%" },
