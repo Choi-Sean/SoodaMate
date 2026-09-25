@@ -111,6 +111,14 @@ class Profile(Base):
 
     # Phase 18 — incognito + travel mode (free, not paywalled per product decision)
     is_incognito: Mapped[bool] = mapped_column("IsIncognito", Boolean, default=False, nullable=False)
+    # Self-service account pause, distinct from User.is_active (support-only,
+    # set by the underage-signup gate — see routers/account.py's
+    # report_underage docstring — and would lock the user out of logging
+    # back in to undo it). Toggling this on hides the profile from both
+    # swipe discovery and Blind Chat matching (see discovery_service's
+    # _core_exclusions and blind_chat_service's queue filters) and blocks
+    # the user's own swipe/Blind-Chat actions until they toggle it back off.
+    is_suspended: Mapped[bool] = mapped_column("IsSuspended", Boolean, default=False, nullable=False)
     travel_lat: Mapped[float | None] = mapped_column("TravelLat", nullable=True)
     travel_lng: Mapped[float | None] = mapped_column("TravelLng", nullable=True)
     travel_expires_at: Mapped[datetime | None] = mapped_column(

@@ -191,6 +191,7 @@ def _core_exclusions(viewer: User, viewer_profile: Profile) -> list:
         # portably to `= 1` / `= 0` there instead of erroring.
         Profile.is_profile_complete,
         ~Profile.is_incognito,  # Phase 18 — hidden from fresh Discover browsing
+        ~Profile.is_suspended,  # self-service pause — see Profile.is_suspended's docstring
         ~User.is_banned,
         User.is_active,
         mutual_interest,

@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Image, Platform, Pressable, RefreshControl, ScrollView, Text, View, StyleSheet } from "react-native";
+import { ActivityIndicator, Image, Platform, Pressable, RefreshControl, ScrollView, Switch, Text, View, StyleSheet } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
-import { getMyProfile } from "../../api/profiles";
+import { getMyProfile, setSuspended } from "../../api/profiles";
 import { cancelSubscription } from "../../api/account";
 import { getFaceVerificationStatus } from "../../api/verification";
 import VerifiedBadge from "../../components/VerifiedBadge";
@@ -43,6 +43,7 @@ export default function MyProfileScreen({ navigation }: Props) {
   const queryClient = useQueryClient();
   const { data: profile, refetch } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
   const [canceling, setCanceling] = useState(false);
+  const [suspending, setSuspending] = useState(false);
   // Deliberately NOT react-query's own `isRefetching` — that flag is true for
   // *any* background refetch of ["myProfile"], including ones this screen
   // never asked for (another screen calling invalidateQueries after a
@@ -133,6 +134,32 @@ export default function MyProfileScreen({ navigation }: Props) {
     showAlert(t("profile.cancelConfirmTitle"), t("profile.cancelConfirmBody", { date: formatDate(profile.premium_until) }), [
       { text: t("profile.keepMembership"), style: "cancel" },
       { text: t("profile.cancelConfirmButton"), style: "destructive", onPress: doCancel },
+    ]);
+  }
+
+  async function doSetSuspended(next: boolean) {
+    setSuspending(true);
+    try {
+      await setSuspended(next);
+      await queryClient.invalidateQueries({ queryKey: ["myProfile"] });
+    } catch (e: any) {
+      showAlert(t("common.somethingWentWrong"), e?.response?.data?.detail ?? e?.message ?? "");
+    } finally {
+      setSuspending(false);
+    }
+  }
+
+  // Turning it ON has real consequences (hidden from everyone, can't swipe
+  // or use Blind Chat) so it asks first; turning it back OFF is harmless
+  // and reversible, so that direction applies immediately.
+  function handleToggleSuspend(next: boolean) {
+    if (!next) {
+      doSetSuspended(false);
+      return;
+    }
+    showAlert(t("profile.suspendConfirmTitle"), t("profile.suspendConfirmBody"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("profile.suspendConfirmButton"), style: "destructive", onPress: () => doSetSuspended(true) },
     ]);
   }
 
@@ -345,6 +372,20 @@ export default function MyProfileScreen({ navigation }: Props) {
         <Text style={styles.purchaseHistoryLinkText}>{t("profile.purchaseHistoryLink")}</Text>
         <Ionicons name="chevron-forward" size={15} color={colors.accentDark} />
       </Pressable>
+
+      {profile && (
+        <View style={styles.suspendCard}>
+          <View style={styles.suspendTextWrap}>
+            <Text style={styles.suspendLabel}>{t("profile.suspendLabel")}</Text>
+            <Text style={styles.suspendHint}>{t("profile.suspendHint")}</Text>
+          </View>
+          {suspending ? (
+            <ActivityIndicator size="small" color={colors.navy} />
+          ) : (
+            <Switch value={profile.is_suspended} onValueChange={handleToggleSuspend} trackColor={{ true: colors.danger }} />
+          )}
+        </View>
+      )}
 
       <Pressable style={styles.soodaListCard} onPress={() => openExternalUrl(SOODALIST_STORE_URL)}>
         <Image source={require("../../../assets/soodalist-logo.png")} style={styles.soodaListLogo} resizeMode="contain" />
@@ -594,6 +635,20 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   purchaseHistoryLinkText: { flex: 1, fontSize: 13.5, fontWeight: "700", color: colors.navy },
+  suspendCard: {
+    marginTop: 12,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  suspendTextWrap: { flex: 1 },
+  suspendLabel: { fontSize: 13.5, fontWeight: "700", color: colors.navy },
+  suspendHint: { fontSize: 12, color: colors.muted, marginTop: 2, lineHeight: 16 },
   soodaListCard: {
     marginTop: 16,
     backgroundColor: colors.white,

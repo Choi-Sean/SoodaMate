@@ -142,6 +142,7 @@ class ProfileOut(BaseModel):
     free_peek_remaining: int = 0
     free_peek_reset_at: datetime | None = None
     is_incognito: bool = False
+    is_suspended: bool = False
     travel_lat: float | None = None
     travel_lng: float | None = None
     travel_expires_at: datetime | None = None
@@ -270,6 +271,10 @@ class PhotoReorderRequest(BaseModel):
 
 class IncognitoUpdate(BaseModel):
     is_incognito: bool
+
+
+class SuspendUpdate(BaseModel):
+    is_suspended: bool
 
 
 class PremiumFilterUpdate(BaseModel):

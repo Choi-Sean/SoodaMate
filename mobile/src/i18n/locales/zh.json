@@ -321,7 +321,12 @@
     "membershipPremium": "高级会员",
     "membershipFree": "免费会员",
     "purchaseHistoryLink": "查看购买记录",
-    "perkAdvancedFilters": "高级筛选（种族、宗教、政治倾向等）"
+    "perkAdvancedFilters": "高级筛选（种族、宗教、政治倾向等）",
+    "suspendLabel": "暂停账户",
+    "suspendHint": "开启后其他会员将看不到你，喜欢·跳过配对和盲聊也无法使用。你可以随时再次关闭。",
+    "suspendConfirmTitle": "要暂停账户吗？",
+    "suspendConfirmBody": "暂停期间，其他会员无法看到你的资料，你也无法使用喜欢·跳过配对或盲聊。你可以随时在此页面重新开启。",
+    "suspendConfirmButton": "暂停"
   },
   "purchaseHistory": {
     "title": "购买记录",

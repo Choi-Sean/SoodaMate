@@ -68,6 +68,11 @@ export async function setIncognito(isIncognito: boolean): Promise<Profile> {
   return resp.data;
 }
 
+export async function setSuspended(isSuspended: boolean): Promise<Profile> {
+  const resp = await apiClient.post<Profile>("/profiles/me/suspend", { is_suspended: isSuspended });
+  return resp.data;
+}
+
 export async function setTravelMode(lat: number, lng: number, durationHours = 24): Promise<Profile> {
   const resp = await apiClient.post<Profile>("/profiles/me/travel", {
     lat,

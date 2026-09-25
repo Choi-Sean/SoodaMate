@@ -29,6 +29,8 @@ async def _require_complete_profile(db: AsyncSession, user: User) -> Profile:
     # (or a modified client) can't skip it.
     if settings.require_verified_accounts and not profile.face_verified:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "identity verification required")
+    if profile.is_suspended:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "account suspended")
     return profile
 
 

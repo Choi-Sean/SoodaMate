@@ -22,6 +22,7 @@ from app.schemas.profile import (
     PremiumFilterUpdate,
     ProfileOut,
     ProfileUpdate,
+    SuspendUpdate,
     TravelModeRequest,
 )
 from app.schemas.moment import MomentOut
@@ -232,6 +233,21 @@ async def set_incognito(
     # updated_at is server-computed (onupdate=func.now()) and left unloaded
     # after commit — refresh so ProfileOut's response model doesn't trigger
     # a lazy load outside of an await (see update_my_profile's same fix).
+    await db.refresh(profile)
+    return await _load_profile_out(db, user.id)
+
+
+@router.post("/me/suspend", response_model=ProfileOut)
+async def set_suspended(
+    body: SuspendUpdate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> ProfileOut:
+    profile = await db.get(Profile, user.id)
+    if profile is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "complete your profile first")
+    profile.is_suspended = body.is_suspended
+    await db.commit()
     await db.refresh(profile)
     return await _load_profile_out(db, user.id)
 

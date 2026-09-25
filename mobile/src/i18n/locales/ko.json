@@ -321,7 +321,12 @@
     "membershipPremium": "프리미엄 회원",
     "membershipFree": "무료 회원",
     "purchaseHistoryLink": "구매 내역 보기",
-    "perkAdvancedFilters": "인종·종교·정치성향 등 고급 필터"
+    "perkAdvancedFilters": "인종·종교·정치성향 등 고급 필터",
+    "suspendLabel": "계정 일시정지",
+    "suspendHint": "켜면 다른 회원에게 보이지 않고, 스와이프·블라인드 채팅도 이용할 수 없어요. 언제든 다시 끌 수 있어요.",
+    "suspendConfirmTitle": "계정을 정지할까요?",
+    "suspendConfirmBody": "정지하면 다른 회원에게 프로필이 보이지 않고, 스와이프와 블라인드 채팅을 이용할 수 없어요. 이 화면에서 언제든 다시 켤 수 있어요.",
+    "suspendConfirmButton": "정지하기"
   },
   "purchaseHistory": {
     "title": "구매 내역",

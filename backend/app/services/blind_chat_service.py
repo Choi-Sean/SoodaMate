@@ -217,6 +217,7 @@ def _compatibility_filters(
         BlindChatQueueEntry.created_at >= datetime.now(timezone.utc) - STALE_QUEUE_ENTRY,
         ~User.is_banned,
         User.is_active,
+        ~Profile.is_suspended,
         mutual_interest,
         *gender_filters,
         Profile.birth_date >= viewer_min_birth,

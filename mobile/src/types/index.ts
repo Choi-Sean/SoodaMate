@@ -62,6 +62,7 @@ export interface Profile {
   free_peek_remaining: number;
   free_peek_reset_at: string | null;
   is_incognito: boolean;
+  is_suspended: boolean;
   travel_lat: number | null;
   travel_lng: number | null;
   travel_expires_at: string | null;

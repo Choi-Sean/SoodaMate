@@ -321,7 +321,12 @@
     "membershipPremium": "Premium member",
     "membershipFree": "Free member",
     "purchaseHistoryLink": "View purchase history",
-    "perkAdvancedFilters": "Advanced filters (race, religion, politics, and more)"
+    "perkAdvancedFilters": "Advanced filters (race, religion, politics, and more)",
+    "suspendLabel": "Suspend account",
+    "suspendHint": "Turn this on and other members won't see you — Swipe and Blind Chat are off too. Switch it back anytime.",
+    "suspendConfirmTitle": "Suspend your account?",
+    "suspendConfirmBody": "While suspended, other members can't see your profile and you can't use Swipe or Blind Chat. You can turn it back on anytime from this screen.",
+    "suspendConfirmButton": "Suspend"
   },
   "purchaseHistory": {
     "title": "Purchase history",

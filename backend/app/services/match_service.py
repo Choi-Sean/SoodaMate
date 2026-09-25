@@ -101,6 +101,10 @@ async def record_swipe(
     if from_user_id == to_user_id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "cannot swipe on yourself")
 
+    from_profile = await db.get(Profile, from_user_id)
+    if from_profile is not None and from_profile.is_suspended:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "account suspended")
+
     # The target's card may have been fetched well before this swipe lands
     # (the discovery deck is cached client-side) — if that account was
     # deleted in the meantime, sp_RecordSwipe's Swipe insert would blow up on

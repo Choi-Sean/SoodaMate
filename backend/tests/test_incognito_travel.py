@@ -22,6 +22,44 @@ async def test_incognito_hides_from_discovery(client):
 
 
 @pytest.mark.asyncio
+async def test_suspend_hides_from_discovery_and_blocks_own_swipes(client):
+    viewer_id, viewer_headers = await create_user_with_profile(
+        client, "suspend1@example.com", gender="male", interested_in="female"
+    )
+    suspended_id, suspended_headers = await create_user_with_profile(
+        client, "suspend2@example.com", gender="female", interested_in="male"
+    )
+
+    resp = await client.post("/profiles/me/suspend", headers=suspended_headers, json={"is_suspended": True})
+    assert resp.status_code == 200
+    assert resp.json()["is_suspended"] is True
+
+    candidates = await client.get("/discovery/candidates", headers=viewer_headers)
+    ids = [c["user_id"] for c in candidates.json()]
+    assert suspended_id not in ids
+
+    swipe_resp = await client.post("/interactions/like", headers=suspended_headers, json={"to_user_id": viewer_id})
+    assert swipe_resp.status_code == 403
+
+    # Toggling back off restores normal behavior — both discovery visibility
+    # and the ability to swipe again.
+    unsuspend = await client.post("/profiles/me/suspend", headers=suspended_headers, json={"is_suspended": False})
+    assert unsuspend.json()["is_suspended"] is False
+    swipe_resp2 = await client.post("/interactions/pass", headers=suspended_headers, json={"to_user_id": viewer_id})
+    assert swipe_resp2.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_suspended_user_cannot_join_blind_chat_queue(client):
+    _, headers = await create_user_with_profile(client, "suspend3@example.com")
+    await client.post("/profiles/me/suspend", headers=headers, json={"is_suspended": True})
+
+    resp = await client.post("/blind-chat/queue", headers=headers, json={"categories": ["travel"]})
+    assert resp.status_code == 403
+    assert resp.json()["detail"] == "account suspended"
+
+
+@pytest.mark.asyncio
 async def test_travel_mode_repositions_for_distance_filter(client):
     viewer_id, viewer_headers = await create_user_with_profile(
         client,

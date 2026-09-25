@@ -321,7 +321,12 @@
     "membershipPremium": "Miembro Premium",
     "membershipFree": "Miembro gratuito",
     "purchaseHistoryLink": "Ver historial de compras",
-    "perkAdvancedFilters": "Filtros avanzados (raza, religión, política y más)"
+    "perkAdvancedFilters": "Filtros avanzados (raza, religión, política y más)",
+    "suspendLabel": "Suspender cuenta",
+    "suspendHint": "Actívalo y otros miembros no te verán — Swipe y el chat a ciegas también se desactivan. Puedes volver a activarlo cuando quieras.",
+    "suspendConfirmTitle": "¿Suspender tu cuenta?",
+    "suspendConfirmBody": "Mientras esté suspendida, otros miembros no verán tu perfil y no podrás usar Swipe ni el chat a ciegas. Puedes reactivarla cuando quieras desde esta pantalla.",
+    "suspendConfirmButton": "Suspender"
   },
   "purchaseHistory": {
     "title": "Historial de compras",

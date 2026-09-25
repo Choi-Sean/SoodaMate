@@ -321,7 +321,12 @@
     "membershipPremium": "プレミアム会員",
     "membershipFree": "無料会員",
     "purchaseHistoryLink": "購入履歴を見る",
-    "perkAdvancedFilters": "人種・宗教・政治観など高度なフィルター"
+    "perkAdvancedFilters": "人種・宗教・政治観など高度なフィルター",
+    "suspendLabel": "アカウントを一時停止",
+    "suspendHint": "オンにすると他のメンバーに表示されなくなり、スワイプ・ブラインドチャットも利用できません。いつでもオフに戻せます。",
+    "suspendConfirmTitle": "アカウントを一時停止しますか？",
+    "suspendConfirmBody": "停止中は他のメンバーにプロフィールが表示されず、スワイプやブラインドチャットも利用できません。この画面からいつでも再開できます。",
+    "suspendConfirmButton": "一時停止する"
   },
   "purchaseHistory": {
     "title": "購入履歴",
