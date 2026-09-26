@@ -3,7 +3,7 @@ import json
 import pytest
 import stripe
 
-from tests.helpers import create_user_with_profile
+from tests.helpers import create_user_with_profile, rich_profile_fields
 
 _WEBHOOK_SECRET = "whsec_testsecret_0123456789abcdef"
 
@@ -387,12 +387,16 @@ async def test_languages_filter_matches_exact_segment_not_substring(client):
 def _profile_update_with_languages(languages: list[str]) -> dict:
     import datetime
 
+    # PUT is a full replace, not a patch — without rich_profile_fields()
+    # this would wipe create_user_with_profile's richness fields back to
+    # null and drop the profile below discovery's 70% bar.
     return {
         "display_name": "Test",
         "legal_first_name": "Test",
         "birth_date": str(datetime.date(1995, 1, 1)),
         "gender": "female",
         "interested_in": "male",
+        **rich_profile_fields(),
         "languages": languages,
     }
 

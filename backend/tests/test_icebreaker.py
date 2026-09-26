@@ -1,6 +1,6 @@
 import pytest
 
-from tests.helpers import create_ordinary_match, create_user_with_profile
+from tests.helpers import create_ordinary_match, create_user_with_profile, rich_profile_fields
 
 
 @pytest.mark.asyncio
@@ -45,6 +45,10 @@ def _profile_body(name, gender, interested_in, *, interests, k_content_tags):
 
     birth_year = date.today().year - 25
     return {
+        # PUT is a full replace, not a patch — without these, this call
+        # would wipe create_user_with_profile's richness fields back to
+        # null and drop the profile below record_swipe's 70% bar.
+        **rich_profile_fields(),
         "display_name": name,
         "legal_first_name": name,
         "birth_date": f"{birth_year}-01-01",

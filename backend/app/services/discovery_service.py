@@ -12,6 +12,7 @@ from app.models.interaction import Block, Match, Swipe
 from app.models.profile import Photo, Profile
 from app.models.user import User
 from app.services.payment_service import is_premium_member
+from app.utils.profile_completeness import richness_sql_filter
 
 # MSSQL has no RANDOM() (T-SQL's idiom is ORDER BY NEWID()) — resolved once
 # from the live engine's dialect rather than per-request.
@@ -171,7 +172,9 @@ def _core_exclusions(viewer: User, viewer_profile: Profile) -> list:
     these: never yourself, never an incomplete/banned/inactive/incognito
     profile, never someone already swiped on or blocked either direction,
     and never a gender mismatch (that one's not really "negotiable" for a
-    dating app's fallback either)."""
+    dating app's fallback either). richness_sql_filter is the stronger
+    "70% filled in" bar on top of is_profile_complete's bare minimum —
+    only candidates worth matching on ever get shown."""
     already_swiped = exists().where(
         and_(Swipe.from_user_id == viewer.id, Swipe.to_user_id == Profile.user_id)
     )
@@ -190,6 +193,7 @@ def _core_exclusions(viewer: User, viewer_profile: Profile) -> list:
         # no IS TRUE/IS FALSE syntax (only IS NULL), so this compiles
         # portably to `= 1` / `= 0` there instead of erroring.
         Profile.is_profile_complete,
+        richness_sql_filter(),
         ~Profile.is_incognito,  # Phase 18 — hidden from fresh Discover browsing
         ~Profile.is_suspended,  # self-service pause — see Profile.is_suspended's docstring
         ~User.is_banned,
@@ -368,6 +372,7 @@ async def get_users_who_liked_me(
             their_like.to_user_id == viewer.id,
             their_like.action.in_(["like", "superlike"]),
             Profile.is_profile_complete,
+            richness_sql_filter(),
             ~User.is_banned,
             User.is_active,
             ~already_responded,

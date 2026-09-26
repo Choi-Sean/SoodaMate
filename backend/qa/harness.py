@@ -256,6 +256,10 @@ def signup_phone(phone) -> U:
 
 
 def profile_body(name="QA User", age=25, gender="male", interested_in="female", **kw):
+    # Enough optional fields filled in by default to clear the 70% "richly
+    # complete" bar discovery/swipe now gate on (see app/utils/
+    # profile_completeness.py) — kw overrides let a caller null one back out
+    # for a scenario that specifically needs an incomplete profile.
     body = {
         "display_name": name,
         "legal_first_name": name,
@@ -264,6 +268,21 @@ def profile_body(name="QA User", age=25, gender="male", interested_in="female", 
         "interested_in": interested_in,
         "min_age_pref": 18,
         "max_age_pref": 99,
+        "bio": "Hi, I'm a QA test profile!",
+        "race_ethnicity": "east_asian",
+        "religion": "buddhist",
+        "political_view": "moderate",
+        "height_cm": 170,
+        "occupation": "Engineer",
+        "education": "bachelor",
+        "hometown": "Seoul",
+        "smoking": "never",
+        "exercise_frequency": "sometimes",
+        "relationship_goal": "long_term",
+        "wants_kids": "not_sure",
+        "has_kids": "no",
+        "interests": [f"_filler_interest_{uuid.uuid4().hex[:8]}"],
+        "languages": [f"_filler_lang_{uuid.uuid4().hex[:8]}"],
     }
     body.update(kw)
     return body

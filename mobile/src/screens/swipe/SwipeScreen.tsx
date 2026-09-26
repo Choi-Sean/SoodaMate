@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { ActivityIndicator, Image, Pressable, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFonts, Fredoka_600SemiBold } from "@expo-google-fonts/fredoka";
 import { useTranslation } from "react-i18next";
@@ -16,9 +16,11 @@ import { useCandidates } from "../../hooks/useCandidates";
 import { useSwipeAction } from "../../hooks/useSwipeAction";
 import { useSwipeLimit } from "../../hooks/useSwipeLimit";
 import { claimSwipeAdBonus, getSwipeLimit, type SwipeAction } from "../../api/interactions";
+import { getMyProfile } from "../../api/profiles";
 import { showRewardedAd } from "../../services/rewardedAd";
 import { useAuthStore } from "../../store/authStore";
 import { showAlert } from "../../utils/alert";
+import { calculateProfileCompleteness, MIN_COMPLETENESS_FOR_ACTIVE } from "../../utils/profileCompleteness";
 import { colors } from "../../theme";
 
 // A sponsored card takes the place of the next real candidate every 5
@@ -40,7 +42,13 @@ export default function SwipeScreen() {
   // Only the brand wordmark below uses this — falls back to the system
   // bold font until it loads, so nothing else on this screen waits on it.
   const [brandFontLoaded] = useFonts({ Fredoka_600SemiBold });
-  const { data: candidates, isLoading, isError } = useCandidates();
+  const { data: myProfile, isLoading: profileLoading } = useQuery({ queryKey: ["myProfile"], queryFn: getMyProfile });
+  // Matches the same 70% "richly complete" bar the backend now enforces on
+  // both browsing (GET /discovery/candidates) and swiping itself (record_swipe)
+  // — same rule Blind Chat already gates on, see profileCompleteness.ts.
+  const myCompleteness = myProfile ? calculateProfileCompleteness(myProfile) : null;
+  const profileIncomplete = myCompleteness !== null && myCompleteness < MIN_COMPLETENESS_FOR_ACTIVE;
+  const { data: candidates, isLoading, isError } = useCandidates(!profileLoading && !profileIncomplete);
   const { data: swipeLimit } = useSwipeLimit();
   const swipeMutation = useSwipeAction();
   const navigation = useNavigation<any>();
@@ -90,7 +98,7 @@ export default function SwipeScreen() {
   }
 
   function handleAction(action: SwipeAction) {
-    if (!current || swipeMutation.isPending || limitReached) return;
+    if (!current || swipeMutation.isPending || limitReached || profileIncomplete) return;
     swipeMutation.mutate(
       { action, candidate: current },
       {
@@ -166,7 +174,25 @@ export default function SwipeScreen() {
       )}
 
       <View style={styles.cardArea}>
-        {isLoading ? (
+        {profileLoading ? (
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color={colors.accent} />
+          </View>
+        ) : profileIncomplete ? (
+          <View style={styles.centered}>
+            <Ionicons name="person-circle-outline" size={48} color={colors.muted} />
+            <Text style={styles.incompleteTitle}>{t("swipe.profileIncompleteTitle")}</Text>
+            <Text style={styles.emptyText}>
+              {t("swipe.profileIncompleteBody", { percent: myCompleteness, min: MIN_COMPLETENESS_FOR_ACTIVE })}
+            </Text>
+            <Pressable
+              style={styles.completeProfileButton}
+              onPress={() => navigation.navigate("EditProfile")}
+            >
+              <Text style={styles.completeProfileButtonText}>{t("swipe.profileIncompleteCta")}</Text>
+            </Pressable>
+          </View>
+        ) : isLoading ? (
           <View style={styles.centered}>
             <ActivityIndicator size="large" color={colors.accent} />
           </View>
@@ -187,7 +213,7 @@ export default function SwipeScreen() {
         )}
       </View>
 
-      {showAd ? (
+      {profileIncomplete ? null : showAd ? (
         <Pressable style={styles.continueButton} onPress={() => setShowAd(false)}>
           <Text style={styles.continueButtonText}>{t("swipe.continue")}</Text>
         </Pressable>
@@ -269,8 +295,17 @@ const styles = StyleSheet.create({
   },
   adBonusButtonText: { fontSize: 12, color: colors.accentDark, fontWeight: "700" },
   cardArea: { flex: 1, padding: 0 },
-  centered: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
+  centered: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, gap: 10 },
   emptyText: { color: colors.muted, textAlign: "center" },
+  incompleteTitle: { fontSize: 17, fontWeight: "800", color: colors.navy, textAlign: "center" },
+  completeProfileButton: {
+    marginTop: 8,
+    backgroundColor: colors.accent,
+    borderRadius: 999,
+    paddingVertical: 13,
+    paddingHorizontal: 28,
+  },
+  completeProfileButtonText: { color: "#fff", fontWeight: "700", fontSize: 15 },
   continueButton: {
     marginHorizontal: 16,
     marginBottom: 18,

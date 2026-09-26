@@ -616,7 +616,10 @@
     "adBonusTitle": "Bonus swipe",
     "adBonusSuccess": "You've got 1 extra swipe today!",
     "adBonusUnavailable": "No ad available right now. Try again in a bit.",
-    "adBonusPending": "Thanks for watching! Your bonus swipe is being confirmed — it should show up in a few seconds."
+    "adBonusPending": "Thanks for watching! Your bonus swipe is being confirmed — it should show up in a few seconds.",
+    "profileIncompleteTitle": "Finish your profile",
+    "profileIncompleteBody": "You need at least 70% profile completion to use Swipe. You're at {{percent}}% right now.",
+    "profileIncompleteCta": "Complete your profile"
   },
   "likes": {
     "title": "Likes",

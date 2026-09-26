@@ -1,6 +1,6 @@
 import pytest
 
-from tests.helpers import create_user_with_profile
+from tests.helpers import create_user_with_profile, rich_profile_fields
 
 
 @pytest.mark.asyncio
@@ -73,6 +73,10 @@ async def test_travel_mode_repositions_for_distance_filter(client):
         "/profiles/me",
         headers=viewer_headers,
         json={
+            # PUT is a full replace, not a patch — without these, this call
+            # would wipe create_user_with_profile's richness fields back to
+            # null and drop the viewer below discovery's 70% bar.
+            **rich_profile_fields(),
             "display_name": "Test User",
             "legal_first_name": "Test User",
             "birth_date": "1999-01-01",

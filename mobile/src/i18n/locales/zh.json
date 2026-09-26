@@ -616,7 +616,10 @@
     "adBonusTitle": "额外滑动",
     "adBonusSuccess": "今天多获得了1次滑动机会！",
     "adBonusUnavailable": "暂时无法加载广告，请稍后再试。",
-    "adBonusPending": "感谢观看！正在确认你的额外滑动，几秒后就会到账。"
+    "adBonusPending": "感谢观看！正在确认你的额外滑动，几秒后就会到账。",
+    "profileIncompleteTitle": "请完善资料",
+    "profileIncompleteBody": "使用滑动配对需要资料完成度达到 70% 以上，目前完成度为 {{percent}}%。",
+    "profileIncompleteCta": "去完善资料"
   },
   "likes": {
     "title": "喜欢我的人",

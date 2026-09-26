@@ -1,6 +1,6 @@
 import pytest
 
-from tests.helpers import create_user_with_profile
+from tests.helpers import create_user_with_profile, rich_profile_fields
 
 
 async def _disable_expand(client, headers, max_distance_km: int = 500):
@@ -59,6 +59,10 @@ async def test_candidate_bio2_and_bio3_are_visible_to_other_users(client):
             "interested_in": "male",
             "bio2": "More about me",
             "bio3": "One more thing",
+            # PUT is a full replace, not a patch — without these, this call
+            # would wipe create_user_with_profile's richness fields back to
+            # null and drop the candidate below discovery's 70% bar.
+            **rich_profile_fields(),
         },
     )
     assert resp.status_code == 200
@@ -152,6 +156,10 @@ async def test_distance_filter_excludes_far_away_candidate(client):
             "max_distance_km": 10,
             "location_lat": 37.5665,
             "location_lng": 126.9780,
+            # PUT is a full replace, not a patch — without these, this call
+            # would wipe create_user_with_profile's richness fields back to
+            # null and drop the viewer below discovery's own 70% bar.
+            **rich_profile_fields(),
         },
     )
     await _disable_expand(client, viewer_headers, max_distance_km=10)

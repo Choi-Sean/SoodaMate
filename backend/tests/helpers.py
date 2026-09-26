@@ -12,6 +12,38 @@ from app.models.user import User
 
 _tracked_user_ids: list[str] = []
 
+def rich_profile_fields() -> dict:
+    """Fields that clear the 70% "richly complete" bar discovery/swipe now
+    gate on (see app/utils/profile_completeness.py). PUT /profiles/me is a
+    full replace (routers/profiles.py does body.model_dump(), not
+    exclude_unset), so ANY follow-up PUT that omits these silently wipes
+    them back to null — spread this into every /profiles/me body a test
+    sends after the first, not just the first one from
+    create_user_with_profile below.
+
+    interests/languages are randomized per call rather than a fixed value:
+    icebreaker_service picks "shared_interest"/"shared_language" when two
+    profiles' lists overlap, and a fixed filler would make every pair of
+    test users spuriously "share" one — a function (not a module-level
+    constant) so each caller gets its own random tag."""
+    return {
+        "bio": "Hi, I'm a test profile!",
+        "race_ethnicity": "east_asian",
+        "religion": "buddhist",
+        "political_view": "moderate",
+        "height_cm": 170,
+        "occupation": "Engineer",
+        "education": "bachelor",
+        "hometown": "Seoul",
+        "smoking": "never",
+        "exercise_frequency": "sometimes",
+        "relationship_goal": "long_term",
+        "wants_kids": "not_sure",
+        "has_kids": "no",
+        "interests": [f"_filler_interest_{uuid.uuid4().hex[:8]}"],
+        "languages": [f"_filler_lang_{uuid.uuid4().hex[:8]}"],
+    }
+
 
 def track_test_user(user_id: str) -> str:
     """Records a user id a test created so it gets deleted for real once the
@@ -128,14 +160,21 @@ async def create_user_with_profile(
     max_age_pref: int = 99,
     location_lat: float | None = None,
     location_lng: float | None = None,
-    race_ethnicity: str | None = None,
-    religion: str | None = None,
-    height_cm: int | None = None,
-    exercise_frequency: str | None = None,
-    education: str | None = None,
+    race_ethnicity: str | None = "east_asian",
+    religion: str | None = "buddhist",
+    height_cm: int | None = 170,
+    exercise_frequency: str | None = "sometimes",
+    education: str | None = "bachelor",
     mbti: str | None = None,
 ) -> tuple[str, dict]:
-    """Signs up, completes a profile, returns (user_id, auth_headers)."""
+    """Signs up, completes a profile, returns (user_id, auth_headers).
+
+    Defaults fill in enough optional fields to clear the 70% "richly
+    complete" bar (see app/utils/profile_completeness.py) that discovery/
+    swipe now gate on — every test that relies on browsing candidates or
+    completing a swipe (directly or via create_ordinary_match) needs both
+    ends of the interaction to pass it. Pass explicit None/values to
+    override for filter-matching tests that care about a specific field."""
     signup = await client.post("/auth/signup", json={"email": email, "password": "password123"})
     tokens = signup.json()
     track_test_user(tokens["user_id"])
@@ -146,6 +185,7 @@ async def create_user_with_profile(
         "/profiles/me",
         headers=headers,
         json={
+            **rich_profile_fields(),
             "display_name": display_name,
             "legal_first_name": display_name,
             "birth_date": f"{birth_year}-01-01",

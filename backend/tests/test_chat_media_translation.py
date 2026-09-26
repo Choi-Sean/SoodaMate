@@ -5,7 +5,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from app.main import app
-from tests.helpers import create_ordinary_match_sync, track_test_user
+from tests.helpers import create_ordinary_match_sync, rich_profile_fields, track_test_user
 
 
 def _signup_and_complete_profile(
@@ -21,6 +21,11 @@ def _signup_and_complete_profile(
         "/profiles/me",
         headers=headers,
         json={
+            # Enough optional fields filled in to clear the 70% "richly
+            # complete" bar discovery/swipe now gate on (see
+            # app/utils/profile_completeness.py) — create_ordinary_match_sync
+            # goes through the real record_swipe path, which enforces it.
+            **rich_profile_fields(),
             "display_name": "Test",
             "legal_first_name": "Test",
             "birth_date": f"{birth_year}-01-01",

@@ -13,6 +13,7 @@ from app.schemas.moment import MomentOut
 from app.schemas.profile import PhotoOut
 from app.services.discovery_service import get_candidates, get_photos_for_users, get_users_who_liked_me
 from app.services.moment_service import get_moments_for_users
+from app.utils.profile_completeness import load_richness
 
 router = APIRouter(prefix="/discovery", tags=["discovery"])
 
@@ -73,6 +74,12 @@ async def _require_complete_profile(db: AsyncSession, user: User) -> Profile:
     viewer_profile = await db.get(Profile, user.id)
     if viewer_profile is None or not viewer_profile.is_profile_complete:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "complete your profile before browsing")
+    # is_profile_complete is only the bare minimum (photo + name + birth date
+    # + gender) needed to finish signup — browsing/swiping also requires the
+    # richer "70% filled in" bar mobile's Edit Profile strength meter shows,
+    # same bar Blind Chat already gates on (see profileCompleteness.ts).
+    if not await load_richness(db, user.id, viewer_profile):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "profile not complete enough to browse")
     return viewer_profile
 
 

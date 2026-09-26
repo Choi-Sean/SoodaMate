@@ -616,7 +616,10 @@
     "adBonusTitle": "ボーナススワイプ",
     "adBonusSuccess": "本日のスワイプ回数が1回増えました！",
     "adBonusUnavailable": "今は広告を読み込めません。しばらくしてからもう一度お試しください。",
-    "adBonusPending": "ご視聴ありがとうございます！ボーナススワイプを確認中です。数秒後に反映されます。"
+    "adBonusPending": "ご視聴ありがとうございます！ボーナススワイプを確認中です。数秒後に反映されます。",
+    "profileIncompleteTitle": "プロフィールを充実させてください",
+    "profileIncompleteBody": "スワイプを利用するにはプロフィールを70%以上完成させてください。現在{{percent}}%です。",
+    "profileIncompleteCta": "プロフィールを充実させる"
   },
   "likes": {
     "title": "いいね",

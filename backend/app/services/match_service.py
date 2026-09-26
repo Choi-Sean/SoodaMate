@@ -15,6 +15,7 @@ from app.services import push_service
 from app.services.storage_service import build_public_url
 from app.utils.db_retry import run_with_deadlock_retry
 from app.utils.premium import is_premium
+from app.utils.profile_completeness import load_richness
 from app.ws.connection_manager import manager
 
 VALID_ACTIONS = {"like", "pass", "superlike"}
@@ -104,6 +105,11 @@ async def record_swipe(
     from_profile = await db.get(Profile, from_user_id)
     if from_profile is not None and from_profile.is_suspended:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "account suspended")
+    # Mirrors routers/discovery.py's browsing gate — a client that never
+    # called /discovery/candidates (or one that's stale/tampered) can't
+    # swipe its way around the same "70% filled in" requirement.
+    if from_profile is None or not await load_richness(db, from_user_id, from_profile):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "profile not complete enough to swipe")
 
     # The target's card may have been fetched well before this swipe lands
     # (the discovery deck is cached client-side) — if that account was

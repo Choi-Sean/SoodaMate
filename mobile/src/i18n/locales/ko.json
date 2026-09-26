@@ -616,7 +616,10 @@
     "adBonusTitle": "보너스 스와이프",
     "adBonusSuccess": "오늘의 스와이프 횟수가 1회 늘었어요!",
     "adBonusUnavailable": "지금은 광고를 불러올 수 없어요. 잠시 후 다시 시도해주세요.",
-    "adBonusPending": "시청해 주셔서 감사해요! 보너스 스와이프를 확인하는 중이에요. 몇 초 뒤에 반영돼요."
+    "adBonusPending": "시청해 주셔서 감사해요! 보너스 스와이프를 확인하는 중이에요. 몇 초 뒤에 반영돼요.",
+    "profileIncompleteTitle": "프로필을 더 채워주세요",
+    "profileIncompleteBody": "스와이프를 이용하려면 프로필을 70% 이상 완성해주세요. 현재 {{percent}}% 완성됐어요.",
+    "profileIncompleteCta": "프로필 채우러 가기"
   },
   "likes": {
     "title": "좋아요",
