@@ -829,11 +829,11 @@ const translations = {
   },
   "childSafety.s5.title": { ko: "5. 아동 안전 담당자", en: "5. Child Safety Contact", es: "5. Contacto de seguridad infantil", zh: "5. 儿童安全联系人", ja: "5. 児童安全担当者" },
   "childSafety.s5.body": {
-    ko: '본 정책 및 아동 성적 학대 콘텐츠(CSAM) 방지 관행에 관한 문의는 <a href="mailto:choi.sean1991@gmail.com">choi.sean1991@gmail.com</a> 로 연락해 주세요.',
-    en: 'For questions about this policy or our CSAM-prevention practices, contact <a href="mailto:choi.sean1991@gmail.com">choi.sean1991@gmail.com</a>.',
-    es: 'Para preguntas sobre esta política o nuestras prácticas de prevención de CSAM, contacta a <a href="mailto:choi.sean1991@gmail.com">choi.sean1991@gmail.com</a>.',
-    zh: '如对本政策或我们的CSAM防范措施有任何疑问，请联系 <a href="mailto:choi.sean1991@gmail.com">choi.sean1991@gmail.com</a>。',
-    ja: '本ポリシーおよび児童性的虐待コンテンツ（CSAM）防止の取り組みに関するお問い合わせは <a href="mailto:choi.sean1991@gmail.com">choi.sean1991@gmail.com</a> までご連絡ください。',
+    ko: '본 정책 및 아동 성적 학대 콘텐츠(CSAM) 방지 관행에 관한 문의는 <a href="mailto:support@soodamate.com">support@soodamate.com</a> 로 연락해 주세요.',
+    en: 'For questions about this policy or our CSAM-prevention practices, contact <a href="mailto:support@soodamate.com">support@soodamate.com</a>.',
+    es: 'Para preguntas sobre esta política o nuestras prácticas de prevención de CSAM, contacta a <a href="mailto:support@soodamate.com">support@soodamate.com</a>.',
+    zh: '如对本政策或我们的CSAM防范措施有任何疑问，请联系 <a href="mailto:support@soodamate.com">support@soodamate.com</a>。',
+    ja: '本ポリシーおよび児童性的虐待コンテンツ（CSAM）防止の取り組みに関するお問い合わせは <a href="mailto:support@soodamate.com">support@soodamate.com</a> までご連絡ください。',
   },
 
   "shop.title": { ko: "프리미엄 상점", en: "Premium Shop", es: "Tienda Premium", zh: "高级商店", ja: "プレミアムショップ" },
