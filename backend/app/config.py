@@ -80,7 +80,7 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_username: str = ""
     smtp_password: str = ""
-    smtp_from_address: str = "no-reply@soodamate.example.com"
+    smtp_from_address: str = "support@soodamate.com"
 
     # Phone verification (Twilio Verify) — required at signup now that Blind
     # Chat is the app's primary flow. Empty until the user provisions a
